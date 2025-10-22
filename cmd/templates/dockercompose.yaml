@@ -1,0 +1,47 @@
+# DevContainer Configuration
+# Configuration using Docker Compose
+
+name: my-devcontainer
+
+# Docker Compose files
+dockerComposeFile:
+  - docker-compose.yml
+
+# Service to use as dev container
+service: app
+
+# Workspace configuration
+workspaceFolder: /workspace
+remoteUser: vscode
+
+# Override command
+command: /bin/sh -c "while sleep 1000; do :; done"
+
+# Container environment variables
+containerEnv:
+  NODE_ENV: development
+
+# Port forwarding
+forwardPorts:
+  - 3000
+  - 5432
+
+# Features
+features:
+  ghcr.io/devcontainers/features/git:1: {}
+  ghcr.io/devcontainers/features/github-cli:1: {}
+  ghcr.io/devcontainers/features/docker-in-docker:2: {}
+
+# Lifecycle hooks
+postCreateCommand: npm install
+postStartCommand: npm run dev
+
+# VS Code customizations
+customizations:
+  vscode:
+    extensions:
+      - dbaeumer.vscode-eslint
+      - esbenp.prettier-vscode
+      - ms-azuretools.vscode-docker
+    settings:
+      editor.formatOnSave: true

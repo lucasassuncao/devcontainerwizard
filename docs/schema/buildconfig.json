@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lucasassuncao/devcontainerwizard/internal/model/build-config",
+  "properties": {
+    "dockerfile": {
+      "type": "string",
+      "description": "Path to the Dockerfile to use for building the image.",
+      "default": "Dockerfile"
+    },
+    "context": {
+      "type": "string",
+      "description": "Build context directory.",
+      "default": "."
+    },
+    "args": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "type": "object",
+      "description": "Build arguments as key-value pairs."
+    },
+    "target": {
+      "type": "string",
+      "description": "Target stage for multi-stage Docker builds."
+    },
+    "cacheFrom": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "description": "List of images to cache from."
+    },
+    "output": {
+      "type": "string",
+      "description": "Output location of the build."
+    },
+    "ssh": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "description": "SSH mount sources to use during build."
+    },
+    "secrets": {
+      "items": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identifier for the secret."
+          },
+          "src": {
+            "type": "string",
+            "description": "Path or source of the secret."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      "type": "array",
+      "description": "Secrets to pass to the build process."
+    }
+  },
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "dockerfile",
+    "context"
+  ]
+}

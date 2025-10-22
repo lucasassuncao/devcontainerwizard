@@ -1,0 +1,26 @@
+# DevContainer Configuration
+# This is a minimal configuration using an existing Docker image
+
+name: my-devcontainer
+image: mcr.microsoft.com/devcontainers/base:ubuntu
+
+# Workspace configuration
+workspaceFolder: /workspace
+remoteUser: vscode
+
+# Container environment variables
+containerEnv:
+  NODE_ENV: development
+
+# Port forwarding
+forwardPorts:
+  - 3000
+
+# VS Code customizations
+customizations:
+  vscode:
+    extensions:
+      - dbaeumer.vscode-eslint
+      - esbenp.prettier-vscode
+    settings:
+      editor.formatOnSave: true

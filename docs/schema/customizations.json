@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lucasassuncao/devcontainerwizard/internal/model/customizations",
+  "properties": {
+    "vscode": {
+      "properties": {
+        "settings": {
+          "type": "object",
+          "description": "Key-value settings for VS Code."
+        },
+        "extensions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "List of VS Code extensions to install."
+        },
+        "remoteUser": {
+          "type": "string",
+          "description": "Remote user for VS Code container setup."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "VS Code specific customizations."
+    },
+    "codespaces": {
+      "properties": {
+        "settings": {
+          "type": "object",
+          "description": "Key-value settings for Codespaces."
+        },
+        "extensions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "List of Codespaces extensions to install."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Codespaces specific customizations."
+    },
+    "jetbrains": {
+      "properties": {
+        "plugins": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "List of JetBrains plugins to install."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "JetBrains IDE specific customizations."
+    },
+    "neovim": {
+      "properties": {
+        "plugins": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "List of Neovim plugins to install."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Neovim specific customizations."
+    }
+  },
+  "additionalProperties": false,
+  "type": "object"
+}
