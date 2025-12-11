@@ -39,13 +39,13 @@ func GenerateIndex(docsDir string, configs []interface{}) error
 GenerateIndex creates an index markdown file listing all configuration structures.
 
 <a name="RenderMarkdownDocsInTerminal"></a>
-## func [RenderMarkdownDocsInTerminal](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/viewport.go#L70>)
+## func [RenderMarkdownDocsInTerminal](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/viewport.go#L71>)
 
 ```go
 func RenderMarkdownDocsInTerminal(docs map[string]string) error
 ```
 
-RenderMarkdownDocsInTerminal combina Promptui \+ Bubble Tea viewport
+RenderMarkdownDocsInTerminal renders the provided markdown documentation in an interactive terminal viewport using Bubble Tea.
 
 <a name="SchemaGenerator"></a>
 ## type [SchemaGenerator](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L16-L22>)
@@ -60,25 +60,25 @@ type SchemaGenerator struct {
 ```
 
 <a name="NewSchemaGenerator"></a>
-### func [NewSchemaGenerator](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L33>)
+### func [NewSchemaGenerator](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L34>)
 
 ```go
 func NewSchemaGenerator(docsDir, schemasDir string, cleanupSchemas bool) (*SchemaGenerator, error)
 ```
 
-
+NewSchemaGenerator creates a new SchemaGenerator
 
 <a name="SchemaGenerator.GenerateSchemaAndDocs"></a>
-### func \(\*SchemaGenerator\) [GenerateSchemaAndDocs](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L53>)
+### func \(\*SchemaGenerator\) [GenerateSchemaAndDocs](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L55>)
 
 ```go
 func (g *SchemaGenerator) GenerateSchemaAndDocs(v interface{}) error
 ```
 
-
+GenerateSchemaAndDocs generates JSON schema and markdown docs for the given type
 
 <a name="SchemaGenerator.GenerateSchemaAndDocsInMemory"></a>
-### func \(\*SchemaGenerator\) [GenerateSchemaAndDocsInMemory](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L84>)
+### func \(\*SchemaGenerator\) [GenerateSchemaAndDocsInMemory](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L86>)
 
 ```go
 func (g *SchemaGenerator) GenerateSchemaAndDocsInMemory(types []interface{}) (map[string]string, error)

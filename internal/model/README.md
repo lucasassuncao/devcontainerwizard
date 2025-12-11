@@ -8,7 +8,7 @@
 import "github.com/lucasassuncao/devcontainerwizard/internal/model"
 ```
 
-Package model ...
+Package model defines the data structures used to represent dev container configuration and related types. These structs are used for parsing, validation and documentation generation.
 
 ## Index
 
@@ -28,16 +28,16 @@ Package model ...
 
 
 <a name="GetAllTypes"></a>
-## func [GetAllTypes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L132>)
+## func [GetAllTypes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L136>)
 
 ```go
 func GetAllTypes() []interface{}
 ```
 
-
+GetAllTypes returns all model types for documentation generation
 
 <a name="BuildConfig"></a>
-## type [BuildConfig](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L56-L65>)
+## type [BuildConfig](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L59-L68>)
 
 BuildConfig defines parameters for building a dev container image.
 
@@ -45,41 +45,41 @@ BuildConfig defines parameters for building a dev container image.
 type BuildConfig struct {
     Dockerfile string            `json:"dockerfile,omitempty" yaml:"dockerfile,omitempty" validate:"required" jsonschema:"required,default=Dockerfile" jsonschema_description:"Path to the Dockerfile to use for building the image."`
     Context    string            `json:"context,omitempty" yaml:"context,omitempty" validate:"required" jsonschema:"required,default=." jsonschema_description:"Build context directory."`
-    Args       map[string]string `json:"args,omitempty" yaml:"args,omitempty" validate:"omitempty,dive,keys,required,endkeys,required" jsonschema_description:"Build arguments as key-value pairs."`
+    Args       map[string]string `json:"args,omitempty" yaml:"args,omitempty" validate:"omitempty" jsonschema_description:"Build arguments as key-value pairs."`
     Target     string            `json:"target,omitempty" yaml:"target,omitempty" validate:"omitempty" jsonschema_description:"Target stage for multi-stage Docker builds."`
-    CacheFrom  []string          `json:"cacheFrom,omitempty" yaml:"cacheFrom,omitempty" validate:"omitempty,dive,required" jsonschema_description:"List of images to cache from."`
+    CacheFrom  []string          `json:"cacheFrom,omitempty" yaml:"cacheFrom,omitempty" validate:"omitempty" jsonschema_description:"List of images to cache from."`
     Output     string            `json:"output,omitempty" yaml:"output,omitempty" validate:"omitempty" jsonschema_description:"Output location of the build."`
-    SSH        []string          `json:"ssh,omitempty" yaml:"ssh,omitempty" validate:"omitempty,dive,required" jsonschema_description:"SSH mount sources to use during build."`
+    SSH        []string          `json:"ssh,omitempty" yaml:"ssh,omitempty" validate:"omitempty" jsonschema_description:"SSH mount sources to use during build."`
     Secrets    []BuildSecret     `json:"secrets,omitempty" yaml:"secrets,omitempty" validate:"omitempty,dive" jsonschema_description:"Secrets to pass to the build process."`
 }
 ```
 
 <a name="BuildSecret"></a>
-## type [BuildSecret](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L68-L71>)
+## type [BuildSecret](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L71-L74>)
 
 BuildSecret represents a secret used during build.
 
 ```go
 type BuildSecret struct {
     ID  string `json:"id,omitempty" yaml:"id,omitempty" validate:"required" jsonschema_description:"Identifier for the secret."`
-    Src string `json:"src,omitempty" yaml:"src,omitempty" validate:"required,file" jsonschema_description:"Path or source of the secret."`
+    Src string `json:"src,omitempty" yaml:"src,omitempty" validate:"required" jsonschema_description:"Path or source of the secret."`
 }
 ```
 
 <a name="CodespacesCustomization"></a>
-## type [CodespacesCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L111-L114>)
+## type [CodespacesCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L114-L117>)
 
 CodespacesCustomization defines GitHub Codespaces\-specific settings.
 
 ```go
 type CodespacesCustomization struct {
-    Settings   map[string]any `json:"settings,omitempty" yaml:"settings,omitempty" validate:"omitempty,dive,keys,required,endkeys" jsonschema_description:"Key-value settings for Codespaces."`
-    Extensions []string       `json:"extensions,omitempty" yaml:"extensions,omitempty" validate:"omitempty,dive,required" jsonschema_description:"List of Codespaces extensions to install."`
+    Settings   map[string]any `json:"settings,omitempty" yaml:"settings,omitempty" validate:"omitempty" jsonschema_description:"Key-value settings for Codespaces."`
+    Extensions []string       `json:"extensions,omitempty" yaml:"extensions,omitempty" validate:"omitempty" jsonschema_description:"List of Codespaces extensions to install."`
 }
 ```
 
 <a name="Customizations"></a>
-## type [Customizations](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L96-L101>)
+## type [Customizations](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L99-L104>)
 
 Customizations defines editor or IDE specific configurations.
 
@@ -93,7 +93,7 @@ type Customizations struct {
 ```
 
 <a name="DevContainer"></a>
-## type [DevContainer](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L4-L53>)
+## type [DevContainer](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L6-L56>)
 
 
 
@@ -102,7 +102,7 @@ type DevContainer struct {
     Schema            string       `json:"$schema,omitempty" yaml:"$schema,omitempty" jsonschema_description:"URL of the JSON schema that describes the format of this file."`
     Name              string       `json:"name,omitempty" yaml:"name,omitempty" validate:"required" jsonschema:"required" jsonschema_description:"Name of the dev container."`
     Image             string       `json:"image,omitempty" yaml:"image,omitempty" validate:"required_without=Build" jsonschema_description:"Docker image to use for the dev container."`
-    Build             *BuildConfig `json:"build,omitempty" yaml:"build,omitempty" validate:"required_without=Image" jsonschema_description:"Configuration for building the image."`
+    Build             *BuildConfig `json:"build,omitempty" yaml:"build,omitempty" validate:"omitempty" jsonschema_description:"Configuration for building the image."`
     DockerComposeFile []string     `json:"dockerComposeFile,omitempty" yaml:"dockerComposeFile,omitempty" jsonschema_description:"List of Docker Compose files to use."`
     Service           string       `json:"service,omitempty" yaml:"service,omitempty" validate:"required_with=DockerComposeFile" jsonschema_description:"Specific service to run from Docker Compose."`
 
@@ -111,12 +111,13 @@ type DevContainer struct {
     RemoteUser      string `json:"remoteUser,omitempty" yaml:"remoteUser,omitempty" jsonschema_description:"User to use inside the container."`
     UserEnvProbe    string `json:"userEnvProbe,omitempty" yaml:"userEnvProbe,omitempty" validate:"omitempty,oneof=none loginShell loginInteractiveShell interactiveShell" jsonschema_description:"Command to detect the default user inside the container."`
 
-    Environment  map[string]string `json:"environment,omitempty" yaml:"environment,omitempty" jsonschema_description:"Environment variables to set in the container."`
-    ContainerEnv map[string]string `json:"containerEnv,omitempty" yaml:"containerEnv,omitempty" jsonschema_description:"Environment variables specific to the container."`
-    LocalEnv     map[string]string `json:"localEnv,omitempty" yaml:"localEnv,omitempty" jsonschema_description:"Environment variables local to the host for the dev container."`
+    // Environment variables
+    ContainerEnv map[string]string `json:"containerEnv,omitempty" yaml:"containerEnv,omitempty" jsonschema_description:"Environment variables to set in the container."`
+    RemoteEnv    map[string]string `json:"remoteEnv,omitempty" yaml:"remoteEnv,omitempty" jsonschema_description:"Environment variables for remote connections (like SSH)."`
+    LocalEnv     map[string]string `json:"-" yaml:"localEnv,omitempty" jsonschema_description:"Environment variables local to the host (not exported to JSON)."`
 
     ForwardPorts         []interface{}              `json:"forwardPorts,omitempty" yaml:"forwardPorts,omitempty" jsonschema_description:"Ports that are forwarded from the container to the local machine. Can be an integer port number, or a string of the format \"host:port_number\""`
-    PortsAttributes      map[string]*PortAttributes `json:"portsAttributes,omitempty" yaml:"portsAttributes,omitempty" validate:"omitempty,dive,keys,required,endkeys,dive" jsonschema_description:"Additional attributes for forwarded ports."`
+    PortsAttributes      map[string]*PortAttributes `json:"portsAttributes,omitempty" yaml:"portsAttributes,omitempty" validate:"omitempty" jsonschema_description:"Additional attributes for forwarded ports."`
     OtherPortsAttributes *PortAttributes            `json:"otherPortsAttributes,omitempty" yaml:"otherPortsAttributes,omitempty" validate:"omitempty" jsonschema_description:"Default attributes applied to all forwarded ports not defined in portsAttributes."`
     Mounts               []Mount                    `json:"mounts,omitempty" yaml:"mounts,omitempty" validate:"omitempty,dive" jsonschema_description:"Mount points inside the container."`
 
@@ -144,25 +145,25 @@ type DevContainer struct {
     Watch          *WatchConfig    `json:"watch,omitempty" yaml:"watch,omitempty" validate:"omitempty" jsonschema_description:"Configuration for files/processes to watch for restarts."`
     Customizations *Customizations `json:"customizations,omitempty" yaml:"customizations,omitempty" validate:"omitempty" jsonschema_description:"Editor/IDE customizations inside the container."`
 
-    Secrets map[string]Secret `json:"secrets,omitempty" yaml:"secrets,omitempty" validate:"omitempty,dive,keys,required,endkeys,dive" jsonschema_description:"Secrets to pass to the container."`
+    Secrets map[string]Secret `json:"secrets,omitempty" yaml:"secrets,omitempty" validate:"omitempty" jsonschema_description:"Secrets to pass to the container."`
 
     ShutdownAction string `json:"shutdownAction,omitempty" yaml:"shutdownAction,omitempty" validate:"omitempty,oneof=none stopContainer stopCompose" jsonschema_description:"Action to take when the container is stopped."`
 }
 ```
 
 <a name="JetBrainsCustomization"></a>
-## type [JetBrainsCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L117-L119>)
+## type [JetBrainsCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L120-L122>)
 
 JetBrainsCustomization defines JetBrains IDE configuration.
 
 ```go
 type JetBrainsCustomization struct {
-    Plugins []string `json:"plugins,omitempty" yaml:"plugins,omitempty" validate:"omitempty,dive,required" jsonschema_description:"List of JetBrains plugins to install."`
+    Plugins []string `json:"plugins,omitempty" yaml:"plugins,omitempty" validate:"omitempty" jsonschema_description:"List of JetBrains plugins to install."`
 }
 ```
 
 <a name="Mount"></a>
-## type [Mount](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L74-L80>)
+## type [Mount](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L77-L83>)
 
 Mount represents a filesystem or volume mount for the container.
 
@@ -177,18 +178,18 @@ type Mount struct {
 ```
 
 <a name="NeovimCustomization"></a>
-## type [NeovimCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L122-L124>)
+## type [NeovimCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L125-L127>)
 
 NeovimCustomization defines Neovim\-specific configuration.
 
 ```go
 type NeovimCustomization struct {
-    Plugins []string `json:"plugins,omitempty" yaml:"plugins,omitempty" validate:"omitempty,dive,required" jsonschema_description:"List of Neovim plugins to install."`
+    Plugins []string `json:"plugins,omitempty" yaml:"plugins,omitempty" validate:"omitempty" jsonschema_description:"List of Neovim plugins to install."`
 }
 ```
 
 <a name="PortAttributes"></a>
-## type [PortAttributes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L83-L87>)
+## type [PortAttributes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L86-L90>)
 
 PortAttributes defines additional metadata for a forwarded port.
 
@@ -201,7 +202,7 @@ type PortAttributes struct {
 ```
 
 <a name="Secret"></a>
-## type [Secret](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L127-L130>)
+## type [Secret](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L130-L133>)
 
 Secret defines a reusable secret for builds or runtime.
 
@@ -213,27 +214,27 @@ type Secret struct {
 ```
 
 <a name="VSCodeCustomization"></a>
-## type [VSCodeCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L104-L108>)
+## type [VSCodeCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L107-L111>)
 
 VSCodeCustomization defines VS Code\-specific settings.
 
 ```go
 type VSCodeCustomization struct {
-    Settings   map[string]any `json:"settings,omitempty" yaml:"settings,omitempty" validate:"omitempty,dive,keys,required,endkeys" jsonschema_description:"Key-value settings for VS Code."`
-    Extensions []string       `json:"extensions,omitempty" yaml:"extensions,omitempty" validate:"omitempty,dive,required" jsonschema_description:"List of VS Code extensions to install."`
+    Settings   map[string]any `json:"settings,omitempty" yaml:"settings,omitempty" validate:"omitempty" jsonschema_description:"Key-value settings for VS Code."`
+    Extensions []string       `json:"extensions,omitempty" yaml:"extensions,omitempty" validate:"omitempty" jsonschema_description:"List of VS Code extensions to install."`
     RemoteUser string         `json:"remoteUser,omitempty" yaml:"remoteUser,omitempty" validate:"omitempty" jsonschema_description:"Remote user for VS Code container setup."`
 }
 ```
 
 <a name="WatchConfig"></a>
-## type [WatchConfig](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L90-L93>)
+## type [WatchConfig](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L93-L96>)
 
 WatchConfig controls which files or processes trigger restarts.
 
 ```go
 type WatchConfig struct {
-    WaitFor []string `json:"waitFor,omitempty" yaml:"waitFor,omitempty" validate:"omitempty,dive,required" jsonschema_description:"List of processes or files to wait for before starting."`
-    Restart []string `json:"restart,omitempty" yaml:"restart,omitempty" validate:"omitempty,dive,required" jsonschema_description:"List of files or events that trigger a restart."`
+    WaitFor []string `json:"waitFor,omitempty" yaml:"waitFor,omitempty" validate:"omitempty" jsonschema_description:"List of processes or files to wait for before starting."`
+    Restart []string `json:"restart,omitempty" yaml:"restart,omitempty" validate:"omitempty" jsonschema_description:"List of files or events that trigger a restart."`
 }
 ```
 

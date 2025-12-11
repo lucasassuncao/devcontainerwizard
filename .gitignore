@@ -6,6 +6,7 @@ dist/# Binaries for programs and plugins
 *.dylib
 bin/
 dist/
+.binaries/
 
 # Test binary, built with `go test -c`
 *.test
@@ -51,3 +52,7 @@ temp/
 # OS specific
 Thumbs.db
 Desktop.ini
+
+# Binary files
+devcontainerwizard
+devcontainerwizard.exe

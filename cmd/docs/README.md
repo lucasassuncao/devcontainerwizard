@@ -23,9 +23,10 @@ Package docs ...
 
 ```go
 var GenerateCmd = &cobra.Command{
-    Use:   "generate-docs",
-    Short: "Generate documentation for devcontainer",
-    Run:   runGenerate,
+    Use:    "generate-docs",
+    Short:  "Generate documentation for devcontainer",
+    Run:    runGenerate,
+    Hidden: true,
 }
 ```
 

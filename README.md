@@ -1,6 +1,7 @@
-# DevContainer Wizard 🧙‍♂️
+e# DevContainer Wizard 🧙‍♂️
 
 A powerful CLI tool to generate and manage DevContainer configurations with ease.
+It generates a config.yaml (human-readable) file that can be converted to a devcontainer.json (DevContainer default format) file automagically.
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
@@ -19,24 +20,33 @@ A powerful CLI tool to generate and manage DevContainer configurations with ease
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/devcontainer-wizard.git
-cd devcontainer-wizard
+git clone https://github.com/lucasassuncao/devcontainerwizard.git
+cd devcontainerwizard
 
 # Build and install
-go build -o devcontainer
-sudo mv devcontainer /usr/local/bin/
+go build -o devcontainerwizard
+sudo mv devcontainerwizard /usr/local/bin/
 
 # Or install directly
 go install
 ```
 
-### Using Go Install
+### Using Go Install (Recommended)
 
 ```bash
-go install github.com/yourusername/devcontainer-wizard@latest
+# Install the latest version
+go install github.com/lucasassuncao/devcontainerwizard@latest
 ```
 
+> **📦 Latest Release**: Check the [releases page](https://github.com/lucasassuncao/devcontainerwizard/releases) for pre-built binaries and the latest version.
+
 ## 🚀 Quick Start
+
+The quick start video below shows you how to use the DevContainer Wizard to generate a new configuration file.
+
+*_Note:_* After generating the devcontainer.json, you can open the project in VS Code and it will prompt you to reopen in container. If not, you can press Ctrl+Shift+P and type `Dev Containers: Reopen in Container`.
+
+![demo](demo.gif)
 
 ### 1. Initialize a New Configuration
 
@@ -245,7 +255,7 @@ customizations:
 ### Prerequisites
 
 - Go 1.21 or higher
-- Make (optional)
+- Make (optional if you don't want to use the Makefile)
 
 ### Building
 
@@ -260,30 +270,6 @@ go build -ldflags="-s -w" -o devcontainer
 go install
 ```
 
-### Testing
-
-```bash
-# Run all tests
-go test ./...
-
-# Run tests with coverage
-go test -coverprofile=coverage.out ./...
-go tool cover -html=coverage.out
-
-# Run specific package tests
-go test ./internal/devcontainer/...
-```
-
-### Linting
-
-```bash
-# Format code
-go fmt ./...
-
-# Run linter (requires golangci-lint)
-golangci-lint run
-```
-
 ### Using Makefile
 
 ```bash
@@ -294,14 +280,65 @@ make clean          # Clean build artifacts
 make install        # Install globally
 ```
 
+### Creating Demo Videos
+
+We use [VHS](https://github.com/charmbracelet/vhs) to create terminal demo GIFs. The process is automated using Docker.
+
+#### Prerequisites
+
+- Docker installed and running
+- Built `devcontainerwizard` binary in the project root
+
+#### Steps
+
+1. **Build the binary** (if not already built):
+   ```bash
+   make build
+   # Or manually:
+   go build -o devcontainerwizard
+   ```
+
+2. **Edit the demo script** (`demo.tape`):
+   ```tape
+   Output demo.gif
+   
+   Set FontSize 20
+   Set Width 1920
+   Set Height 1080
+   
+   Type "devcontainerwizard init -t dockerfile"
+   Enter
+   Sleep 3s
+   ```
+
+3. **Build the Docker image**:
+   ```bash
+   docker build -t devcontwiz:v0.0.1 .
+   ```
+
+4. **Generate the demo GIF**:
+   ```bash
+   docker run --rm -v ${PWD}:/vhs devcontwiz:v0.0.1 demo.tape
+   ```
+
+The `demo.gif` file will be created in your current directory.
+
+#### Tips
+
+- Keep commands short and focused
+- Use `Sleep` between commands to give viewers time to read
+- Test the demo multiple times to ensure timing is right
+- The VHS syntax reference: [VHS Documentation](https://github.com/charmbracelet/vhs#vhs-command-reference)
+```
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create your feature branch (`git checkout -b feat/super-cool-feature`)
+3. Commit your changes (`git commit -m 'Add super cool feature'`)
+4. Push to the branch (`git push origin feat/super-cool-feature`)
 5. Open a Pull Request
 
 ### Development Guidelines
@@ -358,12 +395,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [Dev Containers Specification](https://containers.dev/)
 - [Cobra](https://github.com/spf13/cobra) - CLI framework
 - [Koanf](https://github.com/knadh/koanf) - Configuration management
 - [Validator](https://github.com/go-playground/validator) - Struct validation
+- [VHS](https://github.com/charmbracelet/vhs) - Terminal video recorder
 - [Glamour](https://github.com/charmbracelet/glamour) - Markdown rendering
 - [Bubble Tea](https://github.com/charmbracelet/bubbletea) - Terminal UI
+- [Dev Containers Specification](https://containers.dev/)
 
 ## 📮 Support
 
@@ -376,3 +414,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Made with ❤️ by [Lucas Assunção da Silva](https://github.com/lucasassuncao)
 
 **⭐ If you find this project useful, please consider giving it a star!**
+
+<!-- Code generated by gomarkdoc. DO NOT EDIT -->
+
+# devcontainerwizard
+
+```go
+import "github.com/lucasassuncao/devcontainerwizard"
+```
+
+Package main ...
+
+## Index
+
+
+
+Generated by [gomarkdoc](<https://github.com/princjef/gomarkdoc>)
