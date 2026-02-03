@@ -1,4 +1,4 @@
-e# DevContainer Wizard 🧙‍♂️
+# DevContainer Wizard 🧙‍♂️
 
 A powerful CLI tool to generate and manage DevContainer configurations with ease.
 It generates a config.yaml (human-readable) file that can be converted to a devcontainer.json (DevContainer default format) file automagically.
