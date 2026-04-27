@@ -33,6 +33,9 @@ func runConvert(cmd *cobra.Command, args []string) {
 		log.Fatalf("Failed to parse config: %v", err)
 	}
 
+	// Expand localEnv into containerEnv and remoteEnv
+	devcontainer.ExpandLocalEnv(&dc)
+
 	// Validate struct
 	if err := devcontainer.Validate(dc); err != nil {
 		fmt.Printf("Invalid devcontainer config:\n%s\n", devcontainer.HumanizeValidationError(err))

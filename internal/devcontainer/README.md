@@ -13,6 +13,7 @@ Package devcontainer ...
 ## Index
 
 - [func DevContainerStructLevelValidation\(sl validator.StructLevel\)](<#DevContainerStructLevelValidation>)
+- [func ExpandLocalEnv\(dc \*model.DevContainer\)](<#ExpandLocalEnv>)
 - [func HumanizeValidationError\(err error\) string](<#HumanizeValidationError>)
 - [func LoadYAMLFile\(path string\) \(\*koanf.Koanf, error\)](<#LoadYAMLFile>)
 - [func Parse\(k \*koanf.Koanf\) \(model.DevContainer, error\)](<#Parse>)
@@ -28,6 +29,22 @@ func DevContainerStructLevelValidation(sl validator.StructLevel)
 ```
 
 DevContainerStructLevelValidation garante exclusividade entre Image, Build e DockerComposeFile.
+
+<a name="ExpandLocalEnv"></a>
+## func [ExpandLocalEnv](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/localenv.go#L26>)
+
+```go
+func ExpandLocalEnv(dc *model.DevContainer)
+```
+
+ExpandLocalEnv resolves the localEnv section and substitutes its values into containerEnv and remoteEnv.
+
+Two\-pass expansion:
+
+1. Each localEnv value may contain $\{env:VAR\} — expanded from the host OS.
+2. Values in containerEnv and remoteEnv may contain $\{localEnv:KEY\} — replaced with the resolved localEnv value. Unresolved references are left as\-is.
+
+localEnv itself is never written to the JSON output \(json:"\-" on the field\).
 
 <a name="HumanizeValidationError"></a>
 ## func [HumanizeValidationError](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L42>)

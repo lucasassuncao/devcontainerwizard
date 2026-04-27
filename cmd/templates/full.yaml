@@ -94,9 +94,11 @@ remoteEnv:
   DISPLAY: "${localEnv:DISPLAY}"
 
 # Local environment variables (not exported to JSON, used for processing only)
+# Resolved from the host OS at conversion time; reference them in containerEnv
+# or remoteEnv as ${localEnv:KEY}. Never written to devcontainer.json.
 # localEnv:
 #   MY_LOCAL_SECRET: ${env:MY_LOCAL_SECRET}
-#   HOST_PROJECT_PATH: ${localWorkspaceFolder}
+#   HOST_PROJECT_PATH: ${env:HOME}
 
 # ==============================================================================
 # PORT FORWARDING
