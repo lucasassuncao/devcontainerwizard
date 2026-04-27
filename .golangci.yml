@@ -16,6 +16,8 @@ linters:
     - unparam
     - whitespace
   settings:
+    gocognit:
+      min-complexity: 35
     lll:
       line-length: 300
   exclusions:

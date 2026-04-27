@@ -23,6 +23,9 @@ Package model defines the data structures used to represent dev container config
 - [type NeovimCustomization](<#NeovimCustomization>)
 - [type PortAttributes](<#PortAttributes>)
 - [type Secret](<#Secret>)
+- [type StringOrSlice](<#StringOrSlice>)
+  - [func \(s StringOrSlice\) MarshalJSON\(\) \(\[\]byte, error\)](<#StringOrSlice.MarshalJSON>)
+  - [func \(s \*StringOrSlice\) UnmarshalJSON\(data \[\]byte\) error](<#StringOrSlice.UnmarshalJSON>)
 - [type VSCodeCustomization](<#VSCodeCustomization>)
 - [type WatchConfig](<#WatchConfig>)
 
@@ -137,10 +140,10 @@ type DevContainer struct {
     OverrideFeatureInstallOrder []string                  `json:"overrideFeatureInstallOrder,omitempty" yaml:"overrideFeatureInstallOrder,omitempty" jsonschema_description:"Order to install features inside the container, overriding defaults."`
     Features                    map[string]map[string]any `json:"features,omitempty" yaml:"features,omitempty" jsonschema_description:"Features to install in the container and their options."`
 
-    OnCreateCommand   string `json:"onCreateCommand,omitempty" yaml:"onCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created."`
-    PostCreateCommand string `json:"postCreateCommand,omitempty" yaml:"postCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created and initialized."`
-    PostStartCommand  string `json:"postStartCommand,omitempty" yaml:"postStartCommand,omitempty" jsonschema_description:"Command to run after the container starts."`
-    PostAttachCommand string `json:"postAttachCommand,omitempty" yaml:"postAttachCommand,omitempty" jsonschema_description:"Command to run after attaching to the container."`
+    OnCreateCommand   StringOrSlice `json:"onCreateCommand,omitempty" yaml:"onCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created. Can be a string or an array of strings."`
+    PostCreateCommand StringOrSlice `json:"postCreateCommand,omitempty" yaml:"postCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created and initialized. Can be a string or an array of strings."`
+    PostStartCommand  StringOrSlice `json:"postStartCommand,omitempty" yaml:"postStartCommand,omitempty" jsonschema_description:"Command to run after the container starts. Can be a string or an array of strings."`
+    PostAttachCommand StringOrSlice `json:"postAttachCommand,omitempty" yaml:"postAttachCommand,omitempty" jsonschema_description:"Command to run after attaching to the container. Can be a string or an array of strings."`
 
     Watch          *WatchConfig    `json:"watch,omitempty" yaml:"watch,omitempty" validate:"omitempty" jsonschema_description:"Configuration for files/processes to watch for restarts."`
     Customizations *Customizations `json:"customizations,omitempty" yaml:"customizations,omitempty" validate:"omitempty" jsonschema_description:"Editor/IDE customizations inside the container."`
@@ -212,6 +215,33 @@ type Secret struct {
     Default     string `json:"default,omitempty" yaml:"default,omitempty" validate:"omitempty" jsonschema_description:"Default value for the secret if none is provided."`
 }
 ```
+
+<a name="StringOrSlice"></a>
+## type [StringOrSlice](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/stringorslice.go#L11>)
+
+StringOrSlice holds a value that the devcontainer spec allows as either a single string or an array of strings \(lifecycle commands such as onCreateCommand\). JSON output: one element → string, multiple → array.
+
+```go
+type StringOrSlice []string
+```
+
+<a name="StringOrSlice.MarshalJSON"></a>
+### func \(StringOrSlice\) [MarshalJSON](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/stringorslice.go#L13>)
+
+```go
+func (s StringOrSlice) MarshalJSON() ([]byte, error)
+```
+
+
+
+<a name="StringOrSlice.UnmarshalJSON"></a>
+### func \(\*StringOrSlice\) [UnmarshalJSON](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/stringorslice.go#L20>)
+
+```go
+func (s *StringOrSlice) UnmarshalJSON(data []byte) error
+```
+
+
 
 <a name="VSCodeCustomization"></a>
 ## type [VSCodeCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L107-L111>)

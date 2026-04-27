@@ -48,7 +48,7 @@ func LoadYAMLFile(path string) (*koanf.Koanf, error)
 
 
 <a name="Parse"></a>
-## func [Parse](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/parser.go#L11>)
+## func [Parse](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/parser.go#L12>)
 
 ```go
 func Parse(k *koanf.Koanf) (model.DevContainer, error)

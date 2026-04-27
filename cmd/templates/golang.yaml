@@ -1,0 +1,54 @@
+# DevContainer Configuration for Go Development
+# Optimized setup for professional Go development with best practices
+
+name: golang-devcontainer
+
+# Use official Go devcontainer image
+image: "mcr.microsoft.com/devcontainers/go:latest"
+
+# Workspace configuration
+"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
+remoteUser: vscode
+
+# Dev Container Features
+features:
+  # Essential version control
+  ghcr.io/devcontainers/features/git:1:
+    version: latest
+  ghcr.io/devcontainers/features/go:1:
+    golangciLintVersion: latest
+    version: "1.25.4"
+
+# VS Code customizations
+customizations:
+  vscode:
+    extensions:
+      # Go language support
+      - golang.go
+
+    settings:
+      # Go settings
+      go.useLanguageServer: true
+      go.lintTool: golangci-lint
+      go.lintOnSave: package
+      go.formatTool: goimports
+      go.testFlags:
+        - -v
+        - -race
+      go.coverOnSave: true
+      go.toolsManagement.autoUpdate: true
+      
+      # Delve debugger settings
+      go.delveConfig:
+        apiVersion: 2
+        showGlobalVariables: true
+      
+      # Editor settings
+      editor.formatOnSave: true
+      editor.codeActionsOnSave:
+        source.organizeImports: explicit
+      
+      # Files settings
+      files.eol: "\n"
+      files.trimTrailingWhitespace: true
+      files.insertFinalNewline: true

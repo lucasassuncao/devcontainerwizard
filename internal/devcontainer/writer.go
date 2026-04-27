@@ -15,12 +15,12 @@ func WriteFile(dc model.DevContainer, outputDir string) error {
 		return fmt.Errorf("error marshalling JSON: %w", err)
 	}
 
-	if err := os.MkdirAll(outputDir, os.ModePerm); err != nil {
+	if err := os.MkdirAll(outputDir, 0750); err != nil {
 		return fmt.Errorf("error creating directory: %w", err)
 	}
 
 	filePath := filepath.Join(outputDir, "devcontainer.json")
-	if err := os.WriteFile(filePath, jsonBytes, 0644); err != nil {
+	if err := os.WriteFile(filePath, jsonBytes, 0600); err != nil {
 		return fmt.Errorf("error writing file: %w", err)
 	}
 

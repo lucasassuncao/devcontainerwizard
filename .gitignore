@@ -15,6 +15,7 @@ dist/
 *.out
 coverage.out
 coverage.html
+coverage.xml
 
 # Dependency directories
 vendor/
@@ -56,3 +57,5 @@ Desktop.ini
 # Binary files
 devcontainerwizard
 devcontainerwizard.exe
+
+.claude

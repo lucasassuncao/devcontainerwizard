@@ -1,58 +1,53 @@
-.PHONY: help build release install docs clean test test-coverage fmt lint deps run run-with-config generate-docs show-docs install-tools fix-permissions
+.PHONY: help build build-all release tag install fmt lint test test-coverage test-watch security deps docs generate-docs show-docs all run run-with-config clean
 
 # Tool versions
-GORELEASER_VERSION := v2@latest
 GOLANGCI_LINT_VERSION := v2.5.0
-GOMARKDOC_VERSION := latest
+GOMARKDOC_VERSION     := v1.1.0
+GORELEASER_VERSION    := v2.15.2
+GOTESTSUM_VERSION     := v1.13.0
+GOSEC_VERSION         := v2.25.0
+GOCOBERTURA_VERSION   := latest
+
+# Tools invoked via go run -- no global install required
+GORELEASER  := go run github.com/goreleaser/goreleaser/v2@$(GORELEASER_VERSION)
+GOLANGCI    := go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+GOMARKDOC   := go run github.com/princjef/gomarkdoc/cmd/gomarkdoc@$(GOMARKDOC_VERSION)
+GOTESTSUM   := go run gotest.tools/gotestsum@$(GOTESTSUM_VERSION)
+GOSEC       := go run github.com/securego/gosec/v2/cmd/gosec@$(GOSEC_VERSION)
+GOCOBERTURA := go run github.com/t-yuki/gocover-cobertura@$(GOCOBERTURA_VERSION)
+
+# Coverage
+COVERAGE_OUT  := coverage.out
+COVERAGE_HTML := coverage.html
+COVERAGE_XML  := coverage.xml
 
 # Project variables
 BINARY_NAME := devcontainer
-BUILD_DIR := bin
-MAIN_PATH := main.go
-TOOLS_DIR := .binaries
-
-# Export GOBIN so go install uses our local tools directory
-export GOBIN := $(shell pwd)/$(TOOLS_DIR)
-
-# Tool binaries
-GORELEASER := $(TOOLS_DIR)/goreleaser
-GOLANGCI_LINT := $(TOOLS_DIR)/golangci-lint
-GOMARKDOC := $(TOOLS_DIR)/gomarkdoc
+BUILD_DIR   := bin
+MAIN_PATH   := main.go
 
 help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-# Install goreleaser to local tools directory
-$(GORELEASER):
-	@echo "Installing goreleaser to $(TOOLS_DIR)..."
-	@mkdir -p $(TOOLS_DIR)
-	@go install github.com/goreleaser/goreleaser/$(GORELEASER_VERSION)
-
-# Install golangci-lint to local tools directory
-$(GOLANGCI_LINT):
-	@echo "Installing golangci-lint to $(TOOLS_DIR)..."
-	@mkdir -p $(TOOLS_DIR)
-	@go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
-
-# Install gomarkdoc to local tools directory
-$(GOMARKDOC):
-	@echo "Installing gomarkdoc to $(TOOLS_DIR)..."
-	@mkdir -p $(TOOLS_DIR)
-	@go install github.com/princjef/gomarkdoc/cmd/gomarkdoc@$(GOMARKDOC_VERSION)
-
-install-tools: $(GORELEASER) $(GOLANGCI_LINT) $(GOMARKDOC) ## Install all tools to .binaries directory
-
-build: $(GORELEASER) ## Build binary with goreleaser (current platform only)
+build: ## Build binary with goreleaser (current platform only)
 	@echo "Building..."
 	@$(GORELEASER) build --skip=validate --single-target --snapshot --clean
 
-build-all: $(GORELEASER) ## Build binaries for all platforms
+build-all: ## Build binaries for all platforms
 	@echo "Building for all platforms..."
 	@$(GORELEASER) build --skip=validate --snapshot --clean
 
-release: $(GORELEASER) ## Create a release with goreleaser
+release: ## Create a release with goreleaser
 	@echo "Creating release..."
 	@$(GORELEASER) release --timeout 360s
+
+tag: ## Create and push an annotated git tag (usage: make tag VERSION=v1.2.3)
+ifndef VERSION
+	$(error Usage: make tag VERSION=v1.2.3)
+endif
+	git diff --exit-code --quiet
+	git tag -a $(VERSION) -m "Release $(VERSION)"
+	git push origin $(VERSION)
 
 install: ## Install binary globally
 	@go install
@@ -60,32 +55,43 @@ install: ## Install binary globally
 fmt: ## Format code
 	@go fmt ./...
 
-lint: $(GOLANGCI_LINT) ## Run linter checks
-	@$(GOLANGCI_LINT) -v run ./...
+lint: ## Run linter checks
+	@$(GOLANGCI) -v run ./...
 
-test: ## Run tests
-	@go test -v ./...
+test: ## Run tests with gotestsum (testdox format)
+	@$(GOTESTSUM) --format testdox ./...
 
-test-coverage: ## Run tests with coverage report
-	@go test -v -coverprofile=coverage.out ./...
-	@go tool cover -html=coverage.out
+test-watch: ## Run tests in watch mode (reruns on file changes)
+	@$(GOTESTSUM) --format testdox --watch ./...
+
+test-coverage: ## Run tests with coverage (HTML + Cobertura XML)
+	@$(GOTESTSUM) --format testdox -- -coverprofile=$(COVERAGE_OUT) -covermode=atomic ./...
+	@go tool cover -func=$(COVERAGE_OUT) | tail -1
+	@go tool cover -html=$(COVERAGE_OUT) -o $(COVERAGE_HTML)
+	@$(GOCOBERTURA) < $(COVERAGE_OUT) > $(COVERAGE_XML)
+	@echo "Reports: $(COVERAGE_HTML) | $(COVERAGE_XML)"
+
+security: ## Run security analysis with gosec
+	@$(GOSEC) -stdout -severity medium ./...
 
 deps: ## Download and tidy dependencies
 	@go mod download
 	@go mod tidy
 
-fix-permissions: ## Fix file permissions (useful in WSL)
-	@echo "Fixing file permissions..."
-	@sudo chown -R $(USER):$(USER) . 2>/dev/null || true
-
-docs: $(GOMARKDOC) ## Generate documentation with gomarkdoc
-	@sudo $(GOMARKDOC) -e -o '{{.Dir}}/README.md' ./...
+docs: ## Generate documentation with gomarkdoc
+	@$(GOMARKDOC) -e \
+		--repository.url https://github.com/lucasassuncao/devcontainerwizard \
+		--repository.default-branch main \
+		--repository.path / \
+		-o '{{.Dir}}/README.md' ./internal/...
 
 generate-docs: ## Generate docs using the app
 	@go run $(MAIN_PATH) generate-docs
 
 show-docs: ## Show documentation in terminal
 	@go run $(MAIN_PATH) show-docs
+
+all: fmt docs lint security test-coverage
 
 run: ## Run the application
 	@go run $(MAIN_PATH)
@@ -94,5 +100,5 @@ run-with-config: ## Run with custom config (CONFIG=path OUTPUT=path)
 	@go run $(MAIN_PATH) -c $(CONFIG) -o $(OUTPUT)
 
 clean: ## Remove build artifacts and cache
-	@rm -rf $(BUILD_DIR) dist/ coverage.out $(TOOLS_DIR)
+	@rm -rf $(BUILD_DIR) dist/ $(COVERAGE_OUT) $(COVERAGE_HTML) $(COVERAGE_XML)
 	@go clean -cache -testcache

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="DevContainer Wizard — a CLI tool that generates devcontainer.json from a simple YAML config file." />
+  <title>DevContainer Wizard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ── Hero ── -->
+<header class="hero">
+  <h1 class="hero-title">DevContainer Wizard</h1>
+  <p>A CLI tool that turns a simple YAML config into a ready-to-use <code>devcontainer.json</code>. Templates, interactive wizard, validation — no JSON wrestling.</p>
+
+  <div class="cta">
+    <a class="btn btn-primary" href="https://github.com/lucasassuncao/devcontainerwizard/releases">
+      ⬇ Download latest
+    </a>
+    <a class="btn btn-secondary" href="https://github.com/lucasassuncao/devcontainerwizard">
+      ★ View on GitHub
+    </a>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ── Features ── -->
+  <section id="features">
+    <h2>Features</h2>
+    <div class="features">
+      <div class="feature-card">
+        <div class="icon">📝</div>
+        <h3>YAML-first config</h3>
+        <p>Write your dev container config in human-friendly YAML — no JSON, no escaping nightmares, comments allowed.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🧱</div>
+        <h3>Built-in templates</h3>
+        <p>Start from <code>image</code>, <code>dockerfile</code>, <code>dockercompose</code>, <code>full</code>, or <code>golang</code> templates with a single flag.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🧙</div>
+        <h3>Interactive wizard</h3>
+        <p>Run <code>devcontainerwizard init -i</code> to pick a template, set the container name, add features, and configure ports through guided prompts.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">✅</div>
+        <h3>Schema validation</h3>
+        <p>Validates required fields, mutual exclusivity of <code>image</code> / <code>build</code> / <code>dockerComposeFile</code>, and enum values before writing any file.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">⚡</div>
+        <h3>Lifecycle commands</h3>
+        <p>Supports <code>onCreateCommand</code>, <code>postCreateCommand</code>, <code>postStartCommand</code>, and <code>postAttachCommand</code> as a string or an array of strings.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🎨</div>
+        <h3>Multi-editor support</h3>
+        <p>Configure VS Code, JetBrains, Neovim, and Codespaces customizations — extensions, settings, plugins — all in one file.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔌</div>
+        <h3>Features & options</h3>
+        <p>Install any devcontainer feature from <a href="https://containers.dev/features" target="_blank">containers.dev</a> with per-feature options, including install order overrides.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔒</div>
+        <h3>Secrets support</h3>
+        <p>Declare secrets with descriptions and defaults in YAML; they are written to <code>devcontainer.json</code> exactly as the spec requires.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📚</div>
+        <h3>Built-in docs</h3>
+        <p>Generate Markdown documentation for every config field with <code>generate-docs</code>, or browse it right in the terminal with <code>show-docs</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Installation ── -->
+  <section id="install">
+    <h2>Installation</h2>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(event, 'tab-go')">go install</button>
+      <button class="tab" onclick="switchTab(event, 'tab-download')">Download binary</button>
+      <button class="tab" onclick="switchTab(event, 'tab-build')">Build from source</button>
+    </div>
+
+    <div id="tab-go" class="tab-content active">
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre>go install github.com/lucasassuncao/devcontainerwizard@latest</pre>
+      </div>
+    </div>
+
+    <div id="tab-download" class="tab-content">
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="cmt"># 1. Download the binary for your platform from the releases page</span>
+<span class="cmt">#    https://github.com/lucasassuncao/devcontainerwizard/releases</span>
+
+<span class="cmt"># 2. Add to your PATH, then run:</span>
+devcontainerwizard init -i</pre>
+      </div>
+    </div>
+
+    <div id="tab-build" class="tab-content">
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre>git clone https://github.com/lucasassuncao/devcontainerwizard.git
+cd devcontainerwizard
+go build -o devcontainerwizard .
+./devcontainerwizard init -i</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Quick start ── -->
+  <section id="quickstart">
+    <h2>Quick start</h2>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">Three steps from zero to a working <code>.devcontainer/devcontainer.json</code>.</p>
+
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <pre>devcontainerwizard init -i        <span class="cmt"># interactive wizard — pick template, name, features, ports</span>
+<span class="cmt"># or use a specific template directly:</span>
+devcontainerwizard init -t golang  <span class="cmt"># generate config from the Go template</span>
+
+<span class="cmt"># edit config.yaml as needed, then convert:</span>
+devcontainerwizard                 <span class="cmt"># writes .devcontainer/devcontainer.json</span></pre>
+    </div>
+  </section>
+
+  <!-- ── Config example ── -->
+  <section id="config">
+    <h2>Configuration example</h2>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">A typical <code>config.yaml</code> for a Go project.</p>
+
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <pre><span class="key">name</span>: <span class="str">my-go-project</span>
+<span class="key">image</span>: <span class="str">"mcr.microsoft.com/devcontainers/go:latest"</span>
+<span class="key">workspaceFolder</span>: <span class="str">"/workspaces/${localWorkspaceFolderBasename}"</span>
+<span class="key">remoteUser</span>: <span class="val">vscode</span>
+
+<span class="key">features</span>:
+  <span class="key">ghcr.io/devcontainers/features/git:1</span>:
+    <span class="key">version</span>: <span class="val">latest</span>
+  <span class="key">ghcr.io/devcontainers/features/go:1</span>:
+    <span class="key">version</span>: <span class="str">"1.24"</span>
+    <span class="key">golangciLintVersion</span>: <span class="val">latest</span>
+
+<span class="key">forwardPorts</span>:
+  - <span class="val">8080</span>
+
+<span class="key">postCreateCommand</span>:   <span class="cmt"># string or array</span>
+  - <span class="str">go mod download</span>
+  - <span class="str">go install github.com/air-verse/air@latest</span>
+
+<span class="key">customizations</span>:
+  <span class="key">vscode</span>:
+    <span class="key">extensions</span>:
+      - <span class="str">golang.go</span>
+      - <span class="str">eamodio.gitlens</span>
+    <span class="key">settings</span>:
+      <span class="key">go.formatTool</span>: <span class="val">goimports</span>
+      <span class="key">go.lintTool</span>: <span class="val">golangci-lint</span>
+      <span class="key">editor.formatOnSave</span>: <span class="val">true</span></pre>
+    </div>
+  </section>
+
+  <!-- ── Commands ── -->
+  <section id="commands">
+    <h2>Commands</h2>
+    <table class="cmd-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>devcontainerwizard</td><td>Convert config.yaml to .devcontainer/devcontainer.json</td></tr>
+        <tr><td>devcontainerwizard -c path/to/config.yaml</td><td>Use a custom config file path</td></tr>
+        <tr><td>devcontainerwizard -o path/to/dir/</td><td>Write output to a custom directory</td></tr>
+        <tr><td>devcontainerwizard init</td><td>Create a config.yaml from the default (image) template</td></tr>
+        <tr><td>devcontainerwizard init -t golang</td><td>Create config.yaml from a specific template</td></tr>
+        <tr><td>devcontainerwizard init -i</td><td>Launch the interactive setup wizard</td></tr>
+        <tr><td>devcontainerwizard init -f</td><td>Overwrite an existing config.yaml</td></tr>
+        <tr><td>devcontainerwizard generate-docs</td><td>Generate Markdown documentation for all config fields</td></tr>
+        <tr><td>devcontainerwizard show-docs</td><td>Browse documentation interactively in the terminal</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<!-- ── Footer ── -->
+<footer>
+  <p>
+    Built with ❤️ by <a href="https://github.com/lucasassuncao" target="_blank">lucasassuncao</a>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/lucasassuncao/devcontainerwizard" target="_blank">GitHub</a>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/lucasassuncao/devcontainerwizard/releases" target="_blank">Releases</a>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/lucasassuncao/devcontainerwizard/blob/main/LICENSE" target="_blank">MIT License</a>
+  </p>
+</footer>
+
+<script>
+  function switchTab(event, id) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(id).classList.add('active');
+  }
+
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+
+</body>
+</html>

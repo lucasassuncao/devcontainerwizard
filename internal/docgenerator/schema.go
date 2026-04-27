@@ -125,7 +125,7 @@ func (g *SchemaGenerator) saveJSONSchema(schema *jsonschema.Schema, filename str
 		return fmt.Errorf("invalid schema path: %s", filename)
 	}
 
-	file, err := os.OpenFile(validatedPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
+	file, err := os.OpenFile(validatedPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600) // #nosec G304 -- path validated by validatePathWithinBase
 	if err != nil {
 		return fmt.Errorf("error creating file: %w", err)
 	}

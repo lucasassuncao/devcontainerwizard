@@ -29,9 +29,18 @@ var (
 )
 
 func init() {
+	// Get available templates dynamically from embedded filesystem
+	templates, err := listAvailableTemplates()
+	if err != nil {
+		// If we can't read templates, something is seriously wrong
+		panic(fmt.Sprintf("failed to load templates: %v", err))
+	}
+
+	templateList := strings.Join(templates, ", ")
+
 	initCmd.Flags().BoolVarP(&initForce, "force", "f", false, "Overwrite existing config.yaml")
 	initCmd.Flags().BoolVarP(&initInteractive, "interactive", "i", false, "Interactive mode with prompts")
-	initCmd.Flags().StringVarP(&initTemplate, "template", "t", "image", "Template to use (image, dockerfile, dockercompose, full)")
+	initCmd.Flags().StringVarP(&initTemplate, "template", "t", "image", fmt.Sprintf("Template to use (%s)", templateList))
 }
 
 func runInit(cmd *cobra.Command, args []string) {
@@ -60,7 +69,7 @@ func runInit(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	if err := os.WriteFile(configPath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
 		fmt.Printf("❌ Error writing config file: %v\n", err)
 		return
 	}
@@ -122,6 +131,7 @@ func generateInteractiveConfig() (string, error) {
 		"dockerfile":    "Docker - Custom Dockerfile with build config",
 		"dockercompose": "Compose - Docker Compose multi-service",
 		"full":          "Full - Complete example with all options",
+		"golang":        "Golang - Optimized setup for Go development",
 	}
 
 	var templateItems []string

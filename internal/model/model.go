@@ -42,10 +42,10 @@ type DevContainer struct {
 	OverrideFeatureInstallOrder []string                  `json:"overrideFeatureInstallOrder,omitempty" yaml:"overrideFeatureInstallOrder,omitempty" jsonschema_description:"Order to install features inside the container, overriding defaults."`
 	Features                    map[string]map[string]any `json:"features,omitempty" yaml:"features,omitempty" jsonschema_description:"Features to install in the container and their options."`
 
-	OnCreateCommand   string `json:"onCreateCommand,omitempty" yaml:"onCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created."`
-	PostCreateCommand string `json:"postCreateCommand,omitempty" yaml:"postCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created and initialized."`
-	PostStartCommand  string `json:"postStartCommand,omitempty" yaml:"postStartCommand,omitempty" jsonschema_description:"Command to run after the container starts."`
-	PostAttachCommand string `json:"postAttachCommand,omitempty" yaml:"postAttachCommand,omitempty" jsonschema_description:"Command to run after attaching to the container."`
+	OnCreateCommand   StringOrSlice `json:"onCreateCommand,omitempty" yaml:"onCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created. Can be a string or an array of strings."`
+	PostCreateCommand StringOrSlice `json:"postCreateCommand,omitempty" yaml:"postCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created and initialized. Can be a string or an array of strings."`
+	PostStartCommand  StringOrSlice `json:"postStartCommand,omitempty" yaml:"postStartCommand,omitempty" jsonschema_description:"Command to run after the container starts. Can be a string or an array of strings."`
+	PostAttachCommand StringOrSlice `json:"postAttachCommand,omitempty" yaml:"postAttachCommand,omitempty" jsonschema_description:"Command to run after attaching to the container. Can be a string or an array of strings."`
 
 	Watch          *WatchConfig    `json:"watch,omitempty" yaml:"watch,omitempty" validate:"omitempty" jsonschema_description:"Configuration for files/processes to watch for restarts."`
 	Customizations *Customizations `json:"customizations,omitempty" yaml:"customizations,omitempty" validate:"omitempty" jsonschema_description:"Editor/IDE customizations inside the container."`
