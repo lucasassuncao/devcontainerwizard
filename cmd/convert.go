@@ -13,11 +13,18 @@ import (
 var (
 	configFile string
 	outputDir  string
+
+	convertCmd = &cobra.Command{
+		Use:   "convert",
+		Short: "Convert config.yaml to .devcontainer/devcontainer.json",
+		Long:  "Reads config.yaml (or the file given by --config) and writes a devcontainer.json to the output directory.",
+		Run:   runConvert,
+	}
 )
 
 func init() {
-	rootCmd.Flags().StringVarP(&configFile, "config", "c", "config.yaml", "Config file path")
-	rootCmd.Flags().StringVarP(&outputDir, "output", "o", ".devcontainer", "Output directory")
+	convertCmd.Flags().StringVarP(&configFile, "config", "c", "config.yaml", "Config file path")
+	convertCmd.Flags().StringVarP(&outputDir, "output", "o", ".devcontainer", "Output directory")
 }
 
 func runConvert(cmd *cobra.Command, args []string) {

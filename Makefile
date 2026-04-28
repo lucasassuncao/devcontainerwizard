@@ -83,7 +83,7 @@ docs: ## Generate documentation with gomarkdoc
 		--repository.url https://github.com/lucasassuncao/devcontainerwizard \
 		--repository.default-branch main \
 		--repository.path / \
-		-o '{{.Dir}}/README.md' ./internal/...
+		-o '{{.Dir}}/README.md' ./internal/... ./cmd/...
 
 generate-docs: ## Generate docs using the app
 	@go run $(MAIN_PATH) generate-docs

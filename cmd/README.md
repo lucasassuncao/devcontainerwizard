@@ -16,14 +16,23 @@ Package cmd ...
 
 ## Index
 
-- [func Execute\(\)](<#Execute>)
+- [Variables](<#variables>)
+- [func Execute\(version string\)](<#Execute>)
 
 
-<a name="Execute"></a>
-## func [Execute](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/cmd/root.go#L19>)
+## Variables
+
+<a name="DefaultRepo"></a>DefaultRepo is set at build time via ldflags.
 
 ```go
-func Execute()
+var DefaultRepo = ""
+```
+
+<a name="Execute"></a>
+## func [Execute](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/cmd/root.go#L18>)
+
+```go
+func Execute(version string)
 ```
 
 

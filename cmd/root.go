@@ -13,12 +13,11 @@ var rootCmd = &cobra.Command{
 	Use:   "devcontainerwizard",
 	Short: "Manage DevContainer configurations",
 	Long:  "A CLI to create DevContainer configuration files",
-	Run:   runConvert,
 }
 
 func Execute(version string) {
 	rootCmd.Version = version
-	rootCmd.AddCommand(docs.GenerateCmd, docs.ShowCmd, initCmd, selfUpdateCmd(version))
+	rootCmd.AddCommand(convertCmd, docs.GenerateCmd, docs.ShowCmd, initCmd, selfUpdateCmd(version))
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
