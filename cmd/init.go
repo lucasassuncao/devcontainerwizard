@@ -9,6 +9,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
 //go:embed templates/*.yaml
@@ -75,7 +76,7 @@ func runInit(cmd *cobra.Command, args []string) {
 	}
 
 	fmt.Printf("✅ Created '%s' successfully!\n", configPath)
-	fmt.Printf("📝 Edit the file and run 'devcontainer' to generate your devcontainer.json\n")
+	fmt.Printf("📝 Edit the file and run 'devcontainerwizard' to generate your devcontainer.json\n")
 }
 
 // getTemplateContent retrieves the content of the specified template from the embedded filesystem
@@ -105,7 +106,6 @@ func listAvailableTemplates() ([]string, error) {
 	var templates []string
 	for _, entry := range entries {
 		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".yaml") {
-			// Remove a extensão .yaml
 			name := strings.TrimSuffix(entry.Name(), ".yaml")
 			templates = append(templates, name)
 		}
@@ -114,13 +114,15 @@ func listAvailableTemplates() ([]string, error) {
 	return templates, nil
 }
 
-// generateInteractiveConfig creates a config.yaml content through interactive prompts
+// generateInteractiveConfig creates a config.yaml through interactive prompts.
+// It parses the selected template into a yaml.Node tree so that modifications
+// (name, features, ports) are applied structurally — preserving all comments
+// and avoiding the fragility of raw string replacement.
 func generateInteractiveConfig() (string, error) {
 	fmt.Println("🚀 DevContainer Configuration Generator")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Println()
 
-	// 1. Select template
 	templates, err := listAvailableTemplates()
 	if err != nil {
 		return "", fmt.Errorf("failed to list templates: %w", err)
@@ -160,52 +162,118 @@ func generateInteractiveConfig() (string, error) {
 		return "", err
 	}
 
-	// 2. Customize devcontainer name
+	// Parse into a yaml.Node tree — this lets us modify fields structurally
+	// while keeping every comment from the original template intact.
+	var doc yaml.Node
+	if err := yaml.Unmarshal([]byte(content), &doc); err != nil {
+		return "", fmt.Errorf("parsing template: %w", err)
+	}
+	root := doc.Content[0] // DocumentNode wraps a MappingNode
+
+	// 1. Customize container name
 	if askYesNo("Customize container name?") {
 		namePrompt := promptui.Prompt{
 			Label:   "Container Name",
 			Default: "my-devcontainer",
 		}
 		name, _ := namePrompt.Run()
-		content = strings.Replace(content, "name: my-devcontainer", fmt.Sprintf("name: %s", name), 1)
-		content = strings.Replace(content, "name: full-devcontainer", fmt.Sprintf("name: %s", name), 1)
+		yamlSetScalar(root, "name", name)
 	}
 
-	// 3. Add extra features (if not full template)
+	// 2. Add extra features (skipped for the full template which already has them)
 	if selectedTemplate != "full" && askYesNo("Add extra features? (docker-in-docker, aws-cli)") {
-		content = addExtraFeatures(content)
+		yamlAddFeatures(root, []string{
+			"ghcr.io/devcontainers/features/docker-in-docker:2",
+			"ghcr.io/devcontainers/features/aws-cli:1",
+		})
 	}
 
-	// 4. Customize port
+	// 3. Change forwarded port
 	if askYesNo("Change default port?") {
 		portPrompt := promptui.Prompt{
 			Label:   "Port to forward",
 			Default: "3000",
 		}
 		port, _ := portPrompt.Run()
-		content = strings.Replace(content, "- 3000", fmt.Sprintf("- %s", port), 1)
+		yamlSetFirstPort(root, port)
 	}
 
-	return content, nil
+	out, err := yaml.Marshal(&doc)
+	if err != nil {
+		return "", fmt.Errorf("serializing config: %w", err)
+	}
+	// yaml.Marshal prepends "---\n" for document nodes; strip it for cleaner output.
+	return strings.TrimPrefix(string(out), "---\n"), nil
 }
 
-func addExtraFeatures(content string) string {
-	extraFeatures := `
-  ghcr.io/devcontainers/features/docker-in-docker:2: {}
-  ghcr.io/devcontainers/features/aws-cli:1: {}`
+// yamlSetScalar finds key in a YAML mapping node and replaces its scalar value.
+// No-op if the key is not present.
+func yamlSetScalar(mapping *yaml.Node, key, value string) {
+	for i := 0; i < len(mapping.Content)-1; i += 2 {
+		if mapping.Content[i].Value == key {
+			mapping.Content[i+1].Value = value
+			return
+		}
+	}
+}
 
-	// Searches for the features section and adds to it
-	if strings.Contains(content, "features:") {
-		content = strings.Replace(content,
-			"ghcr.io/devcontainers/features/github-cli:1: {}",
-			"ghcr.io/devcontainers/features/github-cli:1: {}"+extraFeatures,
-			1)
-	} else {
-		// If not present, add the features section
-		content += "\n# Additional features\nfeatures:" + extraFeatures + "\n"
+// yamlSetFirstPort replaces the first element of the forwardPorts sequence,
+// or appends the port if the sequence is empty, or creates the section if absent.
+func yamlSetFirstPort(mapping *yaml.Node, port string) {
+	portNode := &yaml.Node{Kind: yaml.ScalarNode, Value: port, Tag: "!!int"}
+
+	for i := 0; i < len(mapping.Content)-1; i += 2 {
+		if mapping.Content[i].Value == "forwardPorts" {
+			seq := mapping.Content[i+1]
+			if seq.Kind == yaml.SequenceNode {
+				if len(seq.Content) > 0 {
+					seq.Content[0] = portNode
+				} else {
+					seq.Content = append(seq.Content, portNode)
+				}
+			}
+			return
+		}
 	}
 
-	return content
+	// Section absent: append forwardPorts with the requested port.
+	keyNode := &yaml.Node{Kind: yaml.ScalarNode, Value: "forwardPorts", Tag: "!!str"}
+	seqNode := &yaml.Node{Kind: yaml.SequenceNode, Content: []*yaml.Node{portNode}}
+	mapping.Content = append(mapping.Content, keyNode, seqNode)
+}
+
+// yamlAddFeatures adds feature keys (with empty-map values) to the features
+// mapping, creating the section if it does not exist.
+func yamlAddFeatures(mapping *yaml.Node, featureKeys []string) {
+	emptyMap := func() *yaml.Node {
+		return &yaml.Node{Kind: yaml.MappingNode, Tag: "!!map", Style: yaml.FlowStyle}
+	}
+
+	for i := 0; i < len(mapping.Content)-1; i += 2 {
+		if mapping.Content[i].Value == "features" {
+			featMap := mapping.Content[i+1]
+			if featMap.Kind == yaml.MappingNode {
+				for _, k := range featureKeys {
+					featMap.Content = append(featMap.Content,
+						&yaml.Node{Kind: yaml.ScalarNode, Value: k, Tag: "!!str"},
+						emptyMap(),
+					)
+				}
+			}
+			return
+		}
+	}
+
+	// Section absent: create features mapping and append to root.
+	keyNode := &yaml.Node{Kind: yaml.ScalarNode, Value: "features", Tag: "!!str"}
+	featMapNode := &yaml.Node{Kind: yaml.MappingNode, Tag: "!!map"}
+	for _, k := range featureKeys {
+		featMapNode.Content = append(featMapNode.Content,
+			&yaml.Node{Kind: yaml.ScalarNode, Value: k, Tag: "!!str"},
+			emptyMap(),
+		)
+	}
+	mapping.Content = append(mapping.Content, keyNode, featMapNode)
 }
 
 func askYesNo(question string) bool {
