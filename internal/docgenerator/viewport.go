@@ -4,106 +4,275 @@ package docgenerator
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/viewport"
-	bubbletea "github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
-	"github.com/manifoldco/promptui"
+	"github.com/charmbracelet/lipgloss"
 )
 
-type viewportModel struct {
-	viewport         viewport.Model
-	originalMarkdown string
-	quitting         bool
+type docPane int
+
+const (
+	docPaneList docPane = iota
+	docPaneView
+)
+
+const docStatusLines = 1
+
+var (
+	docPanelStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("240"))
+
+	docActivePanelStyle = lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("63"))
+
+	docSelectedStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("212"))
+
+	docItemStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("245"))
+
+	docStatusStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("240")).
+			PaddingLeft(1)
+)
+
+type docTUIModel struct {
+	names    []string
+	raw      map[string]string // raw markdown per name
+	rendered map[string]string // glamour-rendered content per name (cache)
+
+	// List panel
+	cursor     int
+	listOffset int
+	listH      int // visible rows inside border
+	listColW   int // total column width (content + 2 border chars)
+
+	// Viewport panel
+	vp     viewport.Model
+	vpColW int // total column width (content + 2 border chars)
+	vpH    int // content height inside border
+
+	active docPane
+	width  int
+	height int
 }
 
-func NewViewportModel(markdown string) viewportModel {
-	vp := viewport.New(80, 24) // tamanho inicial padrão
-	vp.SetContent(markdown)
-	return viewportModel{
-		viewport:         vp,
-		originalMarkdown: markdown,
+func newDocTUIModel(docs map[string]string) docTUIModel {
+	names := make([]string, 0, len(docs))
+	for k := range docs {
+		names = append(names, k)
+	}
+	sort.Strings(names)
+
+	return docTUIModel{
+		names:    names,
+		raw:      docs,
+		rendered: make(map[string]string, len(docs)),
+		active:   docPaneList,
 	}
 }
 
-func (m viewportModel) Init() bubbletea.Cmd { return nil }
+func (m docTUIModel) Init() tea.Cmd { return nil }
 
-func (m viewportModel) Update(msg bubbletea.Msg) (bubbletea.Model, bubbletea.Cmd) {
+func (m docTUIModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case bubbletea.KeyMsg:
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		m.relayout()
+		m.invalidateRendered()
+		m.loadCurrent()
+		return m, nil
+
+	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
-			m.quitting = true
-			return m, bubbletea.Quit
-		case "up", "k":
-			m.viewport.ScrollUp(1)
-		case "down", "j":
-			m.viewport.ScrollDown(1)
-		case "pgup":
-			m.viewport.ScrollUp(10)
-		case "pgdn":
-			m.viewport.ScrollDown(10)
+			return m, tea.Quit
+		case "tab":
+			if m.active == docPaneList {
+				m.active = docPaneView
+			} else {
+				m.active = docPaneList
+			}
+			return m, nil
 		}
-	case bubbletea.WindowSizeMsg:
-		m.viewport.Width = msg.Width
-		m.viewport.Height = msg.Height - 2
-
-		// Re-renderiza o Markdown com largura correta
-		renderer, _ := glamour.NewTermRenderer(
-			glamour.WithAutoStyle(),
-			glamour.WithWordWrap(msg.Width-4), // pequena margem
-		)
-		out, _ := renderer.Render(m.originalMarkdown)
-		m.viewport.SetContent(out)
+		if m.active == docPaneList {
+			m.handleListKey(msg.String())
+		} else {
+			m.handleViewportKey(msg.String())
+		}
+		return m, nil
 	}
 	return m, nil
 }
 
-func (m viewportModel) View() string {
-	if m.quitting {
-		return ""
+func (m *docTUIModel) handleListKey(key string) {
+	n := len(m.names)
+	switch key {
+	case "up", "k":
+		if m.cursor > 0 {
+			m.cursor--
+			if m.cursor < m.listOffset {
+				m.listOffset = m.cursor
+			}
+			m.loadCurrent()
+		}
+	case "down", "j":
+		if m.cursor < n-1 {
+			m.cursor++
+			if m.cursor >= m.listOffset+m.listH {
+				m.listOffset = m.cursor - m.listH + 1
+			}
+			m.loadCurrent()
+		}
 	}
-	return fmt.Sprintf("%s\n(Use ↑/↓, PgUp/PgDn to scroll, q to quit)\n", m.viewport.View())
 }
 
-// RenderMarkdownDocsInTerminal renders the provided markdown documentation
-// in an interactive terminal viewport using Bubble Tea.
+func (m *docTUIModel) handleViewportKey(key string) {
+	switch key {
+	case "up", "k":
+		m.vp.ScrollUp(1)
+	case "down", "j":
+		m.vp.ScrollDown(1)
+	case "pgup":
+		m.vp.ScrollUp(m.vpH / 2)
+	case "pgdn":
+		m.vp.ScrollDown(m.vpH / 2)
+	}
+}
+
+func (m *docTUIModel) relayout() {
+	// Size the list column to the longest name + "▶ " prefix (2) + border (2) + 1 margin.
+	maxName := 0
+	for _, n := range m.names {
+		if len(n) > maxName {
+			maxName = len(n)
+		}
+	}
+	m.listColW = maxName + 5 // "▶ " (2) + border L+R (2) + 1 trailing margin
+	if m.listColW < 18 {
+		m.listColW = 18
+	}
+	m.vpColW = m.width - m.listColW
+	if m.vpColW < 22 {
+		m.vpColW = 22
+	}
+
+	innerH := m.height - docStatusLines - 2 // 2 = top+bottom panel border
+	if innerH < 1 {
+		innerH = 1
+	}
+	m.listH = innerH
+	m.vpH = innerH
+
+	m.vp.Width = m.vpColW - 2 // subtract left+right border
+	m.vp.Height = m.vpH
+
+	if m.listOffset+m.listH <= m.cursor {
+		m.listOffset = m.cursor - m.listH + 1
+	}
+	if m.listOffset < 0 {
+		m.listOffset = 0
+	}
+}
+
+func (m *docTUIModel) invalidateRendered() {
+	m.rendered = make(map[string]string, len(m.names))
+}
+
+func (m *docTUIModel) renderDoc(name string) string {
+	if r, ok := m.rendered[name]; ok {
+		return r
+	}
+	raw := m.raw[name]
+	renderer, err := glamour.NewTermRenderer(
+		glamour.WithAutoStyle(),
+		glamour.WithWordWrap(m.vp.Width),
+	)
+	if err != nil {
+		m.rendered[name] = raw
+		return raw
+	}
+	out, err := renderer.Render(raw)
+	if err != nil {
+		m.rendered[name] = raw
+		return raw
+	}
+	m.rendered[name] = out
+	return out
+}
+
+func (m *docTUIModel) loadCurrent() {
+	if len(m.names) == 0 || m.vp.Width == 0 {
+		return
+	}
+	m.vp.SetContent(m.renderDoc(m.names[m.cursor]))
+	m.vp.GotoTop()
+}
+
+func (m docTUIModel) View() string {
+	if m.width == 0 {
+		return "Loading…"
+	}
+
+	// ── Left panel (topic list) ──────────────────────────────────────────────
+	var listSB strings.Builder
+	end := m.listOffset + m.listH
+	if end > len(m.names) {
+		end = len(m.names)
+	}
+	for i := m.listOffset; i < end; i++ {
+		label := m.names[i]
+		var line string
+		if i == m.cursor {
+			line = docSelectedStyle.Render("▶ " + label)
+		} else {
+			line = docItemStyle.Render("  " + label)
+		}
+		listSB.WriteString(line + "\n")
+	}
+
+	listBorder := docPanelStyle
+	if m.active == docPaneList {
+		listBorder = docActivePanelStyle
+	}
+	leftPanel := listBorder.
+		Width(m.listColW - 2).
+		Height(m.listH).
+		Render(listSB.String())
+
+	// ── Right panel (viewport) ───────────────────────────────────────────────
+	vpBorder := docPanelStyle
+	if m.active == docPaneView {
+		vpBorder = docActivePanelStyle
+	}
+	rightPanel := vpBorder.
+		Width(m.vpColW - 2).
+		Height(m.vpH).
+		Render(m.vp.View())
+
+	// ── Status bar ───────────────────────────────────────────────────────────
+	status := docStatusStyle.Render(
+		"[Tab] switch panel  [↑/↓ j/k] navigate / scroll  [PgUp/PgDn] half-page  [q] quit",
+	)
+
+	return lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel) + "\n" + status
+}
+
+// RenderMarkdownDocsInTerminal launches the two-panel documentation TUI.
 func RenderMarkdownDocsInTerminal(docs map[string]string) error {
 	if len(docs) == 0 {
 		return fmt.Errorf("no documentation to display")
 	}
-
-	// Sort keys for consistent order
-	var names []string
-	for name := range docs {
-		names = append(names, name)
+	p := tea.NewProgram(newDocTUIModel(docs), tea.WithAltScreen())
+	if _, err := p.Run(); err != nil {
+		return fmt.Errorf("failed to run docs TUI: %w", err)
 	}
-	sort.Strings(names)
-
-	for {
-		// List options using promptui
-		prompt := promptui.Select{
-			Label: "Select documentation to view",
-			Items: append(names, "Exit"),
-			Size:  len(names) + 1,
-		}
-
-		idx, choice, err := prompt.Run()
-		if err != nil {
-			return fmt.Errorf("prompt failed: %w", err)
-		}
-		if choice == "Exit" || idx == len(names) {
-			fmt.Println("Exiting documentation viewer.")
-			return nil
-		}
-
-		// Selected markdown
-		markdown := docs[choice]
-
-		// Create and run Bubble Tea program
-		p := bubbletea.NewProgram(NewViewportModel(markdown), bubbletea.WithAltScreen())
-		if _, err := p.Run(); err != nil {
-			return fmt.Errorf("failed to start viewport program: %w", err)
-		}
-	}
+	return nil
 }

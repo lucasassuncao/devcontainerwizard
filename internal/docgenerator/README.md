@@ -39,13 +39,13 @@ func GenerateIndex(docsDir string, configs []interface{}) error
 GenerateIndex creates an index markdown file listing all configuration structures.
 
 <a name="RenderMarkdownDocsInTerminal"></a>
-## func [RenderMarkdownDocsInTerminal](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/viewport.go#L71>)
+## func [RenderMarkdownDocsInTerminal](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/viewport.go#L269>)
 
 ```go
 func RenderMarkdownDocsInTerminal(docs map[string]string) error
 ```
 
-RenderMarkdownDocsInTerminal renders the provided markdown documentation in an interactive terminal viewport using Bubble Tea.
+RenderMarkdownDocsInTerminal launches the two\-panel documentation TUI.
 
 <a name="SchemaGenerator"></a>
 ## type [SchemaGenerator](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L16-L22>)
