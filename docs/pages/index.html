@@ -71,6 +71,11 @@
         <p>Declare secrets with descriptions and defaults in YAML; they are written to <code>devcontainer.json</code> exactly as the spec requires.</p>
       </div>
       <div class="feature-card">
+        <div class="icon">🖊️</div>
+        <h3>TUI editor</h3>
+        <p>Run <code>devcontainerwizard edit</code> to open a two-panel terminal UI — navigate blocks on the left, preview YAML on the right, toggle fields with guided overlays.</p>
+      </div>
+      <div class="feature-card">
         <div class="icon">📚</div>
         <h3>Built-in docs</h3>
         <p>Generate Markdown documentation for every config field with <code>generate-docs</code>, or browse it right in the terminal with <code>show-docs</code>.</p>
@@ -124,12 +129,16 @@ go build -o devcontainerwizard .
 
     <div class="code-block">
       <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-      <pre>devcontainerwizard init -i        <span class="cmt"># interactive wizard — pick template, name, features, ports</span>
+      <pre>devcontainerwizard init -i           <span class="cmt"># interactive wizard — pick template, name, features, ports</span>
 <span class="cmt"># or use a specific template directly:</span>
-devcontainerwizard init -t golang  <span class="cmt"># generate config from the Go template</span>
+devcontainerwizard init -t golang    <span class="cmt"># generate config from the Go template</span>
 
-<span class="cmt"># edit config.yaml as needed, then convert:</span>
-devcontainerwizard                 <span class="cmt"># writes .devcontainer/devcontainer.json</span></pre>
+<span class="cmt"># optionally open the TUI editor to tweak config.yaml:</span>
+devcontainerwizard edit              <span class="cmt"># two-panel TUI — add, remove, and edit blocks</span>
+
+<span class="cmt"># convert config.yaml to .devcontainer/devcontainer.json:</span>
+devcontainerwizard convert           <span class="cmt"># writes .devcontainer/devcontainer.json</span>
+devcontainerwizard convert -c path/to/config.yaml -o .devcontainer-custom</pre>
     </div>
   </section>
 
@@ -182,15 +191,18 @@ devcontainerwizard                 <span class="cmt"># writes .devcontainer/devc
         </tr>
       </thead>
       <tbody>
-        <tr><td>devcontainerwizard</td><td>Convert config.yaml to .devcontainer/devcontainer.json</td></tr>
-        <tr><td>devcontainerwizard -c path/to/config.yaml</td><td>Use a custom config file path</td></tr>
-        <tr><td>devcontainerwizard -o path/to/dir/</td><td>Write output to a custom directory</td></tr>
+        <tr><td>devcontainerwizard convert</td><td>Convert config.yaml to .devcontainer/devcontainer.json</td></tr>
+        <tr><td>devcontainerwizard convert -c path/to/config.yaml</td><td>Use a custom config file path</td></tr>
+        <tr><td>devcontainerwizard convert -o path/to/dir/</td><td>Write output to a custom directory</td></tr>
         <tr><td>devcontainerwizard init</td><td>Create a config.yaml from the default (image) template</td></tr>
         <tr><td>devcontainerwizard init -t golang</td><td>Create config.yaml from a specific template</td></tr>
         <tr><td>devcontainerwizard init -i</td><td>Launch the interactive setup wizard</td></tr>
         <tr><td>devcontainerwizard init -f</td><td>Overwrite an existing config.yaml</td></tr>
+        <tr><td>devcontainerwizard edit</td><td>Open the TUI editor for config.yaml</td></tr>
+        <tr><td>devcontainerwizard edit path/to/file.yaml</td><td>Open the TUI editor for a specific file</td></tr>
         <tr><td>devcontainerwizard generate-docs</td><td>Generate Markdown documentation for all config fields</td></tr>
         <tr><td>devcontainerwizard show-docs</td><td>Browse documentation interactively in the terminal</td></tr>
+        <tr><td>devcontainerwizard self-update</td><td>Update to the latest release from GitHub</td></tr>
       </tbody>
     </table>
   </section>

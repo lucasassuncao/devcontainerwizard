@@ -8,10 +8,11 @@ It generates a config.yaml (human-readable) file that can be converted to a devc
 ## ✨ Features
 
 - 🚀 **Quick Init** - Generate config.yaml with interactive prompts or pre-built templates
-- 📝 **YAML to JSON** - Convert user-friendly YAML configs to devcontainer.json
+- 🖊️ **TUI Editor** - Add, remove, and edit blocks interactively with a two-panel terminal UI
+- 📝 **YAML to JSON** - Convert user-friendly YAML configs to devcontainer.json via `convert`
 - ✅ **Validation** - Catch configuration errors before building containers
 - 📚 **Documentation** - Auto-generate markdown docs from your models
-- 🎨 **Templates** - Choose from basic, docker, compose, or full templates
+- 🎨 **Templates** - Choose from basic, docker, compose, full, or golang templates
 - 🔧 **Customizable** - Full support for VS Code, Codespaces, JetBrains, and Neovim
 
 ## 📦 Installation
@@ -84,10 +85,10 @@ customizations:
 
 ```bash
 # Generate .devcontainer/devcontainer.json
-devcontainer
+devcontainerwizard convert
 
 # Or specify custom paths
-devcontainer -c my-config.yaml -o .devcontainer
+devcontainerwizard convert -c my-config.yaml -o .devcontainer
 ```
 
 ### 4. Open in VS Code
@@ -125,12 +126,57 @@ devcontainer init -i -f
 - `dockercompose` - Docker Compose multi-service setup
 - `full` - Complete example with all options
 
+### `convert` - Convert to DevContainer
+
+Convert `config.yaml` to `.devcontainer/devcontainer.json`.
+
+```bash
+# Use default config.yaml
+devcontainerwizard convert
+
+# Specify custom config file
+devcontainerwizard convert -c path/to/config.yaml
+
+# Specify custom output directory
+devcontainerwizard convert -o .devcontainer-custom
+
+# Combine flags
+devcontainerwizard convert -c my-config.yaml -o .devcontainer-custom
+```
+
+**Flags:**
+| Flag | Short | Default | Description |
+|------|-------|---------|-------------|
+| `--config` | `-c` | `config.yaml` | Config file path |
+| `--output` | `-o` | `.devcontainer` | Output directory |
+
+### `edit` - TUI Editor
+
+Open an interactive two-panel TUI to add, remove, and edit top-level blocks in a config YAML file.
+
+```bash
+# Edit the default config.yaml
+devcontainerwizard edit
+
+# Edit a specific file
+devcontainerwizard edit path/to/config.yaml
+```
+
+**Controls:**
+- `↑` / `↓` or `j` / `k` — navigate the list
+- `Space` — add/edit a block (guided mode with field toggles)
+- `e` — add/edit a block (free YAML mode)
+- `d` — delete the selected block
+- `Tab` — toggle YAML preview panel
+- `Ctrl+S` — save changes to file
+- `q` — quit (prompts if there are unsaved changes)
+
 ### `show-docs` - View Documentation
 
 View documentation interactively in your terminal.
 
 ```bash
-devcontainer show-docs
+devcontainerwizard show-docs
 ```
 
 Features:
@@ -138,21 +184,6 @@ Features:
 - 🎨 Syntax-highlighted markdown
 - 📱 Responsive to terminal size
 - ⌨️  Press 'q' to quit
-
-### Default Command - Convert
-
-Convert `config.yaml` to `.devcontainer/devcontainer.json`.
-
-```bash
-# Use default config.yaml
-devcontainer
-
-# Specify custom config file
-devcontainer -c path/to/config.yaml
-
-# Specify custom output directory
-devcontainer -o .devcontainer-custom
-```
 
 ## 📋 Configuration Reference
 
@@ -364,13 +395,13 @@ devcontainer init -f
 yamllint config.yaml
 
 # Try generating to see detailed errors
-devcontainer -c config.yaml
+devcontainerwizard convert -c config.yaml
 ```
 
 ### Container won't start
 
 1. Check Docker is running: `docker ps`
-2. Validate your config: `devcontainer -c config.yaml`
+2. Validate your config: `devcontainerwizard convert -c config.yaml`
 3. Check VS Code DevContainer logs: View → Output → Dev Containers
 
 ### Port already in use
