@@ -10,6 +10,10 @@ import (
 )
 
 func WriteFile(dc model.DevContainer, outputDir string) error {
+	if dc.Schema == "" {
+		dc.Schema = "https://containers.dev/implementors/json_schema"
+	}
+
 	jsonBytes, err := json.MarshalIndent(dc, "", "  ")
 	if err != nil {
 		return fmt.Errorf("error marshalling JSON: %w", err)

@@ -1,3 +1,4 @@
+# description: Golang - Optimized setup for Go development
 # DevContainer Configuration for Go Development
 # Optimized setup for professional Go development with best practices
 
@@ -7,7 +8,7 @@ name: golang-devcontainer
 image: "mcr.microsoft.com/devcontainers/go:latest"
 
 # Workspace configuration
-"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
+workspaceFolder: "/workspaces/${localWorkspaceFolderBasename}"
 remoteUser: vscode
 
 # Dev Container Features

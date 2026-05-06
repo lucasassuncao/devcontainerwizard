@@ -3,12 +3,17 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+	"os"
 
 	"github.com/lucasassuncao/devcontainerwizard/internal/devcontainer"
 
 	"github.com/spf13/cobra"
 )
+
+func fatal(format string, args ...any) {
+	fmt.Fprintf(os.Stderr, "Error: "+format+"\n", args...)
+	os.Exit(1)
+}
 
 var (
 	configFile string
@@ -31,13 +36,13 @@ func runConvert(cmd *cobra.Command, args []string) {
 	// Load YAML file
 	k, err := devcontainer.LoadYAMLFile(configFile)
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		fatal("Failed to load config: %v", err)
 	}
 
 	// Parse to struct
 	dc, err := devcontainer.Parse(k)
 	if err != nil {
-		log.Fatalf("Failed to parse config: %v", err)
+		fatal("Failed to parse config: %v", err)
 	}
 
 	// Expand localEnv into containerEnv and remoteEnv
@@ -45,12 +50,12 @@ func runConvert(cmd *cobra.Command, args []string) {
 
 	// Validate struct
 	if err := devcontainer.Validate(dc); err != nil {
-		fmt.Printf("Invalid devcontainer config:\n%s\n", devcontainer.HumanizeValidationError(err))
+		fmt.Fprintf(os.Stderr, "Invalid devcontainer config:\n%s\n", devcontainer.HumanizeValidationError(err))
 		return
 	}
 
 	// Write devcontainer files
 	if err := devcontainer.WriteFile(dc, outputDir); err != nil {
-		log.Fatalf("Failed to write devcontainer: %v", err)
+		fatal("Failed to write devcontainer: %v", err)
 	}
 }

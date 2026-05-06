@@ -30,18 +30,9 @@ var (
 )
 
 func init() {
-	// Get available templates dynamically from embedded filesystem
-	templates, err := listAvailableTemplates()
-	if err != nil {
-		// If we can't read templates, something is seriously wrong
-		panic(fmt.Sprintf("failed to load templates: %v", err))
-	}
-
-	templateList := strings.Join(templates, ", ")
-
 	initCmd.Flags().BoolVarP(&initForce, "force", "f", false, "Overwrite existing config.yaml")
 	initCmd.Flags().BoolVarP(&initInteractive, "interactive", "i", false, "Interactive mode with prompts")
-	initCmd.Flags().StringVarP(&initTemplate, "template", "t", "image", fmt.Sprintf("Template to use (%s)", templateList))
+	initCmd.Flags().StringVarP(&initTemplate, "template", "t", "image", "Template to use (image, dockerfile, dockercompose, full, golang)")
 }
 
 func runInit(cmd *cobra.Command, args []string) {
@@ -59,20 +50,17 @@ func runInit(cmd *cobra.Command, args []string) {
 	if initInteractive {
 		content, err = generateInteractiveConfig()
 		if err != nil {
-			fmt.Printf("❌ Error generating config: %v\n", err)
-			return
+			fatal("Error generating config: %v", err)
 		}
 	} else {
 		content, err = getTemplateContent(initTemplate)
 		if err != nil {
-			fmt.Printf("❌ Error loading template: %v\n", err)
-			return
+			fatal("Error loading template: %v", err)
 		}
 	}
 
 	if err := os.WriteFile(configPath, []byte(content), 0600); err != nil {
-		fmt.Printf("❌ Error writing config file: %v\n", err)
-		return
+		fatal("Error writing config file: %v", err)
 	}
 
 	fmt.Printf("✅ Created '%s' successfully!\n", configPath)
@@ -114,6 +102,21 @@ func listAvailableTemplates() ([]string, error) {
 	return templates, nil
 }
 
+// readTemplateDescription reads the first line of a template file and extracts
+// the text after "# description: ". Returns empty string if not found.
+func readTemplateDescription(name string) string {
+	data, err := templatesFS.ReadFile("templates/" + name + ".yaml")
+	if err != nil {
+		return ""
+	}
+	line, _, _ := strings.Cut(string(data), "\n")
+	desc, found := strings.CutPrefix(line, "# description: ")
+	if !found {
+		return ""
+	}
+	return desc
+}
+
 // generateInteractiveConfig creates a config.yaml through interactive prompts.
 // It parses the selected template into a yaml.Node tree so that modifications
 // (name, features, ports) are applied structurally — preserving all comments
@@ -128,17 +131,9 @@ func generateInteractiveConfig() (string, error) {
 		return "", fmt.Errorf("failed to list templates: %w", err)
 	}
 
-	templateDescriptions := map[string]string{
-		"image":         "Image - Minimal config with Docker image",
-		"dockerfile":    "Docker - Custom Dockerfile with build config",
-		"dockercompose": "Compose - Docker Compose multi-service",
-		"full":          "Full - Complete example with all options",
-		"golang":        "Golang - Optimized setup for Go development",
-	}
-
 	var templateItems []string
 	for _, t := range templates {
-		desc := templateDescriptions[t]
+		desc := readTemplateDescription(t)
 		if desc == "" {
 			desc = t
 		}
