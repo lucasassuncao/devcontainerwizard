@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lucasassuncao/devcontainerwizard/internal/model/port-attributes",
+  "properties": {
+    "label": {
+      "type": "string",
+      "description": "Human-readable label for the port."
+    },
+    "onAutoForward": {
+      "type": "string",
+      "description": "Behavior when the port is auto-forwarded (notify, openBrowser, ignore)."
+    },
+    "protocol": {
+      "type": "string",
+      "description": "Network protocol (tcp/udp) for the port."
+    }
+  },
+  "additionalProperties": false,
+  "type": "object"
+}

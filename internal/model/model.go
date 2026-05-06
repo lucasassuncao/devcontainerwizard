@@ -10,11 +10,14 @@ type DevContainer struct {
 	Build             *BuildConfig `json:"build,omitempty" yaml:"build,omitempty" validate:"omitempty" jsonschema_description:"Configuration for building the image."`
 	DockerComposeFile []string     `json:"dockerComposeFile,omitempty" yaml:"dockerComposeFile,omitempty" jsonschema_description:"List of Docker Compose files to use."`
 	Service           string       `json:"service,omitempty" yaml:"service,omitempty" validate:"required_with=DockerComposeFile" jsonschema_description:"Specific service to run from Docker Compose."`
+	RunServices       []string     `json:"runServices,omitempty" yaml:"runServices,omitempty" jsonschema_description:"Docker Compose services to start automatically alongside the dev container service."`
 
-	WorkspaceFolder string `json:"workspaceFolder,omitempty" yaml:"workspaceFolder,omitempty" jsonschema_description:"Path to the workspace folder inside the container."`
-	WorkspaceMount  string `json:"workspaceMount,omitempty" yaml:"workspaceMount,omitempty" jsonschema_description:"Mount type for the workspace folder."`
-	RemoteUser      string `json:"remoteUser,omitempty" yaml:"remoteUser,omitempty" jsonschema_description:"User to use inside the container."`
-	UserEnvProbe    string `json:"userEnvProbe,omitempty" yaml:"userEnvProbe,omitempty" validate:"omitempty,oneof=none loginShell loginInteractiveShell interactiveShell" jsonschema_description:"Command to detect the default user inside the container."`
+	WorkspaceFolder     string `json:"workspaceFolder,omitempty" yaml:"workspaceFolder,omitempty" jsonschema_description:"Path to the workspace folder inside the container."`
+	WorkspaceMount      string `json:"workspaceMount,omitempty" yaml:"workspaceMount,omitempty" jsonschema_description:"Mount type for the workspace folder."`
+	RemoteUser          string `json:"remoteUser,omitempty" yaml:"remoteUser,omitempty" jsonschema_description:"User that tools run as inside the container (VS Code, extensions, terminals)."`
+	ContainerUser       string `json:"containerUser,omitempty" yaml:"containerUser,omitempty" jsonschema_description:"User for all processes inside the container, including the entrypoint."`
+	UpdateRemoteUserUID bool   `json:"updateRemoteUserUID,omitempty" yaml:"updateRemoteUserUID,omitempty" jsonschema_description:"Sync the container user UID/GID with the local user on Linux to avoid permission issues."`
+	UserEnvProbe        string `json:"userEnvProbe,omitempty" yaml:"userEnvProbe,omitempty" validate:"omitempty,oneof=none loginShell loginInteractiveShell interactiveShell" jsonschema_description:"Shell type used to probe user environment variables."`
 
 	// Environment variables
 	ContainerEnv map[string]string `json:"containerEnv,omitempty" yaml:"containerEnv,omitempty" jsonschema_description:"Environment variables to set in the container."`
@@ -22,14 +25,16 @@ type DevContainer struct {
 	LocalEnv     map[string]string `json:"-" yaml:"localEnv,omitempty" jsonschema_description:"Environment variables local to the host (not exported to JSON)."`
 
 	ForwardPorts         []interface{}              `json:"forwardPorts,omitempty" yaml:"forwardPorts,omitempty" jsonschema_description:"Ports that are forwarded from the container to the local machine. Can be an integer port number, or a string of the format \"host:port_number\""`
+	AppPort              []interface{}              `json:"appPort,omitempty" yaml:"appPort,omitempty" jsonschema_description:"Legacy: ports to publish from the container. Prefer forwardPorts instead."`
 	PortsAttributes      map[string]*PortAttributes `json:"portsAttributes,omitempty" yaml:"portsAttributes,omitempty" validate:"omitempty" jsonschema_description:"Additional attributes for forwarded ports."`
 	OtherPortsAttributes *PortAttributes            `json:"otherPortsAttributes,omitempty" yaml:"otherPortsAttributes,omitempty" validate:"omitempty" jsonschema_description:"Default attributes applied to all forwarded ports not defined in portsAttributes."`
 	Mounts               []Mount                    `json:"mounts,omitempty" yaml:"mounts,omitempty" validate:"omitempty,dive" jsonschema_description:"Mount points inside the container."`
 
-	RunArgs        []string `json:"runArgs,omitempty" yaml:"runArgs,omitempty" jsonschema_description:"Additional arguments to pass to 'docker run'."`
-	StartupCommand string   `json:"startupCommand,omitempty" yaml:"startupCommand,omitempty" jsonschema_description:"Command to run on container startup."`
-	Command        string   `json:"command,omitempty" yaml:"command,omitempty" jsonschema_description:"Command to run inside the container instead of the default CMD."`
-	Entrypoint     string   `json:"entrypoint,omitempty" yaml:"entrypoint,omitempty" jsonschema_description:"Entrypoint to override in the container."`
+	RunArgs         []string `json:"runArgs,omitempty" yaml:"runArgs,omitempty" jsonschema_description:"Additional arguments to pass to 'docker run'."`
+	StartupCommand  string   `json:"startupCommand,omitempty" yaml:"startupCommand,omitempty" jsonschema_description:"Command to run on container startup."`
+	OverrideCommand bool     `json:"overrideCommand,omitempty" yaml:"overrideCommand,omitempty" jsonschema_description:"Whether to override the container's default startup command with the devcontainer lifecycle commands."`
+	Command         string   `json:"command,omitempty" yaml:"command,omitempty" jsonschema_description:"Command to run inside the container instead of the default CMD."`
+	Entrypoint      string   `json:"entrypoint,omitempty" yaml:"entrypoint,omitempty" jsonschema_description:"Entrypoint to override in the container."`
 
 	Init       bool     `json:"init,omitempty" yaml:"init,omitempty" jsonschema_description:"Whether to run an init process inside the container."`
 	Privileged bool     `json:"privileged,omitempty" yaml:"privileged,omitempty" jsonschema_description:"Run the container in privileged mode."`
@@ -39,13 +44,17 @@ type DevContainer struct {
 	SecurityOpt []string `json:"securityOpt,omitempty" yaml:"securityOpt,omitempty" jsonschema_description:"Security options for the container."`
 	Devices     []string `json:"devices,omitempty" yaml:"devices,omitempty" jsonschema_description:"Devices to expose to the container."`
 
+	HostRequirements            *HostRequirements         `json:"hostRequirements,omitempty" yaml:"hostRequirements,omitempty" validate:"omitempty" jsonschema_description:"Minimum host hardware requirements for the dev container."`
 	OverrideFeatureInstallOrder []string                  `json:"overrideFeatureInstallOrder,omitempty" yaml:"overrideFeatureInstallOrder,omitempty" jsonschema_description:"Order to install features inside the container, overriding defaults."`
 	Features                    map[string]map[string]any `json:"features,omitempty" yaml:"features,omitempty" jsonschema_description:"Features to install in the container and their options."`
 
-	OnCreateCommand   StringOrSlice `json:"onCreateCommand,omitempty" yaml:"onCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created. Can be a string or an array of strings."`
-	PostCreateCommand StringOrSlice `json:"postCreateCommand,omitempty" yaml:"postCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created and initialized. Can be a string or an array of strings."`
-	PostStartCommand  StringOrSlice `json:"postStartCommand,omitempty" yaml:"postStartCommand,omitempty" jsonschema_description:"Command to run after the container starts. Can be a string or an array of strings."`
-	PostAttachCommand StringOrSlice `json:"postAttachCommand,omitempty" yaml:"postAttachCommand,omitempty" jsonschema_description:"Command to run after attaching to the container. Can be a string or an array of strings."`
+	InitializeCommand    StringOrSlice `json:"initializeCommand,omitempty" yaml:"initializeCommand,omitempty" jsonschema_description:"Command to run on the host before the container is created or started. Can be a string or an array of strings."`
+	OnCreateCommand      StringOrSlice `json:"onCreateCommand,omitempty" yaml:"onCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created. Can be a string or an array of strings."`
+	UpdateContentCommand StringOrSlice `json:"updateContentCommand,omitempty" yaml:"updateContentCommand,omitempty" jsonschema_description:"Command to run when the container content is updated. Can be a string or an array of strings."`
+	PostCreateCommand    StringOrSlice `json:"postCreateCommand,omitempty" yaml:"postCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created and initialized. Can be a string or an array of strings."`
+	PostStartCommand     StringOrSlice `json:"postStartCommand,omitempty" yaml:"postStartCommand,omitempty" jsonschema_description:"Command to run after the container starts. Can be a string or an array of strings."`
+	PostAttachCommand    StringOrSlice `json:"postAttachCommand,omitempty" yaml:"postAttachCommand,omitempty" jsonschema_description:"Command to run after attaching to the container. Can be a string or an array of strings."`
+	WaitFor              string        `json:"waitFor,omitempty" yaml:"waitFor,omitempty" validate:"omitempty,oneof=initializeCommand onCreateCommand updateContentCommand postCreateCommand postStartCommand" jsonschema_description:"Lifecycle command to wait for before the tool considers the container ready."` //nolint:lll
 
 	Watch          *WatchConfig    `json:"watch,omitempty" yaml:"watch,omitempty" validate:"omitempty" jsonschema_description:"Configuration for files/processes to watch for restarts."`
 	Customizations *Customizations `json:"customizations,omitempty" yaml:"customizations,omitempty" validate:"omitempty" jsonschema_description:"Editor/IDE customizations inside the container."`
@@ -130,6 +139,20 @@ type NeovimCustomization struct {
 type Secret struct {
 	Description string `json:"description,omitempty" yaml:"description,omitempty" validate:"required" jsonschema_description:"Human-readable description of the secret."`
 	Default     string `json:"default,omitempty" yaml:"default,omitempty" validate:"omitempty" jsonschema_description:"Default value for the secret if none is provided."`
+}
+
+// HostRequirements defines minimum hardware resources the host must provide.
+type HostRequirements struct {
+	CPUs    int             `json:"cpus,omitempty" yaml:"cpus,omitempty" validate:"omitempty,min=1" jsonschema_description:"Minimum number of CPUs required."`
+	Memory  string          `json:"memory,omitempty" yaml:"memory,omitempty" jsonschema_description:"Minimum memory required (e.g. \"4gb\")."`
+	Storage string          `json:"storage,omitempty" yaml:"storage,omitempty" jsonschema_description:"Minimum disk storage required (e.g. \"32gb\")."`
+	GPU     *GPURequirement `json:"gpu,omitempty" yaml:"gpu,omitempty" validate:"omitempty" jsonschema_description:"GPU requirement (true, false, or object with cores/memory)."`
+}
+
+// GPURequirement describes GPU resource needs within HostRequirements.
+type GPURequirement struct {
+	Cores  int    `json:"cores,omitempty" yaml:"cores,omitempty" validate:"omitempty,min=1" jsonschema_description:"Minimum number of GPU cores required."`
+	Memory string `json:"memory,omitempty" yaml:"memory,omitempty" jsonschema_description:"Minimum GPU memory required (e.g. \"4gb\")."`
 }
 
 // GetAllTypes returns all model types for documentation generation

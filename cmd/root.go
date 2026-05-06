@@ -17,7 +17,7 @@ var rootCmd = &cobra.Command{
 
 func Execute(version string) {
 	rootCmd.Version = version
-	rootCmd.AddCommand(convertCmd, docs.GenerateCmd, docs.ShowCmd, initCmd, selfUpdateCmd(version))
+	rootCmd.AddCommand(convertCmd, docs.GenerateCmd, docs.ShowCmd, initCmd, selfUpdateCmd(version), editCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

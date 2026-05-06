@@ -12,18 +12,23 @@ The following arguments are supported:
 | [build](#build) | Configuration for building the image. | object | No | - |
 | dockerComposeFile | List of Docker Compose files to use. | array[string] | No | - |
 | service | Specific service to run from Docker Compose. | string | No | - |
+| runServices | Docker Compose services to start automatically alongside the dev container service. | array[string] | No | - |
 | workspaceFolder | Path to the workspace folder inside the container. | string | No | - |
 | workspaceMount | Mount type for the workspace folder. | string | No | - |
-| remoteUser | User to use inside the container. | string | No | - |
-| userEnvProbe | Command to detect the default user inside the container. | string | No | - |
+| remoteUser | User that tools run as inside the container (VS Code, extensions, terminals). | string | No | - |
+| containerUser | User for all processes inside the container, including the entrypoint. | string | No | - |
+| updateRemoteUserUID | Sync the container user UID/GID with the local user on Linux to avoid permission issues. | boolean | No | - |
+| userEnvProbe | Shell type used to probe user environment variables. | string | No | - |
 | containerEnv | Environment variables to set in the container. | map[string]string | No | - |
 | remoteEnv | Environment variables for remote connections (like SSH). | map[string]string | No | - |
 | forwardPorts | Ports that are forwarded from the container to the local machine. Can be an integer port number, or a string of the format "host:port_number" | array[object] | No | - |
+| appPort | Legacy: ports to publish from the container. Prefer forwardPorts instead. | array[object] | No | - |
 | [portsAttributes](#portsattributes-value) | Additional attributes for forwarded ports. | map[string]object | No | - |
 | [otherPortsAttributes](#otherportsattributes) | Default attributes applied to all forwarded ports not defined in portsAttributes. | object | No | - |
 | [mounts](#mounts-item) | Mount points inside the container. | array[object] | No | - |
 | runArgs | Additional arguments to pass to 'docker run'. | array[string] | No | - |
 | startupCommand | Command to run on container startup. | string | No | - |
+| overrideCommand | Whether to override the container's default startup command with the devcontainer lifecycle commands. | boolean | No | - |
 | command | Command to run inside the container instead of the default CMD. | string | No | - |
 | entrypoint | Entrypoint to override in the container. | string | No | - |
 | init | Whether to run an init process inside the container. | boolean | No | - |
@@ -32,12 +37,16 @@ The following arguments are supported:
 | capDrop | Linux capabilities to drop from the container. | array[string] | No | - |
 | securityOpt | Security options for the container. | array[string] | No | - |
 | devices | Devices to expose to the container. | array[string] | No | - |
+| [hostRequirements](#hostrequirements) | Minimum host hardware requirements for the dev container. | object | No | - |
 | overrideFeatureInstallOrder | Order to install features inside the container, overriding defaults. | array[string] | No | - |
 | features | Features to install in the container and their options. | map[string]object | No | - |
-| onCreateCommand | Command to run after the container is created. | string | No | - |
-| postCreateCommand | Command to run after the container is created and initialized. | string | No | - |
-| postStartCommand | Command to run after the container starts. | string | No | - |
-| postAttachCommand | Command to run after attaching to the container. | string | No | - |
+| initializeCommand | Command to run on the host before the container is created or started. Can be a string or an array of strings. | array[string] | No | - |
+| onCreateCommand | Command to run after the container is created. Can be a string or an array of strings. | array[string] | No | - |
+| updateContentCommand | Command to run when the container content is updated. Can be a string or an array of strings. | array[string] | No | - |
+| postCreateCommand | Command to run after the container is created and initialized. Can be a string or an array of strings. | array[string] | No | - |
+| postStartCommand | Command to run after the container starts. Can be a string or an array of strings. | array[string] | No | - |
+| postAttachCommand | Command to run after attaching to the container. Can be a string or an array of strings. | array[string] | No | - |
+| waitFor | Lifecycle command to wait for before the tool considers the container ready. | string | No | - |
 | [watch](#watch) | Configuration for files/processes to watch for restarts. | object | No | - |
 | [customizations](#customizations) | Editor/IDE customizations inside the container. | object | No | - |
 | [secrets](#secrets-value) | Secrets to pass to the container. | map[string]object | No | - |
@@ -102,6 +111,30 @@ The following arguments are supported:
 | target | Target path inside the container. | string | Yes | - |
 | consistency | Consistency mode for the mount (e.g., cached, delegated, consistent). | string | No | - |
 | readonly | Whether the mount is read-only. | boolean | No | - |
+
+### hostRequirements
+
+Minimum host hardware requirements for the dev container.
+
+The following arguments are supported:
+
+| Name | Type | Description | Required | Default |
+|------|------|-------------|----------|---------|
+| cpus | Minimum number of CPUs required. | integer | No | - |
+| memory | Minimum memory required (e.g. "4gb"). | string | No | - |
+| storage | Minimum disk storage required (e.g. "32gb"). | string | No | - |
+| [gpu](#gpu) | GPU requirement (true, false, or object with cores/memory). | object | No | - |
+
+#### gpu
+
+GPU requirement (true, false, or object with cores/memory).
+
+The following arguments are supported:
+
+| Name | Type | Description | Required | Default |
+|------|------|-------------|----------|---------|
+| cores | Minimum number of GPU cores required. | integer | No | - |
+| memory | Minimum GPU memory required (e.g. "4gb"). | string | No | - |
 
 ### watch
 

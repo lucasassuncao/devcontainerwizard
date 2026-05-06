@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lucasassuncao/devcontainerwizard/internal/model/mount",
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Type of mount (e.g., bind, volume)."
+    },
+    "source": {
+      "type": "string",
+      "description": "Source path of the mount."
+    },
+    "target": {
+      "type": "string",
+      "description": "Target path inside the container."
+    },
+    "consistency": {
+      "type": "string",
+      "description": "Consistency mode for the mount (e.g., cached, delegated, consistent)."
+    },
+    "readonly": {
+      "type": "boolean",
+      "description": "Whether the mount is read-only."
+    }
+  },
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "type",
+    "source",
+    "target"
+  ]
+}

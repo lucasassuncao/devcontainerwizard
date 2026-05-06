@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lucasassuncao/devcontainerwizard/internal/model/watch-config",
+  "properties": {
+    "waitFor": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "description": "List of processes or files to wait for before starting."
+    },
+    "restart": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "description": "List of files or events that trigger a restart."
+    }
+  },
+  "additionalProperties": false,
+  "type": "object"
+}
