@@ -197,7 +197,9 @@ func (m Model) handleSpace(it ListItem, guided bool) (tea.Model, tea.Cmd) {
 		initial = current
 	} else {
 		initial = it.Key + ":\n"
-		if guided {
+		if guided && len(FieldsForKey(it.Key)) == 0 {
+			// Only use the guided template for single-textarea blocks (no field defs).
+			// Two-panel blocks initialise from rebuildYAML() when content is trivial.
 			initial = GuidedTemplate(it.Key)
 		}
 	}

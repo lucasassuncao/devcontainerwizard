@@ -115,61 +115,73 @@ func NewOverlay(key, initialContent string, guided bool, totalW, totalH int) Ove
 	}
 
 	if twoPanel {
-		// ── Two-panel: left (fields) + right (yaml editor) ──────────────────
-		//
-		// Each inner panel has a rounded border (1 char each side = 2 overhead).
-		// Total panels rendered width = fieldPanelW+2 + yamlPanelW+2 = contentW
-		// → fieldPanelW + yamlPanelW = contentW - 4
-		panelSpace := contentW - 4
-		if panelSpace < 24 {
-			panelSpace = 24
-		}
-
-		fieldPanelW := panelSpace / 3
-		if fieldPanelW < 18 {
-			fieldPanelW = 18
-		}
-		yamlPanelW := panelSpace - fieldPanelW
-
-		fields := make([]fieldState, len(defs))
-		for i, d := range defs {
-			fields[i] = fieldState{Def: d, Checked: d.Required}
-		}
-
-		ta := textarea.New()
-		ta.SetWidth(yamlPanelW - 2) // 1-char margin on each side inside the panel
-		ta.SetHeight(panelH - 1)
-		ta.CharLimit = 0
-		ta.ShowLineNumbers = false
-		ta.Blur()
-
-		om.fields = fields
-		om.fieldPanelW = fieldPanelW
-		om.fieldPanelH = panelH
-		om.yamlPanelW = yamlPanelW
-		om.yamlPanelH = panelH
-		om.yamlEditor = ta
-		om.active = overlayPanelFields
-
-		om.rebuildYAML()
+		om.initTwoPanel(defs, contentW, panelH, initialContent)
 	} else {
-		// ── Single textarea ──────────────────────────────────────────────────
-		ta := textarea.New()
-		ta.SetWidth(contentW - 2) // small margin
-		ta.SetHeight(panelH)
-		ta.Placeholder = fmt.Sprintf("%s:\n  # your YAML here", key)
-		ta.SetValue(initialContent)
-		ta.Focus()
-		ta.CharLimit = 0
-		ta.ShowLineNumbers = true
-
-		om.yamlEditor = ta
-		om.yamlPanelW = contentW - 2
-		om.yamlPanelH = panelH
-		om.active = overlayPanelYAML
+		om.initSinglePanel(contentW, panelH, initialContent)
 	}
 
 	return om
+}
+
+func (om *OverlayModel) initTwoPanel(defs []FieldDef, contentW, panelH int, initialContent string) {
+	// Each inner panel has a rounded border (1 char each side = 2 overhead).
+	// Total panels rendered width = fieldPanelW+2 + yamlPanelW+2 = contentW
+	// → fieldPanelW + yamlPanelW = contentW - 4
+	panelSpace := contentW - 4
+	if panelSpace < 24 {
+		panelSpace = 24
+	}
+	fieldPanelW := panelSpace / 3
+	if fieldPanelW < 18 {
+		fieldPanelW = 18
+	}
+	yamlPanelW := panelSpace - fieldPanelW
+
+	fields := make([]fieldState, len(defs))
+	for i, d := range defs {
+		fields[i] = fieldState{Def: d, Checked: d.Required}
+	}
+
+	ta := textarea.New()
+	ta.SetWidth(yamlPanelW - 2) // 1-char margin on each side inside the panel
+	ta.SetHeight(panelH - 1)
+	ta.CharLimit = 0
+	ta.ShowLineNumbers = false
+	ta.Blur()
+
+	om.fields = fields
+	om.fieldPanelW = fieldPanelW
+	om.fieldPanelH = panelH
+	om.yamlPanelW = yamlPanelW
+	om.yamlPanelH = panelH
+	om.yamlEditor = ta
+	om.active = overlayPanelFields
+
+	// When editing an existing block, seed the textarea with the current
+	// content and derive toggle states from it; otherwise build from defaults.
+	trivial := om.key + ":\n"
+	if initialContent != "" && initialContent != trivial {
+		om.yamlEditor.SetValue(strings.ReplaceAll(initialContent, "\r\n", "\n"))
+		om.syncFieldsFromYAML()
+	} else {
+		om.rebuildYAML()
+	}
+}
+
+func (om *OverlayModel) initSinglePanel(contentW, panelH int, initialContent string) {
+	ta := textarea.New()
+	ta.SetWidth(contentW - 2) // small margin
+	ta.SetHeight(panelH)
+	ta.Placeholder = fmt.Sprintf("%s:\n  # your YAML here", om.key)
+	ta.SetValue(initialContent)
+	ta.Focus()
+	ta.CharLimit = 0
+	ta.ShowLineNumbers = true
+
+	om.yamlEditor = ta
+	om.yamlPanelW = contentW - 2
+	om.yamlPanelH = panelH
+	om.active = overlayPanelYAML
 }
 
 // syncFieldsFromYAML parses the current textarea value and updates Checked
@@ -199,6 +211,90 @@ func (om *OverlayModel) rebuildYAML() {
 	om.errMsg = ""
 }
 
+func removeFieldNode(valueNode *yaml.Node, idx int) {
+	if idx >= 0 {
+		valueNode.Content = append(valueNode.Content[:idx], valueNode.Content[idx+2:]...)
+	}
+}
+
+func addFieldNode(valueNode *yaml.Node, idx int, parentKey string, def FieldDef) {
+	if idx >= 0 {
+		return // already present
+	}
+	var templateRoot yaml.Node
+	if err := yaml.Unmarshal([]byte(parentKey+":\n"+def.YAML), &templateRoot); err != nil {
+		return
+	}
+	if templateRoot.Kind == 0 || len(templateRoot.Content) == 0 {
+		return
+	}
+	tMapping := templateRoot.Content[0]
+	if tMapping.Kind != yaml.MappingNode || len(tMapping.Content) < 2 {
+		return
+	}
+	tValue := tMapping.Content[1]
+	if tValue.Kind == yaml.MappingNode && len(tValue.Content) >= 2 {
+		valueNode.Content = append(valueNode.Content, tValue.Content[0], tValue.Content[1])
+	}
+}
+
+// applyFieldToggle surgically adds or removes a single sub-field from the
+// current yamlEditor value, preserving any edits the user made to other fields.
+// Used when isEdit=true so that existing content is not overwritten by defaults.
+func (om *OverlayModel) applyFieldToggle(def FieldDef) {
+	current := om.yamlEditor.Value()
+
+	var root yaml.Node
+	if err := yaml.Unmarshal([]byte(current), &root); err != nil || root.Kind == 0 || len(root.Content) == 0 {
+		om.rebuildYAML()
+		return
+	}
+	mapping := root.Content[0]
+	if mapping.Kind != yaml.MappingNode || len(mapping.Content) < 2 {
+		om.rebuildYAML()
+		return
+	}
+	// mapping.Content[0] is the top-level key node, mapping.Content[1] is the value.
+	valueNode := mapping.Content[1]
+	if valueNode.Kind != yaml.MappingNode {
+		om.rebuildYAML()
+		return
+	}
+
+	// Find whether the sub-field already exists in the value mapping.
+	idx := -1
+	for i := 0; i < len(valueNode.Content)-1; i += 2 {
+		if valueNode.Content[i].Value == def.Key {
+			idx = i
+			break
+		}
+	}
+
+	checked := false
+	for _, fs := range om.fields {
+		if fs.Def.Key == def.Key {
+			checked = fs.Checked
+			break
+		}
+	}
+
+	if !checked {
+		removeFieldNode(valueNode, idx)
+	} else {
+		addFieldNode(valueNode, idx, om.key, def)
+	}
+
+	var buf strings.Builder
+	enc := yaml.NewEncoder(&buf)
+	enc.SetIndent(2)
+	if err := enc.Encode(&root); err != nil {
+		om.rebuildYAML()
+		return
+	}
+	om.yamlEditor.SetValue(strings.TrimRight(buf.String(), "\n") + "\n")
+	om.errMsg = ""
+}
+
 func (om OverlayModel) Init() tea.Cmd { return textarea.Blink }
 
 func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd) {
@@ -221,16 +317,21 @@ func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd) {
 		}
 	}
 
-	// All other input goes to the YAML textarea.
-	var cmd tea.Cmd
-	om.yamlEditor, cmd = om.yamlEditor.Update(msg)
-	if om.twoPanel {
-		om.syncFieldsFromYAML()
+	// Forward non-key messages (e.g. textarea.Blink) only when the YAML panel is
+	// active; field-panel mode has no use for textarea ticks.
+	if !om.twoPanel || om.active == overlayPanelYAML {
+		var cmd tea.Cmd
+		om.yamlEditor, cmd = om.yamlEditor.Update(msg)
+		if om.twoPanel {
+			om.syncFieldsFromYAML()
+		}
+		return om, cmd
 	}
-	return om, cmd
+	return om, nil
 }
 
 func (om OverlayModel) confirm() (OverlayModel, tea.Cmd) {
+	om.errMsg = ""
 	snippet := om.yamlEditor.Value()
 	if err := ValidateSnippet(snippet); err != nil {
 		om.errMsg = fmt.Sprintf("YAML inválido: %v", err)
@@ -273,7 +374,11 @@ func (om OverlayModel) updateFieldPanel(msg tea.KeyMsg) OverlayModel {
 	case " ":
 		if om.fieldCursor < n {
 			om.fields[om.fieldCursor].Checked = !om.fields[om.fieldCursor].Checked
-			om.rebuildYAML()
+			if om.isEdit {
+				om.applyFieldToggle(om.fields[om.fieldCursor].Def)
+			} else {
+				om.rebuildYAML()
+			}
 		}
 	}
 	return om

@@ -51,17 +51,27 @@ type ListModel struct {
 }
 
 // BuildListItems constructs the merged item list from the currently existing blocks.
+// Only keys present in allKnownKeys are shown; unknown keys are silently ignored.
 func BuildListItems(existing []Block) []ListItem {
+	knownSet := make(map[string]bool, len(allKnownKeys))
+	for _, k := range allKnownKeys {
+		knownSet[k] = true
+	}
+
 	existingSet := make(map[string]bool, len(existing))
 	for _, b := range existing {
-		existingSet[b.Key] = true
+		if knownSet[b.Key] {
+			existingSet[b.Key] = true
+		}
 	}
 
 	items := make([]ListItem, 0, len(allKnownKeys)+2)
 
-	// Existing keys in file order.
+	// Existing known keys in file order.
 	for _, b := range existing {
-		items = append(items, ListItem{Key: b.Key, Existing: true})
+		if knownSet[b.Key] {
+			items = append(items, ListItem{Key: b.Key, Existing: true})
+		}
 	}
 
 	// Available keys alphabetically (skip already-existing).
@@ -99,18 +109,27 @@ func NewListModel(existing []Block, height int) ListModel {
 // Rebuild refreshes the list after blocks change without losing cursor position.
 func (lm *ListModel) Rebuild(existing []Block) {
 	prevKey := ""
-	if lm.cursor < len(lm.items) {
+	if lm.cursor < len(lm.items) && !lm.items[lm.cursor].Separator {
 		prevKey = lm.items[lm.cursor].Key
 	}
 	lm.items = BuildListItems(existing)
-	for i, it := range lm.items {
-		if it.Key == prevKey {
-			lm.cursor = i
-			lm.clampScroll()
-			return
+	if prevKey != "" {
+		for i, it := range lm.items {
+			if it.Key == prevKey {
+				lm.cursor = i
+				lm.clampScroll()
+				return
+			}
 		}
 	}
+	// Cursor was on a separator, key not found, or list is empty — find first real item.
 	lm.cursor = 0
+	for i, it := range lm.items {
+		if !it.Separator {
+			lm.cursor = i
+			break
+		}
+	}
 	lm.clampScroll()
 }
 

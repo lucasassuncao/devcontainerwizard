@@ -176,13 +176,13 @@ type ListItem struct {
 ```
 
 <a name="BuildListItems"></a>
-### func [BuildListItems](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L54>)
+### func [BuildListItems](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L55>)
 
 ```go
 func BuildListItems(existing []Block) []ListItem
 ```
 
-BuildListItems constructs the merged item list from the currently existing blocks.
+BuildListItems constructs the merged item list from the currently existing blocks. Only keys present in allKnownKeys are shown; unknown keys are silently ignored.
 
 <a name="ListModel"></a>
 ## type [ListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L46-L51>)
@@ -196,7 +196,7 @@ type ListModel struct {
 ```
 
 <a name="NewListModel"></a>
-### func [NewListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L87>)
+### func [NewListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L97>)
 
 ```go
 func NewListModel(existing []Block, height int) ListModel
@@ -205,7 +205,7 @@ func NewListModel(existing []Block, height int) ListModel
 NewListModel creates the list model.
 
 <a name="ListModel.Rebuild"></a>
-### func \(\*ListModel\) [Rebuild](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L100>)
+### func \(\*ListModel\) [Rebuild](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L110>)
 
 ```go
 func (lm *ListModel) Rebuild(existing []Block)
@@ -214,7 +214,7 @@ func (lm *ListModel) Rebuild(existing []Block)
 Rebuild refreshes the list after blocks change without losing cursor position.
 
 <a name="ListModel.SelectedItem"></a>
-### func \(ListModel\) [SelectedItem](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L118>)
+### func \(ListModel\) [SelectedItem](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L137>)
 
 ```go
 func (lm ListModel) SelectedItem() *ListItem
@@ -223,7 +223,7 @@ func (lm ListModel) SelectedItem() *ListItem
 SelectedItem returns the currently highlighted item \(nil if separator\).
 
 <a name="ListModel.Update"></a>
-### func \(ListModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L129>)
+### func \(ListModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L148>)
 
 ```go
 func (lm ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd)
@@ -232,7 +232,7 @@ func (lm ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd)
 
 
 <a name="ListModel.View"></a>
-### func \(ListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L183>)
+### func \(ListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L202>)
 
 ```go
 func (lm ListModel) View() string
@@ -279,7 +279,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
 
 
 <a name="Model.View"></a>
-### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L328>)
+### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L330>)
 
 ```go
 func (m Model) View() string
@@ -332,7 +332,7 @@ NewOverlay builds an overlay for the given key.
 - guided=false → single blank textarea
 
 <a name="OverlayModel.Init"></a>
-### func \(OverlayModel\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L202>)
+### func \(OverlayModel\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L298>)
 
 ```go
 func (om OverlayModel) Init() tea.Cmd
@@ -341,7 +341,7 @@ func (om OverlayModel) Init() tea.Cmd
 
 
 <a name="OverlayModel.Update"></a>
-### func \(OverlayModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L204>)
+### func \(OverlayModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L300>)
 
 ```go
 func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd)
@@ -350,7 +350,7 @@ func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd)
 
 
 <a name="OverlayModel.View"></a>
-### func \(OverlayModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L284>)
+### func \(OverlayModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L389>)
 
 ```go
 func (om OverlayModel) View() string
