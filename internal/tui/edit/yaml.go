@@ -181,3 +181,98 @@ func splitLines(raw []byte) []string {
 func joinLines(lines []string) []byte {
 	return []byte(strings.Join(lines, "\n"))
 }
+
+// rebuildYAML constructs the YAML content for key from the checked field states.
+func rebuildYAML(key string, fields []fieldState) string {
+	var sb strings.Builder
+	sb.WriteString(key + ":\n")
+	for _, fs := range fields {
+		if fs.Checked {
+			sb.WriteString(fs.Def.YAML)
+		}
+	}
+	return sb.String()
+}
+
+// syncFieldsFromYAML updates Checked on each field to reflect what is present
+// in content (the current textarea value for the given key).
+func syncFieldsFromYAML(key string, fields []fieldState, content string) []fieldState {
+	var doc map[string]interface{}
+	if err := yaml.Unmarshal([]byte(content), &doc); err != nil {
+		return fields
+	}
+	sub, _ := doc[key].(map[string]interface{})
+	out := make([]fieldState, len(fields))
+	copy(out, fields)
+	for i := range out {
+		_, out[i].Checked = sub[out[i].Def.Key]
+	}
+	return out
+}
+
+// applyFieldToggle surgically adds or removes a single sub-field from current
+// (the textarea YAML value), preserving edits to other fields.
+// checked is the NEW desired state of def.
+func applyFieldToggle(key string, fields []fieldState, def FieldDef, checked bool, current string) string {
+	var root yaml.Node
+	if err := yaml.Unmarshal([]byte(current), &root); err != nil || root.Kind == 0 || len(root.Content) == 0 {
+		return rebuildYAML(key, fields)
+	}
+	mapping := root.Content[0]
+	if mapping.Kind != yaml.MappingNode || len(mapping.Content) < 2 {
+		return rebuildYAML(key, fields)
+	}
+	valueNode := mapping.Content[1]
+	if valueNode.Kind != yaml.MappingNode {
+		return rebuildYAML(key, fields)
+	}
+
+	idx := -1
+	for i := 0; i < len(valueNode.Content)-1; i += 2 {
+		if valueNode.Content[i].Value == def.Key {
+			idx = i
+			break
+		}
+	}
+
+	if !checked {
+		removeFieldNode(valueNode, idx)
+	} else {
+		addFieldNode(valueNode, idx, key, def)
+	}
+
+	var buf strings.Builder
+	enc := yaml.NewEncoder(&buf)
+	enc.SetIndent(2)
+	if err := enc.Encode(&root); err != nil {
+		return rebuildYAML(key, fields)
+	}
+	return strings.TrimRight(buf.String(), "\n") + "\n"
+}
+
+func removeFieldNode(valueNode *yaml.Node, idx int) {
+	if idx >= 0 {
+		valueNode.Content = append(valueNode.Content[:idx], valueNode.Content[idx+2:]...)
+	}
+}
+
+func addFieldNode(valueNode *yaml.Node, idx int, parentKey string, def FieldDef) {
+	if idx >= 0 {
+		return // already present
+	}
+	var templateRoot yaml.Node
+	if err := yaml.Unmarshal([]byte(parentKey+":\n"+def.YAML), &templateRoot); err != nil {
+		return
+	}
+	if templateRoot.Kind == 0 || len(templateRoot.Content) == 0 {
+		return
+	}
+	tMapping := templateRoot.Content[0]
+	if tMapping.Kind != yaml.MappingNode || len(tMapping.Content) < 2 {
+		return
+	}
+	tValue := tMapping.Content[1]
+	if tValue.Kind == yaml.MappingNode && len(tValue.Content) >= 2 {
+		valueNode.Content = append(valueNode.Content, tValue.Content[0], tValue.Content[1])
+	}
+}

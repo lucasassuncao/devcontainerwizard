@@ -42,6 +42,8 @@ type Model struct {
 
 	width  int
 	height int
+	listW  int // derived by relayout(); read by View()
+	innerH int // derived by relayout(); read by View()
 }
 
 // New loads the YAML file and initialises the model.
@@ -59,8 +61,8 @@ func New(filePath string) (Model, error) {
 		return Model{}, fmt.Errorf("parsing YAML: %w", err)
 	}
 
-	list := NewListModel(blocks, 20)
-	preview := NewPreviewModel(60, 20)
+	list := NewListModel(blocks, 0)
+	preview := NewPreviewModel(0, 0)
 	preview.SetContent(string(raw))
 
 	return Model{
@@ -297,20 +299,20 @@ func (m Model) save() (tea.Model, tea.Cmd) {
 const statusBarLines = 2 // feedback line + hint line
 
 func (m *Model) relayout() {
-	listW := m.width / 3
-	previewW := m.width - listW - 4
-	innerH := m.height - statusBarLines - 2 // 2 panel borders (top+bottom)
+	m.listW = m.width / 3
+	previewW := m.width - m.listW - 4
+	m.innerH = m.height - statusBarLines - 2 // 2 panel borders (top+bottom)
 
-	if innerH < 1 {
-		innerH = 1
+	if m.innerH < 1 {
+		m.innerH = 1
 	}
 	if previewW < 10 {
 		previewW = 10
 	}
 
-	m.list.height = innerH
+	m.list.height = m.innerH
 	m.list.clampScroll()
-	m.preview.Resize(previewW-2, innerH)
+	m.preview.Resize(previewW-2, m.innerH)
 }
 
 func (m Model) forwardToActive(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -336,27 +338,24 @@ func (m Model) View() string {
 		return m.overlay.View()
 	}
 
-	listW := m.width / 3
-	innerH := m.height - statusBarLines - 2
-
 	listContent := m.list.View()
 	listBorder := panelStyle
 	if m.active == paneList {
 		listBorder = activePanelStyle
 	}
 	leftPanel := listBorder.
-		Width(listW - 2).
-		Height(innerH).
+		Width(m.listW - 2).
+		Height(m.innerH).
 		Render(listContent)
 
-	previewW := m.width - listW - 4
+	previewW := m.width - m.listW - 4
 	rightBorder := panelStyle
 	if m.active == panePreview {
 		rightBorder = activePanelStyle
 	}
 	rightPanel := rightBorder.
 		Width(previewW - 2).
-		Height(innerH).
+		Height(m.innerH).
 		Render(m.preview.View())
 
 	body := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)

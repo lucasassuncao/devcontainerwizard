@@ -5,7 +5,9 @@ import (
 	"embed"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -170,6 +172,17 @@ func generateInteractiveConfig() (string, error) {
 		namePrompt := promptui.Prompt{
 			Label:   "Container Name",
 			Default: "my-devcontainer",
+			Validate: func(s string) error {
+				if s == "" {
+					return fmt.Errorf("name cannot be empty")
+				}
+				for _, c := range s {
+					if !unicode.IsLetter(c) && !unicode.IsDigit(c) && c != '-' && c != '_' {
+						return fmt.Errorf("only letters, digits, hyphens and underscores are allowed")
+					}
+				}
+				return nil
+			},
 		}
 		name, _ := namePrompt.Run()
 		yamlSetScalar(root, "name", name)
@@ -188,6 +201,13 @@ func generateInteractiveConfig() (string, error) {
 		portPrompt := promptui.Prompt{
 			Label:   "Port to forward",
 			Default: "3000",
+			Validate: func(s string) error {
+				n, err := strconv.Atoi(s)
+				if err != nil || n < 1 || n > 65535 {
+					return fmt.Errorf("must be a number between 1 and 65535")
+				}
+				return nil
+			},
 		}
 		port, _ := portPrompt.Run()
 		yamlSetFirstPort(root, port)
