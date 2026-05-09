@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="DevContainer Wizard — a CLI tool that generates devcontainer.json from a simple YAML config file." />
+  <meta name="description" content="DevContainer Wizard, a CLI tool that generates devcontainer.json from a simple YAML config file." />
   <title>DevContainer Wizard</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- ── Hero ── -->
+<!-- Hero -->
 <header class="hero">
-  <h1 class="hero-title">DevContainer Wizard</h1>
-  <p>A CLI tool that turns a simple YAML config into a ready-to-use <code>devcontainer.json</code>. Templates, interactive wizard, validation — no JSON wrestling.</p>
+  <img src="devcontainerwizard.png" alt="devcontainerwizard logo" width="300" height="300" />
+  <p>A CLI tool that turns a simple YAML config into a ready-to-use <code>devcontainer.json</code>. Templates, interactive wizard, validation. No JSON wrestling.</p>
 
   <div class="cta">
     <a class="btn btn-primary" href="https://github.com/lucasassuncao/devcontainerwizard/releases">
@@ -26,19 +26,19 @@
 
 <main class="container">
 
-  <!-- ── Features ── -->
+  <!-- Features -->
   <section id="features">
     <h2>Features</h2>
     <div class="features">
       <div class="feature-card">
         <div class="icon">📝</div>
         <h3>YAML-first config</h3>
-        <p>Write your dev container config in human-friendly YAML — no JSON, no escaping nightmares, comments allowed.</p>
+        <p>Write your dev container config in human-friendly YAML. No JSON, no escaping nightmares, comments allowed.</p>
       </div>
       <div class="feature-card">
         <div class="icon">🧱</div>
         <h3>Built-in templates</h3>
-        <p>Start from <code>image</code>, <code>dockerfile</code>, <code>dockercompose</code>, <code>full</code>, or <code>golang</code> templates with a single flag.</p>
+        <p>Get started quickly with pre-built templates for the most common container setups, no manual configuration needed.</p>
       </div>
       <div class="feature-card">
         <div class="icon">🧙</div>
@@ -46,44 +46,34 @@
         <p>Run <code>devcontainerwizard init -i</code> to pick a template, set the container name, add features, and configure ports through guided prompts.</p>
       </div>
       <div class="feature-card">
-        <div class="icon">✅</div>
-        <h3>Schema validation</h3>
-        <p>Validates required fields, mutual exclusivity of <code>image</code> / <code>build</code> / <code>dockerComposeFile</code>, and enum values before writing any file.</p>
+        <div class="icon">🖊️</div>
+        <h3>TUI editor</h3>
+        <p>Run <code>devcontainerwizard edit</code> to open a two-panel terminal UI. Navigate blocks on the left, preview YAML on the right, toggle fields with guided overlays.</p>
       </div>
       <div class="feature-card">
-        <div class="icon">⚡</div>
-        <h3>Lifecycle commands</h3>
-        <p>Supports <code>onCreateCommand</code>, <code>postCreateCommand</code>, <code>postStartCommand</code>, and <code>postAttachCommand</code> as a string or an array of strings.</p>
+        <div class="icon">✅</div>
+        <h3>Validation</h3>
+        <p>Catches configuration errors before writing any file, so your container starts right the first time.</p>
       </div>
       <div class="feature-card">
         <div class="icon">🎨</div>
         <h3>Multi-editor support</h3>
-        <p>Configure VS Code, JetBrains, Neovim, and Codespaces customizations — extensions, settings, plugins — all in one file.</p>
+        <p>Configure VS Code, JetBrains, Neovim, and Codespaces customizations: extensions, settings, plugins, all in one file.</p>
       </div>
       <div class="feature-card">
         <div class="icon">🔌</div>
-        <h3>Features & options</h3>
+        <h3>Features &amp; options</h3>
         <p>Install any devcontainer feature from <a href="https://containers.dev/features" target="_blank">containers.dev</a> with per-feature options, including install order overrides.</p>
-      </div>
-      <div class="feature-card">
-        <div class="icon">🔒</div>
-        <h3>Secrets support</h3>
-        <p>Declare secrets with descriptions and defaults in YAML; they are written to <code>devcontainer.json</code> exactly as the spec requires.</p>
-      </div>
-      <div class="feature-card">
-        <div class="icon">🖊️</div>
-        <h3>TUI editor</h3>
-        <p>Run <code>devcontainerwizard edit</code> to open a two-panel terminal UI — navigate blocks on the left, preview YAML on the right, toggle fields with guided overlays.</p>
       </div>
       <div class="feature-card">
         <div class="icon">📚</div>
         <h3>Built-in docs</h3>
-        <p>Generate Markdown documentation for every config field with <code>generate-docs</code>, or browse it right in the terminal with <code>show-docs</code>.</p>
+        <p>Browse documentation for every config field right in the terminal with <code>show-docs</code>.</p>
       </div>
     </div>
   </section>
 
-  <!-- ── Installation ── -->
+  <!-- Installation -->
   <section id="install">
     <h2>Installation</h2>
 
@@ -122,27 +112,27 @@ go build -o devcontainerwizard .
     </div>
   </section>
 
-  <!-- ── Quick start ── -->
+  <!-- Quick start -->
   <section id="quickstart">
     <h2>Quick start</h2>
     <p style="color: var(--text-muted); margin-bottom: 20px;">Three steps from zero to a working <code>.devcontainer/devcontainer.json</code>.</p>
 
     <div class="code-block">
       <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-      <pre>devcontainerwizard init -i           <span class="cmt"># interactive wizard — pick template, name, features, ports</span>
+      <pre>devcontainerwizard init -i           <span class="cmt"># interactive wizard</span>
 <span class="cmt"># or use a specific template directly:</span>
 devcontainerwizard init -t golang    <span class="cmt"># generate config from the Go template</span>
 
 <span class="cmt"># optionally open the TUI editor to tweak config.yaml:</span>
-devcontainerwizard edit              <span class="cmt"># two-panel TUI — add, remove, and edit blocks</span>
+devcontainerwizard edit              <span class="cmt"># two-panel TUI</span>
 
 <span class="cmt"># convert config.yaml to .devcontainer/devcontainer.json:</span>
-devcontainerwizard convert           <span class="cmt"># writes .devcontainer/devcontainer.json</span>
+devcontainerwizard convert
 devcontainerwizard convert -c path/to/config.yaml -o .devcontainer-custom</pre>
     </div>
   </section>
 
-  <!-- ── Config example ── -->
+  <!-- Config example -->
   <section id="config">
     <h2>Configuration example</h2>
     <p style="color: var(--text-muted); margin-bottom: 20px;">A typical <code>config.yaml</code> for a Go project.</p>
@@ -180,7 +170,7 @@ devcontainerwizard convert -c path/to/config.yaml -o .devcontainer-custom</pre>
     </div>
   </section>
 
-  <!-- ── Commands ── -->
+  <!-- Commands -->
   <section id="commands">
     <h2>Commands</h2>
     <table class="cmd-table">
@@ -200,7 +190,6 @@ devcontainerwizard convert -c path/to/config.yaml -o .devcontainer-custom</pre>
         <tr><td>devcontainerwizard init -f</td><td>Overwrite an existing config.yaml</td></tr>
         <tr><td>devcontainerwizard edit</td><td>Open the TUI editor for config.yaml</td></tr>
         <tr><td>devcontainerwizard edit path/to/file.yaml</td><td>Open the TUI editor for a specific file</td></tr>
-        <tr><td>devcontainerwizard generate-docs</td><td>Generate Markdown documentation for all config fields</td></tr>
         <tr><td>devcontainerwizard show-docs</td><td>Browse documentation interactively in the terminal</td></tr>
         <tr><td>devcontainerwizard self-update</td><td>Update to the latest release from GitHub</td></tr>
       </tbody>
@@ -209,7 +198,7 @@ devcontainerwizard convert -c path/to/config.yaml -o .devcontainer-custom</pre>
 
 </main>
 
-<!-- ── Footer ── -->
+<!-- Footer -->
 <footer>
   <p>
     Built with ❤️ by <a href="https://github.com/lucasassuncao" target="_blank">lucasassuncao</a>
