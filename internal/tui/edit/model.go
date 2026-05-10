@@ -90,7 +90,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.handleKey(msg)
 
 	case SpaceOnItemMsg:
-		return m.handleSpace(msg.Item, msg.Guided)
+		return m.handleSpace(msg.Item)
 
 	case OverlayConfirmedMsg:
 		return m.handleOverlayConfirmed(msg.Snippet)
@@ -187,10 +187,9 @@ func (m Model) updatePreviewEditor(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m Model) handleSpace(it ListItem, guided bool) (tea.Model, tea.Cmd) {
+func (m Model) handleSpace(it ListItem) (tea.Model, tea.Cmd) {
 	var initial string
 	if it.Existing {
-		// For existing items, pre-fill overlay with the current block content.
 		current, err := BlockContent(m.rawYAML, m.blocks, it.Key)
 		if err != nil {
 			m.statusMsg = fmt.Sprintf("Error reading %s: %v", it.Key, err)
@@ -199,26 +198,25 @@ func (m Model) handleSpace(it ListItem, guided bool) (tea.Model, tea.Cmd) {
 		initial = current
 	} else {
 		initial = it.Key + ":\n"
-		if guided && len(FieldsForKey(it.Key)) == 0 {
-			// Only use the guided template for single-textarea blocks (no field defs).
+		if len(FieldsForKey(it.Key)) == 0 {
+			// Only use the template for single-textarea blocks (no field defs).
 			// Two-panel blocks initialise from rebuildYAML() when content is trivial.
-			initial = GuidedTemplate(it.Key)
+			initial = Template(it.Key)
 		}
 	}
 
-	mode := "free"
-	if guided {
-		mode = "guided"
-	}
-
-	ov := NewOverlay(it.Key, initial, guided, m.width, m.height)
+	ov := NewOverlay(it.Key, initial, m.width, m.height)
 	if it.Existing {
 		ov.isEdit = true
 		ov.editKey = it.Key
 	}
 	m.overlay = &ov
 	m.active = paneOverlay
-	m.statusMsg = fmt.Sprintf("Editing %q [%s] — Tab painel, Ctrl+S confirma, Esc cancela.", it.Key, mode)
+	if it.Existing {
+		m.statusMsg = fmt.Sprintf("Edit block %q — Tab panel, Ctrl+S confirm, Esc cancel.", it.Key)
+	} else {
+		m.statusMsg = fmt.Sprintf("Add block %q — Tab panel, Ctrl+S confirm, Esc cancel.", it.Key)
+	}
 	return m, nil
 }
 
@@ -378,9 +376,9 @@ func (m Model) View() string {
 		hintText = "[Tab]/[Esc] back to list • [ctrl+s] save"
 	default:
 		if it := m.list.SelectedItem(); it != nil && it.Existing {
-			hintText = "[↑/↓] navigate • [Space] guided edit • [e] free edit • [d] delete • [Tab] edit YAML • [ctrl+s] save • [q] quit"
+			hintText = "[↑/↓] navigate • [Space] edit block • [d] delete • [Tab] edit YAML • [ctrl+s] save • [q] quit"
 		} else {
-			hintText = "[↑/↓] navigate • [Space] guided add • [e] free add • [Tab] edit YAML • [ctrl+s] save • [q] quit"
+			hintText = "[↑/↓] navigate • [Space] add block • [Tab] edit YAML • [ctrl+s] save • [q] quit"
 		}
 	}
 	hint := statusStyle.Render(hintText)

@@ -1,16 +1,11 @@
 package edit
 
-// guidedTemplates maps each known top-level key to a YAML snippet that shows
-// every available field with example values. Optional fields are commented out
-// so the user can uncomment what they need and delete what they don't.
-var guidedTemplates = map[string]string{ // #nosec G101 -- YAML example templates, not real credentials
-	"name": `name: my-devcontainer
-`,
-
-	"image": `image: ubuntu:22.04
-`,
-
-	"build": `build:
+const (
+	tmplName = `name: my-devcontainer
+`
+	tmplImage = `image: ubuntu:22.04
+`
+	tmplBuild = `build:
   dockerfile: Dockerfile
   context: .
   # args:
@@ -23,68 +18,53 @@ var guidedTemplates = map[string]string{ // #nosec G101 -- YAML example template
   #   - default
   # secrets:
   #   - id=mysecret,src=/path/to/secret
-`,
-
-	"dockerComposeFile": `dockerComposeFile:
+`
+	tmplDockerComposeFile = `dockerComposeFile:
   - docker-compose.yml
   # - docker-compose.override.yml
-`,
-
-	"service": `service: app
-`,
-
-	"runServices": `runServices:
+`
+	tmplService = `service: app
+`
+	tmplRunServices = `runServices:
   - db
   - redis
   # - queue
-`,
-
-	"workspaceFolder": `workspaceFolder: /workspace
-`,
-
-	"workspaceMount": `workspaceMount: source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached
-`,
-
-	"remoteUser": `remoteUser: vscode
-`,
-
-	"containerUser": `containerUser: vscode
-`,
-
-	"updateRemoteUserUID": `updateRemoteUserUID: true
-`,
-
-	"userEnvProbe": `# Options: none | loginShell | loginInteractiveShell | interactiveShell
+`
+	tmplWorkspaceFolder = `workspaceFolder: /workspace
+`
+	tmplWorkspaceMount = `workspaceMount: source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached
+`
+	tmplRemoteUser = `remoteUser: vscode
+`
+	tmplContainerUser = `containerUser: vscode
+`
+	tmplUpdateRemoteUserUID = `updateRemoteUserUID: true
+`
+	tmplUserEnvProbe = `# Options: none | loginShell | loginInteractiveShell | interactiveShell
 userEnvProbe: loginInteractiveShell
-`,
-
-	"containerEnv": `containerEnv:
+`
+	tmplContainerEnv = `containerEnv:
   MY_VAR: value
   # ANOTHER_VAR: other-value
-`,
-
-	"remoteEnv": `remoteEnv:
+`
+	tmplRemoteEnv = `remoteEnv:
   MY_REMOTE_VAR: value
   # PATH: ${containerEnv:PATH}:/my/custom/bin
-`,
-
-	"localEnv": `localEnv:
+`
+	tmplLocalEnv = `localEnv:
   MY_LOCAL_VAR: ${env:MY_LOCAL_VAR}
-`,
-
-	"appPort": `# Legacy field — prefer forwardPorts instead.
+`
+	tmplAppPort = `# Legacy field — prefer forwardPorts instead.
 appPort:
   - 3000
   # - 8080
-`,
-
-	"forwardPorts": `forwardPorts:
+`
+	tmplForwardPorts = `forwardPorts:
   - 3000
   # - 5432
   # - "host:8080"
-`,
-
-	"portsAttributes": `portsAttributes:
+`
+	tmplPortsAttributes = `portsAttributes:
   "3000":
     label: Web App
     onAutoForward: notify
@@ -92,14 +72,12 @@ appPort:
   # "5432":
   #   label: PostgreSQL
   #   onAutoForward: silent
-`,
-
-	"otherPortsAttributes": `otherPortsAttributes:
+`
+	tmplOtherPortsAttributes = `otherPortsAttributes:
   onAutoForward: silent
   # label: Other Port
-`,
-
-	"mounts": `mounts:
+`
+	tmplMounts = `mounts:
   - type: bind
     source: ${localWorkspaceFolder}/.cache
     target: /home/vscode/.cache
@@ -108,51 +86,39 @@ appPort:
   # - type: volume
   #   source: myvolume
   #   target: /data
-`,
-
-	"runArgs": `runArgs:
+`
+	tmplRunArgs = `runArgs:
   - "--network=host"
   # - "--cap-add=SYS_PTRACE"
   # - "--security-opt=seccomp=unconfined"
-`,
-
-	"startupCommand": `startupCommand: "echo 'Container started'"
-`,
-
-	"overrideCommand": `overrideCommand: true
-`,
-
-	"command": `command: sleep infinity
-`,
-
-	"entrypoint": `entrypoint: /usr/local/bin/docker-entrypoint.sh
-`,
-
-	"init": `init: true
-`,
-
-	"privileged": `privileged: false
-`,
-
-	"capAdd": `capAdd:
+`
+	tmplStartupCommand = `startupCommand: "echo 'Container started'"
+`
+	tmplOverrideCommand = `overrideCommand: true
+`
+	tmplCommand = `command: sleep infinity
+`
+	tmplEntrypoint = `entrypoint: /usr/local/bin/docker-entrypoint.sh
+`
+	tmplInit = `init: true
+`
+	tmplPrivileged = `privileged: false
+`
+	tmplCapAdd = `capAdd:
   - SYS_PTRACE
   # - NET_ADMIN
-`,
-
-	"capDrop": `capDrop:
+`
+	tmplCapDrop = `capDrop:
   - ALL
-`,
-
-	"securityOpt": `securityOpt:
+`
+	tmplSecurityOpt = `securityOpt:
   - seccomp=unconfined
   # - apparmor=unconfined
-`,
-
-	"devices": `devices:
+`
+	tmplDevices = `devices:
   - /dev/net/tun
-`,
-
-	"hostRequirements": `hostRequirements:
+`
+	tmplHostRequirements = `hostRequirements:
   cpus: 4
   memory: 8gb
   storage: 32gb
@@ -160,64 +126,53 @@ appPort:
   # gpu:
   #   cores: 4
   #   memory: 4gb
-`,
-
-	"features": `features:
+`
+	tmplFeatures = `features:
   ghcr.io/devcontainers/features/git:1: {}
   # ghcr.io/devcontainers/features/node:1:
   #   version: lts
   # ghcr.io/devcontainers/features/docker-in-docker:2:
   #   version: latest
-`,
-
-	"overrideFeatureInstallOrder": `overrideFeatureInstallOrder:
+`
+	tmplOverrideFeatureInstallOrder = `overrideFeatureInstallOrder:
   - ghcr.io/devcontainers/features/git:1
-`,
-
-	"initializeCommand": `initializeCommand: echo 'Initializing on host'
+`
+	tmplInitializeCommand = `initializeCommand: echo 'Initializing on host'
 # initializeCommand:
 #   - /bin/sh
 #   - -c
 #   - echo 'Initializing on host'
-`,
-
-	"updateContentCommand": `updateContentCommand: echo 'Content updated'
+`
+	tmplUpdateContentCommand = `updateContentCommand: echo 'Content updated'
 # updateContentCommand:
 #   - /bin/sh
 #   - -c
 #   - pip install -r requirements.txt
-`,
-
-	"waitFor": `# Options: initializeCommand | onCreateCommand | updateContentCommand | postCreateCommand | postStartCommand
+`
+	tmplWaitFor = `# Options: initializeCommand | onCreateCommand | updateContentCommand | postCreateCommand | postStartCommand
 waitFor: updateContentCommand
-`,
-
-	"onCreateCommand": `onCreateCommand: echo 'Container created'
+`
+	tmplOnCreateCommand = `onCreateCommand: echo 'Container created'
 # onCreateCommand:
 #   - /bin/sh
 #   - -c
 #   - echo 'Container created'
-`,
-
-	"postCreateCommand": `postCreateCommand: pip install -r requirements.txt
+`
+	tmplPostCreateCommand = `postCreateCommand: pip install -r requirements.txt
 # postCreateCommand:
 #   - /bin/sh
 #   - -c
 #   - pip install -r requirements.txt
-`,
-
-	"postStartCommand": `postStartCommand: echo 'Container started'
-`,
-
-	"postAttachCommand": `postAttachCommand: echo 'Attached to container'
-`,
-
-	"watch": `watch:
+`
+	tmplPostStartCommand = `postStartCommand: echo 'Container started'
+`
+	tmplPostAttachCommand = `postAttachCommand: echo 'Attached to container'
+`
+	tmplWatch = `watch:
   waitFor: postCreateCommand
   restart: true
-`,
-
-	"customizations": `customizations:
+`
+	tmplCustomizations = `customizations:
   vscode:
     extensions:
       - ms-python.python
@@ -231,23 +186,69 @@ waitFor: updateContentCommand
   # codespaces:
   #   openFiles:
   #     - README.md
-`,
-
-	"secrets": `secrets:
+`
+	tmplSecrets = `secrets:
   MY_SECRET:
     description: "Description of the secret"
     # default: ""
-`,
-
-	"shutdownAction": `# Options: none | stopContainer | stopCompose
+` // #nosec G101 -- YAML example template, not a real credential
+	tmplShutdownAction = `# Options: none | stopContainer | stopCompose
 shutdownAction: stopContainer
-`,
+`
+)
+
+// #nosec G101 -- YAML example templates, not real credentials
+var templates = map[string]string{
+	"name":                        tmplName,
+	"image":                       tmplImage,
+	"build":                       tmplBuild,
+	"dockerComposeFile":           tmplDockerComposeFile,
+	"service":                     tmplService,
+	"runServices":                 tmplRunServices,
+	"workspaceFolder":             tmplWorkspaceFolder,
+	"workspaceMount":              tmplWorkspaceMount,
+	"remoteUser":                  tmplRemoteUser,
+	"containerUser":               tmplContainerUser,
+	"updateRemoteUserUID":         tmplUpdateRemoteUserUID,
+	"userEnvProbe":                tmplUserEnvProbe,
+	"containerEnv":                tmplContainerEnv,
+	"remoteEnv":                   tmplRemoteEnv,
+	"localEnv":                    tmplLocalEnv,
+	"appPort":                     tmplAppPort,
+	"forwardPorts":                tmplForwardPorts,
+	"portsAttributes":             tmplPortsAttributes,
+	"otherPortsAttributes":        tmplOtherPortsAttributes,
+	"mounts":                      tmplMounts,
+	"runArgs":                     tmplRunArgs,
+	"startupCommand":              tmplStartupCommand,
+	"overrideCommand":             tmplOverrideCommand,
+	"command":                     tmplCommand,
+	"entrypoint":                  tmplEntrypoint,
+	"init":                        tmplInit,
+	"privileged":                  tmplPrivileged,
+	"capAdd":                      tmplCapAdd,
+	"capDrop":                     tmplCapDrop,
+	"securityOpt":                 tmplSecurityOpt,
+	"devices":                     tmplDevices,
+	"hostRequirements":            tmplHostRequirements,
+	"features":                    tmplFeatures,
+	"overrideFeatureInstallOrder": tmplOverrideFeatureInstallOrder,
+	"initializeCommand":           tmplInitializeCommand,
+	"updateContentCommand":        tmplUpdateContentCommand,
+	"waitFor":                     tmplWaitFor,
+	"onCreateCommand":             tmplOnCreateCommand,
+	"postCreateCommand":           tmplPostCreateCommand,
+	"postStartCommand":            tmplPostStartCommand,
+	"postAttachCommand":           tmplPostAttachCommand,
+	"watch":                       tmplWatch,
+	"customizations":              tmplCustomizations,
+	"secrets":                     tmplSecrets,
+	"shutdownAction":              tmplShutdownAction,
 }
 
-// GuidedTemplate returns the guided YAML snippet for a key, or a minimal
-// fallback if no template is defined for that key.
-func GuidedTemplate(key string) string {
-	if t, ok := guidedTemplates[key]; ok {
+// Template returns the YAML snippet for a key, or a minimal fallback if no template is defined.
+func Template(key string) string {
+	if t, ok := templates[key]; ok {
 		return t
 	}
 	return key + ": \n"

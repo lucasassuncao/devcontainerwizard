@@ -11,9 +11,9 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
 ## Index
 
 - [func BlockContent\(raw \[\]byte, blocks \[\]Block, key string\) \(string, error\)](<#BlockContent>)
-- [func GuidedTemplate\(key string\) string](<#GuidedTemplate>)
 - [func InsertBlock\(raw \[\]byte, snippet string\) \(\[\]byte, error\)](<#InsertBlock>)
 - [func RemoveBlock\(raw \[\]byte, blocks \[\]Block, key string\) \(\[\]byte, error\)](<#RemoveBlock>)
+- [func Template\(key string\) string](<#Template>)
 - [func ValidateSnippet\(text string\) error](<#ValidateSnippet>)
 - [type Block](<#Block>)
   - [func ParseBlocks\(path string\) \(\[\]Block, error\)](<#ParseBlocks>)
@@ -45,7 +45,7 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
 - [type OverlayCancelledMsg](<#OverlayCancelledMsg>)
 - [type OverlayConfirmedMsg](<#OverlayConfirmedMsg>)
 - [type OverlayModel](<#OverlayModel>)
-  - [func NewOverlay\(key, initialContent string, guided bool, totalW, totalH int\) OverlayModel](<#NewOverlay>)
+  - [func NewOverlay\(key, initialContent string, totalW, totalH int\) OverlayModel](<#NewOverlay>)
   - [func \(om OverlayModel\) Init\(\) tea.Cmd](<#OverlayModel.Init>)
   - [func \(om OverlayModel\) Update\(msg tea.Msg\) \(OverlayModel, tea.Cmd\)](<#OverlayModel.Update>)
   - [func \(om OverlayModel\) View\(\) string](<#OverlayModel.View>)
@@ -71,15 +71,6 @@ func BlockContent(raw []byte, blocks []Block, key string) (string, error)
 
 BlockContent returns the raw lines for a given block key.
 
-<a name="GuidedTemplate"></a>
-## func [GuidedTemplate](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/templates.go#L249>)
-
-```go
-func GuidedTemplate(key string) string
-```
-
-GuidedTemplate returns the guided YAML snippet for a key, or a minimal fallback if no template is defined for that key.
-
 <a name="InsertBlock"></a>
 ## func [InsertBlock](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L90>)
 
@@ -97,6 +88,15 @@ func RemoveBlock(raw []byte, blocks []Block, key string) ([]byte, error)
 ```
 
 RemoveBlock deletes the lines belonging to key from raw YAML bytes.
+
+<a name="Template"></a>
+## func [Template](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/templates.go#L250>)
+
+```go
+func Template(key string) string
+```
+
+Template returns the YAML snippet for a key, or a minimal fallback if no template is defined.
 
 <a name="ValidateSnippet"></a>
 ## func [ValidateSnippet](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L172>)
@@ -139,7 +139,7 @@ func ParseBlocksFromBytes(raw []byte) ([]Block, error)
 ParseBlocksFromBytes parses raw YAML bytes and returns top\-level blocks.
 
 <a name="DeleteItemMsg"></a>
-## type [DeleteItemMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L43>)
+## type [DeleteItemMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L40>)
 
 DeleteItemMsg is sent when the user presses d on an existing item.
 
@@ -162,7 +162,7 @@ type FieldDef struct {
 ```
 
 <a name="FieldsForKey"></a>
-### func [FieldsForKey](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_defs.go#L134>)
+### func [FieldsForKey](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_defs.go#L204>)
 
 ```go
 func FieldsForKey(key string) []FieldDef
@@ -258,7 +258,7 @@ type ListItem struct {
 ```
 
 <a name="BuildListItems"></a>
-### func [BuildListItems](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L55>)
+### func [BuildListItems](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L52>)
 
 ```go
 func BuildListItems(existing []Block) []ListItem
@@ -267,7 +267,7 @@ func BuildListItems(existing []Block) []ListItem
 BuildListItems constructs the merged item list from the currently existing blocks. Only keys present in allKnownKeys are shown; unknown keys are silently ignored.
 
 <a name="ListModel"></a>
-## type [ListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L46-L51>)
+## type [ListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L43-L48>)
 
 ListModel is the left\-panel list.
 
@@ -278,7 +278,7 @@ type ListModel struct {
 ```
 
 <a name="NewListModel"></a>
-### func [NewListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L97>)
+### func [NewListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L94>)
 
 ```go
 func NewListModel(existing []Block, height int) ListModel
@@ -287,7 +287,7 @@ func NewListModel(existing []Block, height int) ListModel
 NewListModel creates the list model.
 
 <a name="ListModel.Rebuild"></a>
-### func \(\*ListModel\) [Rebuild](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L110>)
+### func \(\*ListModel\) [Rebuild](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L107>)
 
 ```go
 func (lm *ListModel) Rebuild(existing []Block)
@@ -296,7 +296,7 @@ func (lm *ListModel) Rebuild(existing []Block)
 Rebuild refreshes the list after blocks change without losing cursor position.
 
 <a name="ListModel.SelectedItem"></a>
-### func \(ListModel\) [SelectedItem](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L137>)
+### func \(ListModel\) [SelectedItem](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L134>)
 
 ```go
 func (lm ListModel) SelectedItem() *ListItem
@@ -305,7 +305,7 @@ func (lm ListModel) SelectedItem() *ListItem
 SelectedItem returns the currently highlighted item \(nil if separator\).
 
 <a name="ListModel.Update"></a>
-### func \(ListModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L148>)
+### func \(ListModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L145>)
 
 ```go
 func (lm ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd)
@@ -314,7 +314,7 @@ func (lm ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd)
 
 
 <a name="ListModel.View"></a>
-### func \(ListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L202>)
+### func \(ListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L194>)
 
 ```go
 func (lm ListModel) View() string
@@ -361,7 +361,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
 
 
 <a name="Model.View"></a>
-### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L332>)
+### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L330>)
 
 ```go
 func (m Model) View() string
@@ -388,11 +388,11 @@ type OverlayConfirmedMsg struct{ Snippet string }
 ```
 
 <a name="OverlayModel"></a>
-## type [OverlayModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L29-L52>)
+## type [OverlayModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L29-L51>)
 
-OverlayModel is the floating overlay for adding a YAML block.
+OverlayModel is the floating overlay for adding or editing a YAML block.
 
-Two\-panel mode \(guided \+ complex block\): left field\-toggle list \+ right YAML editor. Single mode \(free or simple block\): just the YAML textarea.
+Two\-panel mode \(complex block\): left field\-toggle list \+ right YAML editor. Single mode \(simple block\): just the YAML textarea.
 
 ```go
 type OverlayModel struct {
@@ -401,20 +401,16 @@ type OverlayModel struct {
 ```
 
 <a name="NewOverlay"></a>
-### func [NewOverlay](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L58>)
+### func [NewOverlay](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L55>)
 
 ```go
-func NewOverlay(key, initialContent string, guided bool, totalW, totalH int) OverlayModel
+func NewOverlay(key, initialContent string, totalW, totalH int) OverlayModel
 ```
 
-NewOverlay builds an overlay for the given key.
-
-- guided=true \+ block has field defs → two\-panel mode
-- guided=true \+ simple block → single textarea with guided template
-- guided=false → single blank textarea
+NewOverlay builds an overlay for the given key. Keys with field definitions open in two\-panel mode; all others use a single textarea.
 
 <a name="OverlayModel.Init"></a>
-### func \(OverlayModel\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L176>)
+### func \(OverlayModel\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L172>)
 
 ```go
 func (om OverlayModel) Init() tea.Cmd
@@ -423,7 +419,7 @@ func (om OverlayModel) Init() tea.Cmd
 
 
 <a name="OverlayModel.Update"></a>
-### func \(OverlayModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L178>)
+### func \(OverlayModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L174>)
 
 ```go
 func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd)
@@ -432,7 +428,7 @@ func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd)
 
 
 <a name="OverlayModel.View"></a>
-### func \(OverlayModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L254>)
+### func \(OverlayModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L250>)
 
 ```go
 func (om OverlayModel) View() string
@@ -533,14 +529,13 @@ func (pm PreviewModel) View() string
 
 
 <a name="SpaceOnItemMsg"></a>
-## type [SpaceOnItemMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L37-L40>)
+## type [SpaceOnItemMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L35-L37>)
 
-SpaceOnItemMsg is sent to the root model when the user presses Space \(Guided\) or e \(Free\). Guided=true means the overlay should be pre\-filled with the template for that key; Guided=false opens a blank textarea.
+SpaceOnItemMsg is sent to the root model when the user presses Space on a list item.
 
 ```go
 type SpaceOnItemMsg struct {
-    Item   ListItem
-    Guided bool
+    Item ListItem
 }
 ```
 

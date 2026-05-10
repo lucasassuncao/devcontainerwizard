@@ -22,13 +22,12 @@ const (
 	overlayPanelYAML
 )
 
-// OverlayModel is the floating overlay for adding a YAML block.
+// OverlayModel is the floating overlay for adding or editing a YAML block.
 //
-// Two-panel mode (guided + complex block): left field-toggle list + right YAML editor.
-// Single mode  (free  or simple block):   just the YAML textarea.
+// Two-panel mode (complex block): left field-toggle list + right YAML editor.
+// Single mode (simple block):     just the YAML textarea.
 type OverlayModel struct {
 	key      string
-	guided   bool
 	twoPanel bool
 
 	// Left panel — two-panel mode only
@@ -52,12 +51,10 @@ type OverlayModel struct {
 }
 
 // NewOverlay builds an overlay for the given key.
-//   - guided=true + block has field defs → two-panel mode
-//   - guided=true + simple block         → single textarea with guided template
-//   - guided=false                        → single blank textarea
-func NewOverlay(key, initialContent string, guided bool, totalW, totalH int) OverlayModel {
+// Keys with field definitions open in two-panel mode; all others use a single textarea.
+func NewOverlay(key, initialContent string, totalW, totalH int) OverlayModel {
 	defs := FieldsForKey(key)
-	twoPanel := guided && len(defs) > 0
+	twoPanel := len(defs) > 0
 
 	// ── Outer box dimensions (including double border + padding) ──────────────
 	//
@@ -100,7 +97,6 @@ func NewOverlay(key, initialContent string, guided bool, totalW, totalH int) Ove
 
 	om := OverlayModel{
 		key:      key,
-		guided:   guided,
 		twoPanel: twoPanel,
 		totalW:   totalW,
 		totalH:   totalH,
@@ -252,14 +248,11 @@ func (om OverlayModel) updateFieldPanel(msg tea.KeyMsg) OverlayModel {
 // ── View ──────────────────────────────────────────────────────────────────────
 
 func (om OverlayModel) View() string {
-	mode := "free"
-	if om.guided {
-		mode = "guided"
-	}
+	action := "add block"
 	if om.isEdit {
-		mode = "edit"
+		action = "edit block"
 	}
-	title := overlayTitleStyle.Render(fmt.Sprintf(" %s [%s] ", om.key, mode))
+	title := overlayTitleStyle.Render(fmt.Sprintf(" %s [%s] ", om.key, action))
 
 	var content string
 	if om.twoPanel {

@@ -31,12 +31,9 @@ type ListItem struct {
 	Separator bool // visual divider row, not selectable
 }
 
-// SpaceOnItemMsg is sent to the root model when the user presses Space (Guided)
-// or e (Free). Guided=true means the overlay should be pre-filled with the
-// template for that key; Guided=false opens a blank textarea.
+// SpaceOnItemMsg is sent to the root model when the user presses Space on a list item.
 type SpaceOnItemMsg struct {
-	Item   ListItem
-	Guided bool
+	Item ListItem
 }
 
 // DeleteItemMsg is sent when the user presses d on an existing item.
@@ -155,12 +152,7 @@ func (lm ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd) {
 		case " ":
 			if it := lm.SelectedItem(); it != nil {
 				item := *it
-				return lm, func() tea.Msg { return SpaceOnItemMsg{Item: item, Guided: true} }
-			}
-		case "e":
-			if it := lm.SelectedItem(); it != nil {
-				item := *it
-				return lm, func() tea.Msg { return SpaceOnItemMsg{Item: item, Guided: false} }
+				return lm, func() tea.Msg { return SpaceOnItemMsg{Item: item} }
 			}
 		case "d":
 			if it := lm.SelectedItem(); it != nil && it.Existing {

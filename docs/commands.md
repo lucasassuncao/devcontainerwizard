@@ -41,8 +41,7 @@ If `[file]` is omitted, opens `config.yaml` in the current directory.
 | Key | Action |
 |-----|--------|
 | `↑` / `k`, `↓` / `j` | Move cursor |
-| `Space` | Add or edit a block (guided mode) |
-| `e` | Add or edit a block (free YAML mode) |
+| `Space` | Add or edit a block |
 | `d` | Delete the selected block |
 | `Tab` | Toggle focus to the YAML preview panel |
 | `Ctrl+S` | Save to file |

@@ -109,6 +109,76 @@ var blockFields = map[string][]FieldDef{
 		},
 	},
 
+	"mounts": {
+		{
+			Key:      "type",
+			Desc:     "Mount type (bind / volume / tmpfs)",
+			YAML:     "  - type: bind\n",
+			Required: true,
+		},
+		{
+			Key:      "source",
+			Desc:     "Source path or volume name",
+			YAML:     "    source: ${localWorkspaceFolder}/.cache\n",
+			Required: true,
+		},
+		{
+			Key:      "target",
+			Desc:     "Target path inside the container",
+			YAML:     "    target: /home/vscode/.cache\n",
+			Required: true,
+		},
+		{
+			Key:  "consistency",
+			Desc: "Mount consistency (cached / delegated / consistent)",
+			YAML: "    consistency: cached\n",
+		},
+		{
+			Key:  "readonly",
+			Desc: "Mount as read-only",
+			YAML: "    readonly: false\n",
+		},
+	},
+
+	"portsAttributes": {
+		{
+			Key:      "label",
+			Desc:     "Human-readable label for the port",
+			YAML:     "  \"3000\":\n    label: Web App\n",
+			Required: true,
+		},
+		{
+			Key:      "onAutoForward",
+			Desc:     "Behavior when port is auto-forwarded",
+			YAML:     "    onAutoForward: notify\n",
+			Required: true,
+		},
+		{
+			Key:  "protocol",
+			Desc: "Network protocol (http / https)",
+			YAML: "    protocol: http\n",
+		},
+		{
+			Key:  "elevateIfNeeded",
+			Desc: "Elevate privileges if port requires it",
+			YAML: "    elevateIfNeeded: false\n",
+		},
+	},
+
+	"secrets": {
+		{
+			Key:      "description",
+			Desc:     "Description shown to the user",
+			YAML:     "  MY_SECRET:\n    description: Description of the secret\n",
+			Required: true,
+		},
+		{
+			Key:  "default",
+			Desc: "Default value if not provided",
+			YAML: "    default: \"\"\n",
+		},
+	},
+
 	"otherPortsAttributes": {
 		{
 			Key:      "onAutoForward",
