@@ -13,14 +13,18 @@ func TestBuildListItems(t *testing.T) {
 	}
 	items := edit.BuildListItems(existing)
 
-	if items[0].Key != "name" || !items[0].Existing {
-		t.Errorf("items[0] = %+v, want {Key:name, Existing:true}", items[0])
+	// items[0] is the "── Added ──" separator.
+	if !items[0].Separator {
+		t.Errorf("items[0] should be the 'Added' separator, got %+v", items[0])
 	}
-	if items[1].Key != "image" || !items[1].Existing {
-		t.Errorf("items[1] = %+v, want {Key:image, Existing:true}", items[1])
+	if items[1].Key != "name" || !items[1].Existing {
+		t.Errorf("items[1] = %+v, want {Key:name, Existing:true}", items[1])
 	}
-	if items[2].Key != "features" || !items[2].Existing {
-		t.Errorf("items[2] = %+v, want {Key:features, Existing:true}", items[2])
+	if items[2].Key != "image" || !items[2].Existing {
+		t.Errorf("items[2] = %+v, want {Key:image, Existing:true}", items[2])
+	}
+	if items[3].Key != "features" || !items[3].Existing {
+		t.Errorf("items[3] = %+v, want {Key:features, Existing:true}", items[3])
 	}
 
 	foundAvailable := false

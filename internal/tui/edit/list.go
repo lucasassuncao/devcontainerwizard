@@ -62,13 +62,18 @@ func BuildListItems(existing []Block) []ListItem {
 		}
 	}
 
-	items := make([]ListItem, 0, len(allKnownKeys)+2)
+	items := make([]ListItem, 0, len(allKnownKeys)+4)
 
 	// Existing known keys in file order.
+	existingItems := make([]ListItem, 0)
 	for _, b := range existing {
 		if knownSet[b.Key] {
-			items = append(items, ListItem{Key: b.Key, Existing: true})
+			existingItems = append(existingItems, ListItem{Key: b.Key, Existing: true})
 		}
+	}
+	if len(existingItems) > 0 {
+		items = append(items, ListItem{Separator: true, Key: "── Added ──"})
+		items = append(items, existingItems...)
 	}
 
 	// Available keys alphabetically (skip already-existing).
@@ -81,6 +86,7 @@ func BuildListItems(existing []Block) []ListItem {
 	sort.Strings(available)
 
 	if len(available) > 0 {
+		items = append(items, ListItem{Separator: true, Key: ""}) // blank line
 		items = append(items, ListItem{Separator: true, Key: "── Available to add ──"})
 		for _, k := range available {
 			items = append(items, ListItem{Key: k, Existing: false})

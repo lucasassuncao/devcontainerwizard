@@ -340,7 +340,7 @@ type ListModel struct {
 ```
 
 <a name="NewListModel"></a>
-### func [NewListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L94>)
+### func [NewListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L100>)
 
 ```go
 func NewListModel(existing []Block, height int) ListModel
@@ -349,7 +349,7 @@ func NewListModel(existing []Block, height int) ListModel
 NewListModel creates the list model.
 
 <a name="ListModel.Rebuild"></a>
-### func \(\*ListModel\) [Rebuild](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L107>)
+### func \(\*ListModel\) [Rebuild](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L113>)
 
 ```go
 func (lm *ListModel) Rebuild(existing []Block)
@@ -358,7 +358,7 @@ func (lm *ListModel) Rebuild(existing []Block)
 Rebuild refreshes the list after blocks change without losing cursor position.
 
 <a name="ListModel.SelectedItem"></a>
-### func \(ListModel\) [SelectedItem](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L134>)
+### func \(ListModel\) [SelectedItem](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L140>)
 
 ```go
 func (lm ListModel) SelectedItem() *ListItem
@@ -367,7 +367,7 @@ func (lm ListModel) SelectedItem() *ListItem
 SelectedItem returns the currently highlighted item \(nil if separator\).
 
 <a name="ListModel.Update"></a>
-### func \(ListModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L145>)
+### func \(ListModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L151>)
 
 ```go
 func (lm ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd)
@@ -376,7 +376,7 @@ func (lm ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd)
 
 
 <a name="ListModel.View"></a>
-### func \(ListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L194>)
+### func \(ListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L200>)
 
 ```go
 func (lm ListModel) View() string
