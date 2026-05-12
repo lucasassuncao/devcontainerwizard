@@ -174,6 +174,97 @@ func ValidateSnippet(text string) error {
 	return yaml.Unmarshal([]byte(text), &check)
 }
 
+// schemaNode represents a node in the validation tree.
+// children != nil means this node has a known set of valid keys.
+// children == nil means the value is free-form and its keys are not validated.
+type schemaNode struct {
+	children map[string]*schemaNode
+}
+
+func freeForm() *schemaNode { return nil }
+
+func node(entries map[string]*schemaNode) *schemaNode {
+	return &schemaNode{children: entries}
+}
+
+// devcontainerSchema is the validation tree for devcontainer.json.
+// Only nodes with a non-nil schemaNode have their children validated;
+// nil leaves are free-form (e.g. args map, settings object, list items).
+var devcontainerSchema = buildDevcontainerSchema()
+
+func buildDevcontainerSchema() *schemaNode {
+	// Build second-level nodes from blockFields.
+	topChildren := make(map[string]*schemaNode, len(allKnownKeys))
+
+	// Keys without blockFields entries are free-form at the second level.
+	for _, k := range allKnownKeys {
+		topChildren[k] = freeForm()
+	}
+
+	// Keys with blockFields entries get a node with their sub-keys.
+	for topKey, defs := range blockFields {
+		children := make(map[string]*schemaNode, len(defs))
+		for _, d := range defs {
+			children[d.Key] = freeForm() // default: sub-key value is free-form
+		}
+		topChildren[topKey] = node(children)
+	}
+
+	// Extend specific nodes with deeper schemas.
+	topChildren["customizations"] = node(map[string]*schemaNode{
+		"vscode": node(map[string]*schemaNode{
+			"extensions": freeForm(), // list of strings — not validated
+			"settings":   freeForm(), // free-form editor settings map
+		}),
+		"jetbrains": node(map[string]*schemaNode{
+			"plugins": freeForm(),
+		}),
+		"codespaces": node(map[string]*schemaNode{
+			"openFiles": freeForm(),
+		}),
+	})
+
+	return node(topChildren)
+}
+
+// ValidateKnownKeys returns the dotted paths of any YAML keys that are not
+// recognised by the schema. Validation is recursive: every object node in the
+// schema is checked; nil (free-form) nodes are left untouched.
+func ValidateKnownKeys(raw []byte) []string {
+	var doc map[string]interface{}
+	if err := yaml.Unmarshal(raw, &doc); err != nil {
+		return nil
+	}
+	var unknown []string
+	walkSchema(doc, devcontainerSchema, "", &unknown)
+	return unknown
+}
+
+// walkSchema recursively validates obj against schema, accumulating dotted
+// paths for unrecognised keys into unknown.
+func walkSchema(obj map[string]interface{}, schema *schemaNode, prefix string, unknown *[]string) {
+	if schema == nil {
+		return // free-form node: don't inspect children
+	}
+	for key, val := range obj {
+		path := key
+		if prefix != "" {
+			path = prefix + "." + key
+		}
+		childSchema, known := schema.children[key]
+		if !known {
+			*unknown = append(*unknown, path)
+			continue
+		}
+		// Recurse into nested objects only when the child schema is non-nil.
+		if childSchema != nil {
+			if nested, ok := val.(map[string]interface{}); ok {
+				walkSchema(nested, childSchema, path, unknown)
+			}
+		}
+	}
+}
+
 func splitLines(raw []byte) []string {
 	return strings.Split(string(raw), "\n")
 }

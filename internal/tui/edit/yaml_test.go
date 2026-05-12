@@ -112,3 +112,67 @@ func TestValidateSnippet(t *testing.T) {
 		t.Error("expected invalid snippet to fail validation")
 	}
 }
+
+func TestValidateKnownKeys(t *testing.T) {
+	valid := []byte("name: mydev\nimage: ubuntu:22.04\n")
+	if unknown := edit.ValidateKnownKeys(valid); len(unknown) != 0 {
+		t.Errorf("expected no unknown keys, got %v", unknown)
+	}
+
+	withUnknown := []byte("name: mydev\ncustomization: bad\nimage: ubuntu:22.04\n")
+	unknown := edit.ValidateKnownKeys(withUnknown)
+	if len(unknown) != 1 || unknown[0] != "customization" {
+		t.Errorf("expected [customization], got %v", unknown)
+	}
+
+	// Sub-key validation: customizations.vscod is not a valid sub-key.
+	withBadSub := []byte("customizations:\n  vscod:\n    extensions:\n      - foo.bar\n")
+	unknown2 := edit.ValidateKnownKeys(withBadSub)
+	if len(unknown2) != 1 || unknown2[0] != "customizations.vscod" {
+		t.Errorf("expected [customizations.vscod], got %v", unknown2)
+	}
+
+	// Valid sub-key should pass.
+	withGoodSub := []byte("customizations:\n  vscode:\n    extensions:\n      - foo.bar\n")
+	if unknown3 := edit.ValidateKnownKeys(withGoodSub); len(unknown3) != 0 {
+		t.Errorf("expected no unknown keys for valid sub-key, got %v", unknown3)
+	}
+
+	// Third level: customizations.vscode.extension is invalid (should be extensions).
+	withBadNested := []byte("customizations:\n  vscode:\n    extension:\n      - foo.bar\n    settings:\n      editor.formatOnSave: true\n")
+	unknown4 := edit.ValidateKnownKeys(withBadNested)
+	if len(unknown4) != 1 || unknown4[0] != "customizations.vscode.extension" {
+		t.Errorf("expected [customizations.vscode.extension], got %v", unknown4)
+	}
+
+	// settings under vscode is a free-form object — its keys must not be validated.
+	withSettings := []byte("customizations:\n  vscode:\n    extensions:\n      - foo.bar\n    settings:\n      editor.formatOnSave: true\n      any.arbitrary.key: 42\n")
+	if unknown5 := edit.ValidateKnownKeys(withSettings); len(unknown5) != 0 {
+		t.Errorf("expected no errors for free-form settings, got %v", unknown5)
+	}
+}
+
+func TestValidateKnownKeysDepth(t *testing.T) {
+	cases := []struct {
+		desc    string
+		yaml    string
+		wantErr bool
+	}{
+		{"typo top-level", "buiild:\n  dockerfile: Dockerfile\n", true},
+		{"typo sub-campo", "build:\n  dockerfilee: Dockerfile\n  context: .\n", true},
+		{"MY_ARG livre em args", "build:\n  dockerfile: Dockerfile\n  context: .\n  args:\n    MY_ARG: value\n    OUTRO_ARG: x\n", false},
+		{"itens de lista em cacheFrom", "build:\n  dockerfile: Dockerfile\n  context: .\n  cacheFrom:\n    - myregistry/image:cache\n    - outra:cache\n", false},
+		{"build completo correto", "build:\n  dockerfile: Dockerfile\n  context: .\n  args:\n    MY_ARG: value\n  target: dev\n  cacheFrom:\n    - myregistry/image:cache\n  output: type=local,dest=./out\n  ssh:\n    - default\n", false},
+	}
+	for _, c := range cases {
+		t.Run(c.desc, func(t *testing.T) {
+			unknown := edit.ValidateKnownKeys([]byte(c.yaml))
+			if c.wantErr && len(unknown) == 0 {
+				t.Error("expected validation error, got none")
+			}
+			if !c.wantErr && len(unknown) != 0 {
+				t.Errorf("expected no errors, got %v", unknown)
+			}
+		})
+	}
+}

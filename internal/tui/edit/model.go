@@ -15,6 +15,7 @@ const (
 	paneList pane = iota
 	panePreview
 	paneOverlay
+	paneAlert
 )
 
 type quitState int
@@ -34,6 +35,7 @@ type Model struct {
 	list    ListModel
 	preview PreviewModel
 	overlay *OverlayModel
+	alert   *AlertModel
 
 	active    pane
 	dirty     bool
@@ -103,6 +105,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case DeleteItemMsg:
 		return m.handleDelete(msg.Key)
+
+	case AlertDismissedMsg:
+		m.alert = nil
+		m.active = paneList
+		return m, nil
 	}
 
 	return m.forwardToActive(msg)
@@ -121,6 +128,13 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 	}
 
+	// Alert active — forward to it.
+	if m.active == paneAlert && m.alert != nil {
+		al, cmd := m.alert.Update(msg)
+		m.alert = &al
+		return m, cmd
+	}
+
 	// Overlay active — forward to it.
 	if m.active == paneOverlay && m.overlay != nil {
 		ov, cmd := m.overlay.Update(msg)
@@ -131,6 +145,8 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "ctrl+s":
 		return m.save()
+	case "ctrl+l":
+		return m.validateKeys()
 	case "q", "ctrl+c":
 		if m.active == panePreview {
 			break // let q through to the textarea
@@ -285,12 +301,33 @@ func (m *Model) applyRaw(raw []byte) {
 }
 
 func (m Model) save() (tea.Model, tea.Cmd) {
+	if unknown := ValidateKnownKeys(m.rawYAML); len(unknown) > 0 {
+		msg := "The following key(s) are not valid devcontainer fields:\n\n  " +
+			strings.Join(unknown, ", ") +
+			"\n\nFix the YAML before saving."
+		return m.showAlert("Invalid key(s) — cannot save", msg, alertError)
+	}
 	if err := os.WriteFile(m.filePath, m.rawYAML, 0o600); err != nil {
-		m.statusMsg = fmt.Sprintf("Save failed: %v", err)
-		return m, nil
+		return m.showAlert("Save failed", err.Error(), alertError)
 	}
 	m.dirty = false
 	m.statusMsg = fmt.Sprintf("Saved to %s.", m.filePath)
+	return m, nil
+}
+
+func (m Model) validateKeys() (tea.Model, tea.Cmd) {
+	if unknown := ValidateKnownKeys(m.rawYAML); len(unknown) > 0 {
+		msg := "The following key(s) are not valid devcontainer fields:\n\n  " +
+			strings.Join(unknown, ", ")
+		return m.showAlert("Validation — unknown key(s)", msg, alertError)
+	}
+	return m.showAlert("Validation passed", "All keys are recognized devcontainer fields.", alertSuccess)
+}
+
+func (m Model) showAlert(title, message string, kind alertKind) (tea.Model, tea.Cmd) {
+	al := NewAlert(title, message, kind, m.width, m.height)
+	m.alert = &al
+	m.active = paneAlert
 	return m, nil
 }
 
@@ -330,6 +367,10 @@ func (m Model) forwardToActive(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() string {
 	if m.width == 0 {
 		return "Loading..."
+	}
+
+	if m.active == paneAlert && m.alert != nil {
+		return m.alert.View()
 	}
 
 	if m.active == paneOverlay && m.overlay != nil {
@@ -373,12 +414,12 @@ func (m Model) View() string {
 	var hintText string
 	switch m.active {
 	case panePreview:
-		hintText = "[Tab]/[Esc] back to list • [ctrl+s] save"
+		hintText = "[Tab]/[Esc] back to list • [ctrl+l] validate • [ctrl+s] save"
 	default:
 		if it := m.list.SelectedItem(); it != nil && it.Existing {
-			hintText = "[↑/↓] navigate • [Space] edit block • [d] delete • [Tab] edit YAML • [ctrl+s] save • [q] quit"
+			hintText = "[↑/↓] navigate • [Space] edit block • [d] delete • [Tab] edit YAML • [ctrl+l] validate • [ctrl+s] save • [q] quit"
 		} else {
-			hintText = "[↑/↓] navigate • [Space] add block • [Tab] edit YAML • [ctrl+s] save • [q] quit"
+			hintText = "[↑/↓] navigate • [Space] add block • [Tab] edit YAML • [ctrl+l] validate • [ctrl+s] save • [q] quit"
 		}
 	}
 	hint := statusStyle.Render(hintText)

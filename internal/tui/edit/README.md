@@ -14,7 +14,13 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
 - [func InsertBlock\(raw \[\]byte, snippet string\) \(\[\]byte, error\)](<#InsertBlock>)
 - [func RemoveBlock\(raw \[\]byte, blocks \[\]Block, key string\) \(\[\]byte, error\)](<#RemoveBlock>)
 - [func Template\(key string\) string](<#Template>)
+- [func ValidateKnownKeys\(raw \[\]byte\) \[\]string](<#ValidateKnownKeys>)
 - [func ValidateSnippet\(text string\) error](<#ValidateSnippet>)
+- [type AlertDismissedMsg](<#AlertDismissedMsg>)
+- [type AlertModel](<#AlertModel>)
+  - [func NewAlert\(title, message string, kind alertKind, totalW, totalH int\) AlertModel](<#NewAlert>)
+  - [func \(a AlertModel\) Update\(msg tea.KeyMsg\) \(AlertModel, tea.Cmd\)](<#AlertModel.Update>)
+  - [func \(a AlertModel\) View\(\) string](<#AlertModel.View>)
 - [type Block](<#Block>)
   - [func ParseBlocks\(path string\) \(\[\]Block, error\)](<#ParseBlocks>)
   - [func ParseBlocksFromBytes\(raw \[\]byte\) \(\[\]Block, error\)](<#ParseBlocksFromBytes>)
@@ -98,6 +104,15 @@ func Template(key string) string
 
 Template returns the YAML snippet for a key, or a minimal fallback if no template is defined.
 
+<a name="ValidateKnownKeys"></a>
+## func [ValidateKnownKeys](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L233>)
+
+```go
+func ValidateKnownKeys(raw []byte) []string
+```
+
+ValidateKnownKeys returns the dotted paths of any YAML keys that are not recognised by the schema. Validation is recursive: every object node in the schema is checked; nil \(free\-form\) nodes are left untouched.
+
 <a name="ValidateSnippet"></a>
 ## func [ValidateSnippet](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L172>)
 
@@ -106,6 +121,53 @@ func ValidateSnippet(text string) error
 ```
 
 ValidateSnippet returns an error if the YAML text is not parseable.
+
+<a name="AlertDismissedMsg"></a>
+## type [AlertDismissedMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L11>)
+
+AlertDismissedMsg is sent when the user closes the alert overlay.
+
+```go
+type AlertDismissedMsg struct{}
+```
+
+<a name="AlertModel"></a>
+## type [AlertModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L21-L27>)
+
+AlertModel is a simple modal that shows a message with an OK button.
+
+```go
+type AlertModel struct {
+    // contains filtered or unexported fields
+}
+```
+
+<a name="NewAlert"></a>
+### func [NewAlert](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L29>)
+
+```go
+func NewAlert(title, message string, kind alertKind, totalW, totalH int) AlertModel
+```
+
+
+
+<a name="AlertModel.Update"></a>
+### func \(AlertModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L53>)
+
+```go
+func (a AlertModel) Update(msg tea.KeyMsg) (AlertModel, tea.Cmd)
+```
+
+
+
+<a name="AlertModel.View"></a>
+### func \(AlertModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L61>)
+
+```go
+func (a AlertModel) View() string
+```
+
+
 
 <a name="Block"></a>
 ## type [Block](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L13-L17>)
@@ -323,7 +385,7 @@ func (lm ListModel) View() string
 View renders the visible slice of the list.
 
 <a name="Model"></a>
-## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L28-L47>)
+## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L29-L49>)
 
 Model is the root Bubble Tea model for the edit TUI.
 
@@ -334,7 +396,7 @@ type Model struct {
 ```
 
 <a name="New"></a>
-### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L50>)
+### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L52>)
 
 ```go
 func New(filePath string) (Model, error)
@@ -343,7 +405,7 @@ func New(filePath string) (Model, error)
 New loads the YAML file and initialises the model.
 
 <a name="Model.Init"></a>
-### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L79>)
+### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L81>)
 
 ```go
 func (m Model) Init() tea.Cmd
@@ -352,7 +414,7 @@ func (m Model) Init() tea.Cmd
 
 
 <a name="Model.Update"></a>
-### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L81>)
+### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L83>)
 
 ```go
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
@@ -361,7 +423,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
 
 
 <a name="Model.View"></a>
-### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L330>)
+### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L367>)
 
 ```go
 func (m Model) View() string
