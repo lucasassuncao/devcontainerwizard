@@ -1,4 +1,3 @@
-// Package docs ...
 package docs
 
 import (

@@ -27,10 +27,9 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
 - [type FieldDef](<#FieldDef>)
   - [func FieldsForKey\(key string\) \[\]FieldDef](<#FieldsForKey>)
 - [type FieldListModel](<#FieldListModel>)
-  - [func NewFieldListModel\(defs \[\]FieldDef, w, h int\) FieldListModel](<#NewFieldListModel>)
+  - [func NewFieldListModel\(defs \[\]FieldDef, h int\) FieldListModel](<#NewFieldListModel>)
   - [func \(fl FieldListModel\) Fields\(\) \[\]fieldState](<#FieldListModel.Fields>)
   - [func \(fl \*FieldListModel\) SetFields\(fields \[\]fieldState\)](<#FieldListModel.SetFields>)
-  - [func \(fl \*FieldListModel\) SetSize\(w, h int\)](<#FieldListModel.SetSize>)
   - [func \(fl FieldListModel\) ToggledField\(\) fieldState](<#FieldListModel.ToggledField>)
   - [func \(fl FieldListModel\) Update\(msg tea.KeyMsg\) \(FieldListModel, bool\)](<#FieldListModel.Update>)
   - [func \(fl FieldListModel\) View\(\) string](<#FieldListModel.View>)
@@ -114,7 +113,7 @@ func ValidateSnippet(text string) error
 ValidateSnippet returns an error if the YAML text is not parseable.
 
 <a name="AlertDismissedMsg"></a>
-## type [AlertDismissedMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L11>)
+## type [AlertDismissedMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L13>)
 
 AlertDismissedMsg is sent when the user closes the alert overlay.
 
@@ -123,7 +122,7 @@ type AlertDismissedMsg struct{}
 ```
 
 <a name="AlertModel"></a>
-## type [AlertModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L21-L27>)
+## type [AlertModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L23-L29>)
 
 AlertModel is a simple modal that shows a message with an OK button.
 
@@ -134,7 +133,7 @@ type AlertModel struct {
 ```
 
 <a name="NewAlert"></a>
-### func [NewAlert](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L29>)
+### func [NewAlert](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L31>)
 
 ```go
 func NewAlert(title, message string, kind alertKind, totalW, totalH int) AlertModel
@@ -143,7 +142,7 @@ func NewAlert(title, message string, kind alertKind, totalW, totalH int) AlertMo
 
 
 <a name="AlertModel.Update"></a>
-### func \(AlertModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L46>)
+### func \(AlertModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L48>)
 
 ```go
 func (a AlertModel) Update(msg tea.KeyMsg) (AlertModel, tea.Cmd)
@@ -152,7 +151,7 @@ func (a AlertModel) Update(msg tea.KeyMsg) (AlertModel, tea.Cmd)
 
 
 <a name="AlertModel.View"></a>
-### func \(AlertModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L54>)
+### func \(AlertModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L56>)
 
 ```go
 func (a AlertModel) View() string
@@ -215,7 +214,7 @@ func FieldsForKey(key string) []FieldDef
 FieldsForKey returns sub\-field definitions for a top\-level key, or nil when the block is a simple scalar and should fall back to a plain textarea.
 
 <a name="FieldListModel"></a>
-## type [FieldListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L17-L23>)
+## type [FieldListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L17-L22>)
 
 FieldListModel is the left panel of the guided overlay: a scrollable, toggleable list of sub\-field definitions for a given YAML key.
 
@@ -226,16 +225,16 @@ type FieldListModel struct {
 ```
 
 <a name="NewFieldListModel"></a>
-### func [NewFieldListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L27>)
+### func [NewFieldListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L26>)
 
 ```go
-func NewFieldListModel(defs []FieldDef, w, h int) FieldListModel
+func NewFieldListModel(defs []FieldDef, h int) FieldListModel
 ```
 
 NewFieldListModel initialises the model from a slice of FieldDefs. Required fields start checked.
 
 <a name="FieldListModel.Fields"></a>
-### func \(FieldListModel\) [Fields](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L42>)
+### func \(FieldListModel\) [Fields](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L35>)
 
 ```go
 func (fl FieldListModel) Fields() []fieldState
@@ -244,7 +243,7 @@ func (fl FieldListModel) Fields() []fieldState
 Fields returns the current field states.
 
 <a name="FieldListModel.SetFields"></a>
-### func \(\*FieldListModel\) [SetFields](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L47>)
+### func \(\*FieldListModel\) [SetFields](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L40>)
 
 ```go
 func (fl *FieldListModel) SetFields(fields []fieldState)
@@ -252,17 +251,8 @@ func (fl *FieldListModel) SetFields(fields []fieldState)
 
 SetFields replaces the field states \(used after syncFieldsFromYAML\).
 
-<a name="FieldListModel.SetSize"></a>
-### func \(\*FieldListModel\) [SetSize](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L36>)
-
-```go
-func (fl *FieldListModel) SetSize(w, h int)
-```
-
-SetSize updates the visible panel dimensions.
-
 <a name="FieldListModel.ToggledField"></a>
-### func \(FieldListModel\) [ToggledField](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L80>)
+### func \(FieldListModel\) [ToggledField](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L73>)
 
 ```go
 func (fl FieldListModel) ToggledField() fieldState
@@ -271,7 +261,7 @@ func (fl FieldListModel) ToggledField() fieldState
 ToggledField returns the field at the cursor. Call after Update returns toggled=true.
 
 <a name="FieldListModel.Update"></a>
-### func \(FieldListModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L53>)
+### func \(FieldListModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L46>)
 
 ```go
 func (fl FieldListModel) Update(msg tea.KeyMsg) (FieldListModel, bool)
@@ -280,7 +270,7 @@ func (fl FieldListModel) Update(msg tea.KeyMsg) (FieldListModel, bool)
 Update handles keyboard input. Returns the updated model and a bool indicating whether a toggle occurred \(Space was pressed on a field\).
 
 <a name="FieldListModel.View"></a>
-### func \(FieldListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L85>)
+### func \(FieldListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L78>)
 
 ```go
 func (fl FieldListModel) View() string
@@ -439,7 +429,7 @@ func (m Model) View() string
 
 
 <a name="OverlayCancelledMsg"></a>
-## type [OverlayCancelledMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L16>)
+## type [OverlayCancelledMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L18>)
 
 OverlayCancelledMsg is sent when the user presses Esc.
 
@@ -448,7 +438,7 @@ type OverlayCancelledMsg struct{}
 ```
 
 <a name="OverlayConfirmedMsg"></a>
-## type [OverlayConfirmedMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L13>)
+## type [OverlayConfirmedMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L15>)
 
 OverlayConfirmedMsg is sent when the user confirms with Ctrl\+S.
 
@@ -457,7 +447,7 @@ type OverlayConfirmedMsg struct{ Snippet string }
 ```
 
 <a name="OverlayModel"></a>
-## type [OverlayModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L29-L51>)
+## type [OverlayModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L31-L53>)
 
 OverlayModel is the floating overlay for adding or editing a YAML block.
 
@@ -470,7 +460,7 @@ type OverlayModel struct {
 ```
 
 <a name="NewOverlay"></a>
-### func [NewOverlay](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L55>)
+### func [NewOverlay](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L57>)
 
 ```go
 func NewOverlay(key, initialContent string, totalW, totalH int) OverlayModel
@@ -479,7 +469,7 @@ func NewOverlay(key, initialContent string, totalW, totalH int) OverlayModel
 NewOverlay builds an overlay for the given key. Keys with field definitions open in two\-panel mode; all others use a single textarea.
 
 <a name="OverlayModel.Init"></a>
-### func \(OverlayModel\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L172>)
+### func \(OverlayModel\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L174>)
 
 ```go
 func (om OverlayModel) Init() tea.Cmd
@@ -488,7 +478,7 @@ func (om OverlayModel) Init() tea.Cmd
 
 
 <a name="OverlayModel.Update"></a>
-### func \(OverlayModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L174>)
+### func \(OverlayModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L176>)
 
 ```go
 func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd)
@@ -497,7 +487,7 @@ func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd)
 
 
 <a name="OverlayModel.View"></a>
-### func \(OverlayModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L250>)
+### func \(OverlayModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L252>)
 
 ```go
 func (om OverlayModel) View() string

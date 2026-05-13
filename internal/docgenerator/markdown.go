@@ -1,4 +1,3 @@
-// Package docgenerator ...
 package docgenerator
 
 import (

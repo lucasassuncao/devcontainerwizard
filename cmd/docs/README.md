@@ -8,10 +8,6 @@
 import "github.com/lucasassuncao/devcontainerwizard/cmd/docs"
 ```
 
-Package docs ...
-
-Package docs ...
-
 ## Index
 
 - [Variables](<#variables>)

@@ -8,8 +8,6 @@
 import "github.com/lucasassuncao/devcontainerwizard/internal/devcontainer"
 ```
 
-Package devcontainer ...
-
 ## Index
 
 - [func DevContainerStructLevelValidation\(sl validator.StructLevel\)](<#DevContainerStructLevelValidation>)
@@ -22,7 +20,7 @@ Package devcontainer ...
 
 
 <a name="DevContainerStructLevelValidation"></a>
-## func [DevContainerStructLevelValidation](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L22>)
+## func [DevContainerStructLevelValidation](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L21>)
 
 ```go
 func DevContainerStructLevelValidation(sl validator.StructLevel)
@@ -47,7 +45,7 @@ Two\-pass expansion:
 localEnv itself is never written to the JSON output \(json:"\-" on the field\).
 
 <a name="HumanizeValidationError"></a>
-## func [HumanizeValidationError](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L65>)
+## func [HumanizeValidationError](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L64>)
 
 ```go
 func HumanizeValidationError(err error) string
@@ -74,7 +72,7 @@ func Parse(k *koanf.Koanf) (model.DevContainer, error)
 
 
 <a name="Validate"></a>
-## func [Validate](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L14>)
+## func [Validate](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L13>)
 
 ```go
 func Validate(dc model.DevContainer) error

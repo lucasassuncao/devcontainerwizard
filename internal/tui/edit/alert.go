@@ -5,6 +5,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/lucasassuncao/devcontainerwizard/internal/tui/theme"
 )
 
 // AlertDismissedMsg is sent when the user closes the alert overlay.
@@ -38,9 +40,9 @@ func NewAlert(title, message string, kind alertKind, totalW, totalH int) AlertMo
 
 func (a AlertModel) accentColor() lipgloss.Color {
 	if a.kind == alertSuccess {
-		return lipgloss.Color("82")
+		return theme.Success
 	}
-	return lipgloss.Color("196")
+	return theme.Danger
 }
 
 func (a AlertModel) Update(msg tea.KeyMsg) (AlertModel, tea.Cmd) {

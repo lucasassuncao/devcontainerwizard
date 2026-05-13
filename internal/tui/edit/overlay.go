@@ -7,6 +7,8 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/lucasassuncao/devcontainerwizard/internal/tui/theme"
 )
 
 // OverlayConfirmedMsg is sent when the user confirms with Ctrl+S.
@@ -125,7 +127,7 @@ func (om *OverlayModel) initTwoPanel(defs []FieldDef, contentW, panelH int, init
 	}
 	yamlPanelW := panelSpace - fieldPanelW
 
-	om.fieldList = NewFieldListModel(defs, fieldPanelW, panelH)
+	om.fieldList = NewFieldListModel(defs, panelH)
 	om.fieldPanelW = fieldPanelW
 	om.fieldPanelH = panelH
 
@@ -268,7 +270,7 @@ func (om OverlayModel) View() string {
 
 	parts := []string{title, content}
 	if om.errMsg != "" {
-		parts = append(parts, lipgloss.NewStyle().Foreground(lipgloss.Color("196")).Render(om.errMsg))
+		parts = append(parts, lipgloss.NewStyle().Foreground(theme.Danger).Render(om.errMsg))
 	}
 	parts = append(parts, hint)
 

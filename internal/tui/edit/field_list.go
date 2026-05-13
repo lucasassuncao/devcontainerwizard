@@ -18,24 +18,17 @@ type FieldListModel struct {
 	fields []fieldState
 	cursor int
 	offset int
-	width  int
 	height int
 }
 
 // NewFieldListModel initialises the model from a slice of FieldDefs.
 // Required fields start checked.
-func NewFieldListModel(defs []FieldDef, w, h int) FieldListModel {
+func NewFieldListModel(defs []FieldDef, h int) FieldListModel {
 	fields := make([]fieldState, len(defs))
 	for i, d := range defs {
 		fields[i] = fieldState{Def: d, Checked: d.Required}
 	}
-	return FieldListModel{fields: fields, width: w, height: h}
-}
-
-// SetSize updates the visible panel dimensions.
-func (fl *FieldListModel) SetSize(w, h int) {
-	fl.width = w
-	fl.height = h
+	return FieldListModel{fields: fields, height: h}
 }
 
 // Fields returns the current field states.

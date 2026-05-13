@@ -1,4 +1,3 @@
-// Package devcontainer ...
 package devcontainer
 
 import (
