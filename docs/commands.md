@@ -47,6 +47,25 @@ If `[file]` is omitted, opens `config.yaml` in the current directory.
 | `Ctrl+S` | Save to file |
 | `q` | Quit (prompts if there are unsaved changes) |
 
+**Inside a block overlay (fields panel):**
+
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` | Move field cursor |
+| `Space` | Toggle a field on/off |
+| `p` | Open the preset picker |
+| `Tab` | Switch to the YAML editor panel |
+| `Ctrl+S` | Confirm and close |
+| `Esc` | Cancel |
+
+**Preset picker (`p`):**
+
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` | Navigate presets |
+| `Enter` | Apply selected preset |
+| `Esc` | Close without applying |
+
 ---
 
 ## convert
@@ -71,6 +90,38 @@ Browse configuration documentation in the terminal with syntax-highlighted markd
 ```bash
 devcontainerwizard show-docs
 ```
+
+**Key bindings:**
+
+| Key | Action |
+|-----|--------|
+| `↑` / `k`, `↓` / `j` | Navigate topics / scroll content |
+| `PgUp` / `PgDn` | Half-page scroll in the content panel |
+| `Tab` | Switch between the Topics and content panels |
+| `q` | Quit |
+
+---
+
+## show-examples
+
+Browse built-in YAML presets for every devcontainer config field in a two-panel TUI.
+Use it to discover ready-made values before opening the editor.
+
+```bash
+devcontainerwizard show-examples
+```
+
+**Navigation:**
+
+| Key | Action |
+|-----|--------|
+| `↑` / `k`, `↓` / `j` | Move cursor |
+| `Enter` / `→` / `l` | Drill into a field's preset list |
+| `Esc` / `←` / `h` | Go back to the fields list |
+| `Tab` | Switch focus to the YAML preview panel |
+| `q` | Quit |
+
+The left panel lists all 45 config fields. Selecting a field shows its available presets; selecting a preset renders the corresponding YAML block on the right with syntax highlighting.
 
 ---
 

@@ -56,6 +56,7 @@ Writes `.devcontainer/devcontainer.json`. Open the project in VS Code and it wil
 | `edit` | Open the TUI editor for a config file |
 | `convert` | Convert `config.yaml` to `.devcontainer/devcontainer.json` |
 | `show-docs` | Browse configuration docs in the terminal |
+| `show-examples` | Browse built-in YAML presets for every config field |
 | `self-update` | Update to the latest release |
 
 ## Documentation
