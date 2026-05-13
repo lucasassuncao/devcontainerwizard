@@ -16,7 +16,7 @@ var ShowCmd = &cobra.Command{
 }
 
 func runShow(cmd *cobra.Command, args []string) {
-	gen, err := docgenerator.NewSchemaGenerator("docs/markdown", "docs/schema", true)
+	gen, err := docgenerator.NewSchemaGenerator("docs/markdown", "docs/schema", docgenerator.WithCleanupSchemas())
 	if err != nil {
 		log.Fatalf("Failed to create generator: %v", err)
 	}

@@ -26,7 +26,7 @@ func runGenerate(cmd *cobra.Command, args []string) {
 	markdownDir := filepath.Join(docsDir, "markdown")
 	schemaDir := filepath.Join(docsDir, "schema")
 
-	gen, err := docgenerator.NewSchemaGenerator(markdownDir, schemaDir, false)
+	gen, err := docgenerator.NewSchemaGenerator(markdownDir, schemaDir)
 	if err != nil {
 		log.Fatalf("Failed to create generator: %v", err)
 	}

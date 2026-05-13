@@ -17,7 +17,7 @@ type SchemaGenerator struct {
 	docsDir         string
 	schemasDir      string
 	visitedSections map[string]bool
-	CleanupSchemas  bool
+	cleanupSchemas  bool
 }
 
 type SectionArgs struct {
@@ -29,16 +29,24 @@ type SectionArgs struct {
 	NameSuffix   string
 }
 
+// Option configures a SchemaGenerator at construction.
+type Option func(*SchemaGenerator)
+
+// WithCleanupSchemas makes the generator delete each JSON schema file after
+// the markdown is rendered, leaving only the docs behind.
+func WithCleanupSchemas() Option {
+	return func(g *SchemaGenerator) { g.cleanupSchemas = true }
+}
+
 // NewSchemaGenerator creates a new SchemaGenerator
-func NewSchemaGenerator(docsDir, schemasDir string, cleanupSchemas bool) (*SchemaGenerator, error) {
-	// Create directories if they do not exist
+func NewSchemaGenerator(docsDir, schemasDir string, opts ...Option) (*SchemaGenerator, error) {
 	for _, dir := range []string{docsDir, schemasDir} {
 		if err := os.MkdirAll(dir, 0750); err != nil {
 			return nil, fmt.Errorf("failed to create directory %s: %w", dir, err)
 		}
 	}
 
-	return &SchemaGenerator{
+	g := &SchemaGenerator{
 		reflector: &jsonschema.Reflector{
 			RequiredFromJSONSchemaTags: true,
 			DoNotReference:             true,
@@ -46,8 +54,11 @@ func NewSchemaGenerator(docsDir, schemasDir string, cleanupSchemas bool) (*Schem
 		docsDir:         docsDir,
 		schemasDir:      schemasDir,
 		visitedSections: make(map[string]bool),
-		CleanupSchemas:  cleanupSchemas,
-	}, nil
+	}
+	for _, opt := range opts {
+		opt(g)
+	}
+	return g, nil
 }
 
 // GenerateSchemaAndDocs generates JSON schema and markdown docs for the given type
@@ -71,7 +82,7 @@ func (g *SchemaGenerator) GenerateSchemaAndDocs(v any) error {
 		return fmt.Errorf("error saving docs for %s: %w", typeName, err)
 	}
 
-	if g.CleanupSchemas {
+	if g.cleanupSchemas {
 		if err := os.Remove(schemaPath); err != nil {
 			return fmt.Errorf("error removing schema file %s: %w", schemaPath, err)
 		}
@@ -104,7 +115,7 @@ func (g *SchemaGenerator) GenerateSchemaAndDocsInMemory(types []any) (map[string
 
 		result[typeName] = g.generateMarkdownDocs(schema, typeName)
 
-		if g.CleanupSchemas {
+		if g.cleanupSchemas {
 			if err := os.Remove(schemaPath); err != nil {
 				return nil, fmt.Errorf("error removing schema file %s: %w", schemaPath, err)
 			}

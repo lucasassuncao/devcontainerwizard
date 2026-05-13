@@ -12,8 +12,10 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/docgenerator"
 
 - [func GenerateIndex\(docsDir string, configs \[\]any\) error](<#GenerateIndex>)
 - [func RenderMarkdownDocsInTerminal\(docs map\[string\]string\) error](<#RenderMarkdownDocsInTerminal>)
+- [type Option](<#Option>)
+  - [func WithCleanupSchemas\(\) Option](<#WithCleanupSchemas>)
 - [type SchemaGenerator](<#SchemaGenerator>)
-  - [func NewSchemaGenerator\(docsDir, schemasDir string, cleanupSchemas bool\) \(\*SchemaGenerator, error\)](<#NewSchemaGenerator>)
+  - [func NewSchemaGenerator\(docsDir, schemasDir string, opts ...Option\) \(\*SchemaGenerator, error\)](<#NewSchemaGenerator>)
   - [func \(g \*SchemaGenerator\) GenerateSchemaAndDocs\(v any\) error](<#SchemaGenerator.GenerateSchemaAndDocs>)
   - [func \(g \*SchemaGenerator\) GenerateSchemaAndDocsInMemory\(types \[\]any\) \(map\[string\]string, error\)](<#SchemaGenerator.GenerateSchemaAndDocsInMemory>)
 - [type SectionArgs](<#SectionArgs>)
@@ -37,6 +39,24 @@ func RenderMarkdownDocsInTerminal(docs map[string]string) error
 
 RenderMarkdownDocsInTerminal launches the two\-panel documentation TUI.
 
+<a name="Option"></a>
+## type [Option](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L33>)
+
+Option configures a SchemaGenerator at construction.
+
+```go
+type Option func(*SchemaGenerator)
+```
+
+<a name="WithCleanupSchemas"></a>
+### func [WithCleanupSchemas](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L37>)
+
+```go
+func WithCleanupSchemas() Option
+```
+
+WithCleanupSchemas makes the generator delete each JSON schema file after the markdown is rendered, leaving only the docs behind.
+
 <a name="SchemaGenerator"></a>
 ## type [SchemaGenerator](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L15-L21>)
 
@@ -44,22 +64,21 @@ RenderMarkdownDocsInTerminal launches the two\-panel documentation TUI.
 
 ```go
 type SchemaGenerator struct {
-    CleanupSchemas bool
     // contains filtered or unexported fields
 }
 ```
 
 <a name="NewSchemaGenerator"></a>
-### func [NewSchemaGenerator](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L33>)
+### func [NewSchemaGenerator](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L42>)
 
 ```go
-func NewSchemaGenerator(docsDir, schemasDir string, cleanupSchemas bool) (*SchemaGenerator, error)
+func NewSchemaGenerator(docsDir, schemasDir string, opts ...Option) (*SchemaGenerator, error)
 ```
 
 NewSchemaGenerator creates a new SchemaGenerator
 
 <a name="SchemaGenerator.GenerateSchemaAndDocs"></a>
-### func \(\*SchemaGenerator\) [GenerateSchemaAndDocs](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L54>)
+### func \(\*SchemaGenerator\) [GenerateSchemaAndDocs](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L65>)
 
 ```go
 func (g *SchemaGenerator) GenerateSchemaAndDocs(v any) error
@@ -68,7 +87,7 @@ func (g *SchemaGenerator) GenerateSchemaAndDocs(v any) error
 GenerateSchemaAndDocs generates JSON schema and markdown docs for the given type
 
 <a name="SchemaGenerator.GenerateSchemaAndDocsInMemory"></a>
-### func \(\*SchemaGenerator\) [GenerateSchemaAndDocsInMemory](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L85>)
+### func \(\*SchemaGenerator\) [GenerateSchemaAndDocsInMemory](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L96>)
 
 ```go
 func (g *SchemaGenerator) GenerateSchemaAndDocsInMemory(types []any) (map[string]string, error)
