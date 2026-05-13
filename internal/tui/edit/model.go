@@ -349,8 +349,7 @@ func (m Model) save() (tea.Model, tea.Cmd) {
 		return m.showAlert("Save failed", err.Error(), alertError)
 	}
 	m.dirty = false
-	m.statusMsg = fmt.Sprintf("Saved to %s.", m.filePath)
-	return m, nil
+	return m.showAlert("Saved", fmt.Sprintf("Saved to %s.", m.filePath), alertSuccess)
 }
 
 func (m Model) validateKeys() (tea.Model, tea.Cmd) {
@@ -368,12 +367,15 @@ func (m Model) showAlert(title, message string, kind alertKind) (tea.Model, tea.
 	return m, nil
 }
 
-const statusBarLines = 2 // feedback line + hint line
+const (
+	headerLines    = 1
+	statusBarLines = 2 // feedback line + hint line
+)
 
 func (m *Model) relayout() {
 	m.listW = m.width / 3
 	previewW := m.width - m.listW - 4
-	m.innerH = m.height - statusBarLines - 2 // 2 panel borders (top+bottom)
+	m.innerH = m.height - headerLines - statusBarLines - 2 // 2 panel borders (top+bottom)
 
 	if m.innerH < 1 {
 		m.innerH = 1
@@ -400,35 +402,18 @@ func (m Model) View() string {
 		return m.overlay.View()
 	}
 
-	listContent := m.list.View()
-	listBorder := panelStyle
-	if !m.previewFocused {
-		listBorder = activePanelStyle
-	}
-	leftPanel := listBorder.
-		Width(m.listW - 2).
-		Height(m.innerH).
-		Render(listContent)
+	header := renderHeader(m.filePath, m.dirty, m.width)
+
+	leftTitle := fmt.Sprintf("Blocks (%d/%d)", m.list.AddedCount(), len(allKnownKeys))
+	leftPanel := renderTitledPanel(leftTitle, m.listW, m.innerH+2, !m.previewFocused, m.list.View())
 
 	previewW := m.width - m.listW - 4
-	rightBorder := panelStyle
-	if m.previewFocused {
-		rightBorder = activePanelStyle
-	}
-	rightPanel := rightBorder.
-		Width(previewW - 2).
-		Height(m.innerH).
-		Render(m.preview.View())
+	rightPanel := renderTitledPanel("Preview", previewW, m.innerH+2, m.previewFocused, m.preview.View())
 
 	body := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
 
 	// ── Feedback line (dynamic) ──────────────────────────────────────────────
-	dirtyMarker := ""
-	if m.dirty {
-		dirtyMarker = dirtyStyle.Render(" [modified]")
-	}
-
-	feedback := statusStyle.Render(m.statusMsg) + dirtyMarker
+	feedback := statusStyle.Render(m.statusMsg)
 	if m.quitting == quitAsking {
 		feedback = dirtyStyle.Render(" " + m.statusMsg)
 	}
@@ -447,5 +432,5 @@ func (m Model) View() string {
 	feedbackLine := lipgloss.NewStyle().Width(m.width).Render(feedback)
 	hintLine := lipgloss.NewStyle().Width(m.width).Render(hint)
 
-	return strings.Join([]string{body, feedbackLine, hintLine}, "\n")
+	return strings.Join([]string{header, body, feedbackLine, hintLine}, "\n")
 }

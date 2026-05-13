@@ -72,7 +72,7 @@ func BuildListItems(existing []Block) []ListItem {
 		}
 	}
 	if len(existingItems) > 0 {
-		items = append(items, ListItem{Separator: true, Key: "── Added ──"})
+		items = append(items, ListItem{Separator: true, Key: "ADDED"})
 		items = append(items, existingItems...)
 	}
 
@@ -87,7 +87,7 @@ func BuildListItems(existing []Block) []ListItem {
 
 	if len(available) > 0 {
 		items = append(items, ListItem{Separator: true, Key: ""}) // blank line
-		items = append(items, ListItem{Separator: true, Key: "── Available to add ──"})
+		items = append(items, ListItem{Separator: true, Key: "AVAILABLE"})
 		for _, k := range available {
 			items = append(items, ListItem{Key: k, Existing: false})
 		}
@@ -134,6 +134,17 @@ func (lm *ListModel) Rebuild(existing []Block) {
 		}
 	}
 	lm.clampScroll()
+}
+
+// AddedCount returns how many recognised top-level keys are present.
+func (lm ListModel) AddedCount() int {
+	n := 0
+	for _, it := range lm.items {
+		if it.Existing {
+			n++
+		}
+	}
+	return n
 }
 
 // SelectedItem returns the currently highlighted item (nil if separator).
@@ -207,17 +218,17 @@ func (lm ListModel) View() string {
 		it := lm.items[i]
 		switch {
 		case it.Separator:
-			sb.WriteString(separatorStyle.Render(it.Key))
+			sb.WriteString(sectionLabelStyle.Render(it.Key))
 		case i == lm.cursor:
-			mark := "○"
+			mark := "+"
 			if it.Existing {
 				mark = "●"
 			}
-			sb.WriteString(selectedItemStyle.Render("▶ " + mark + " " + it.Key))
+			sb.WriteString(selectedItemStyle.Render("▶ " + mark + "  " + it.Key))
 		case it.Existing:
-			sb.WriteString(existingItemStyle.Render("  ● " + it.Key))
+			sb.WriteString(existingItemStyle.Render("  ●  " + it.Key))
 		default:
-			sb.WriteString(availableItemStyle.Render("  ○ " + it.Key))
+			sb.WriteString(availableItemStyle.Render("  +  " + it.Key))
 		}
 		sb.WriteByte('\n')
 	}

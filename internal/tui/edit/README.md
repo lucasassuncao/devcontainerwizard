@@ -39,6 +39,7 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
   - [func BuildListItems\(existing \[\]Block\) \[\]ListItem](<#BuildListItems>)
 - [type ListModel](<#ListModel>)
   - [func NewListModel\(existing \[\]Block, height int\) ListModel](<#NewListModel>)
+  - [func \(lm ListModel\) AddedCount\(\) int](<#ListModel.AddedCount>)
   - [func \(lm \*ListModel\) Rebuild\(existing \[\]Block\)](<#ListModel.Rebuild>)
   - [func \(lm ListModel\) SelectedItem\(\) \*ListItem](<#ListModel.SelectedItem>)
   - [func \(lm ListModel\) Update\(msg tea.Msg\) \(ListModel, tea.Cmd\)](<#ListModel.Update>)
@@ -338,6 +339,15 @@ func NewListModel(existing []Block, height int) ListModel
 
 NewListModel creates the list model.
 
+<a name="ListModel.AddedCount"></a>
+### func \(ListModel\) [AddedCount](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L140>)
+
+```go
+func (lm ListModel) AddedCount() int
+```
+
+AddedCount returns how many recognised top\-level keys are present.
+
 <a name="ListModel.Rebuild"></a>
 ### func \(\*ListModel\) [Rebuild](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L113>)
 
@@ -348,7 +358,7 @@ func (lm *ListModel) Rebuild(existing []Block)
 Rebuild refreshes the list after blocks change without losing cursor position.
 
 <a name="ListModel.SelectedItem"></a>
-### func \(ListModel\) [SelectedItem](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L140>)
+### func \(ListModel\) [SelectedItem](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L151>)
 
 ```go
 func (lm ListModel) SelectedItem() *ListItem
@@ -357,7 +367,7 @@ func (lm ListModel) SelectedItem() *ListItem
 SelectedItem returns the currently highlighted item \(nil if separator\).
 
 <a name="ListModel.Update"></a>
-### func \(ListModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L151>)
+### func \(ListModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L162>)
 
 ```go
 func (lm ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd)
@@ -366,7 +376,7 @@ func (lm ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd)
 
 
 <a name="ListModel.View"></a>
-### func \(ListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L200>)
+### func \(ListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L211>)
 
 ```go
 func (lm ListModel) View() string
@@ -420,7 +430,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
 
 
 <a name="Model.View"></a>
-### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L391>)
+### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L393>)
 
 ```go
 func (m Model) View() string
