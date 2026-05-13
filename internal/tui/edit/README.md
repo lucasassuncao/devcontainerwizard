@@ -22,7 +22,6 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
   - [func \(a AlertModel\) Update\(msg tea.KeyMsg\) \(AlertModel, tea.Cmd\)](<#AlertModel.Update>)
   - [func \(a AlertModel\) View\(\) string](<#AlertModel.View>)
 - [type Block](<#Block>)
-  - [func ParseBlocks\(path string\) \(\[\]Block, error\)](<#ParseBlocks>)
   - [func ParseBlocksFromBytes\(raw \[\]byte\) \(\[\]Block, error\)](<#ParseBlocksFromBytes>)
 - [type DeleteItemMsg](<#DeleteItemMsg>)
 - [type FieldDef](<#FieldDef>)
@@ -60,7 +59,7 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
 
 
 <a name="BlockContent"></a>
-## func [BlockContent](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L156>)
+## func [BlockContent](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L146>)
 
 ```go
 func BlockContent(raw []byte, blocks []Block, key string) (string, error)
@@ -69,7 +68,7 @@ func BlockContent(raw []byte, blocks []Block, key string) (string, error)
 BlockContent returns the raw lines for a given block key.
 
 <a name="InsertBlock"></a>
-## func [InsertBlock](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L90>)
+## func [InsertBlock](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L80>)
 
 ```go
 func InsertBlock(raw []byte, snippet string) ([]byte, error)
@@ -78,7 +77,7 @@ func InsertBlock(raw []byte, snippet string) ([]byte, error)
 InsertBlock inserts a YAML snippet into raw, respecting the canonical key order defined by allKnownKeys. The snippet is placed before the first existing block whose key follows the new key in that order. If the new key is unknown or no later block exists, the snippet is appended at the end.
 
 <a name="RemoveBlock"></a>
-## func [RemoveBlock](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L66>)
+## func [RemoveBlock](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L56>)
 
 ```go
 func RemoveBlock(raw []byte, blocks []Block, key string) ([]byte, error)
@@ -96,7 +95,7 @@ func Template(key string) string
 Template returns the YAML snippet for a key, or a minimal fallback if no template is defined.
 
 <a name="ValidateKnownKeys"></a>
-## func [ValidateKnownKeys](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L211>)
+## func [ValidateKnownKeys](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L201>)
 
 ```go
 func ValidateKnownKeys(raw []byte) []string
@@ -105,7 +104,7 @@ func ValidateKnownKeys(raw []byte) []string
 ValidateKnownKeys returns the dotted paths of any YAML keys that are not recognised by the schema. Free\-form sub\-trees are skipped.
 
 <a name="ValidateSnippet"></a>
-## func [ValidateSnippet](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L172>)
+## func [ValidateSnippet](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L162>)
 
 ```go
 func ValidateSnippet(text string) error
@@ -161,7 +160,7 @@ func (a AlertModel) View() string
 
 
 <a name="Block"></a>
-## type [Block](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L13-L17>)
+## type [Block](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L12-L16>)
 
 Block represents a top\-level YAML key with its line range \(1\-based\).
 
@@ -173,17 +172,8 @@ type Block struct {
 }
 ```
 
-<a name="ParseBlocks"></a>
-### func [ParseBlocks](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L20>)
-
-```go
-func ParseBlocks(path string) ([]Block, error)
-```
-
-ParseBlocks reads path and returns its top\-level blocks.
-
 <a name="ParseBlocksFromBytes"></a>
-### func [ParseBlocksFromBytes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L29>)
+### func [ParseBlocksFromBytes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L19>)
 
 ```go
 func ParseBlocksFromBytes(raw []byte) ([]Block, error)

@@ -95,19 +95,16 @@ func (g *SchemaGenerator) GenerateSchemaAndDocsInMemory(types []interface{}) (ma
 		typeName := t.Name()
 		schema := g.reflector.Reflect(v)
 
-		// Caminho do schema temporário
+		// Write the JSON schema to a temporary file, render the markdown from it,
+		// then remove the schema unless the caller wants to keep it.
 		schemaPath := filepath.Join(g.schemasDir, fmt.Sprintf("%s.json", strings.ToLower(typeName)))
 
-		// 1️⃣ Gera o schema JSON
 		if err := g.saveJSONSchema(schema, schemaPath); err != nil {
 			return nil, fmt.Errorf("error saving schema for %s: %w", typeName, err)
 		}
 
-		// 2️⃣ Gera o Markdown (em memória)
-		markdown := g.generateMarkdownDocs(schema, typeName)
-		result[typeName] = markdown
+		result[typeName] = g.generateMarkdownDocs(schema, typeName)
 
-		// 3️⃣ Cleanup opcional dos schemas
 		if g.CleanupSchemas {
 			if err := os.Remove(schemaPath); err != nil {
 				return nil, fmt.Errorf("error removing schema file %s: %w", schemaPath, err)

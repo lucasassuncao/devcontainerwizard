@@ -14,7 +14,7 @@ func GenerateIndex(docsDir string, configs []interface{}) error {
 	var sb strings.Builder
 
 	sb.WriteString("# Documentation Index\n\n")
-	sb.WriteString("This documentation describes all available configuration structurees.\n\n")
+	sb.WriteString("This documentation describes all available configuration structures.\n\n")
 	sb.WriteString("## Available Configurations\n\n")
 
 	for _, config := range configs {

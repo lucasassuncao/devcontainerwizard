@@ -208,7 +208,7 @@ func (om OverlayModel) confirm() (OverlayModel, tea.Cmd) {
 	om.errMsg = ""
 	snippet := om.yamlEditor.Value()
 	if err := ValidateSnippet(snippet); err != nil {
-		om.errMsg = fmt.Sprintf("YAML inválido: %v", err)
+		om.errMsg = fmt.Sprintf("Invalid YAML: %v", err)
 		return om, nil
 	}
 	if !strings.HasSuffix(snippet, "\n") {

@@ -1,8 +1,6 @@
 package edit_test
 
 import (
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
@@ -16,21 +14,10 @@ forwardPorts:
   - 3000
 `
 
-func writeTmp(t *testing.T, content string) string {
-	t.Helper()
-	dir := t.TempDir()
-	p := filepath.Join(dir, "config.yaml")
-	if err := os.WriteFile(p, []byte(content), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	return p
-}
-
-func TestParseBlocks(t *testing.T) {
-	p := writeTmp(t, sampleYAML)
-	blocks, err := edit.ParseBlocks(p)
+func TestParseBlocksFromBytes(t *testing.T) {
+	blocks, err := edit.ParseBlocksFromBytes([]byte(sampleYAML))
 	if err != nil {
-		t.Fatalf("ParseBlocks: %v", err)
+		t.Fatalf("ParseBlocksFromBytes: %v", err)
 	}
 	if len(blocks) != 4 {
 		t.Fatalf("expected 4 blocks, got %d", len(blocks))
@@ -159,10 +146,10 @@ func TestValidateKnownKeysDepth(t *testing.T) {
 		wantErr bool
 	}{
 		{"typo top-level", "buiild:\n  dockerfile: Dockerfile\n", true},
-		{"typo sub-campo", "build:\n  dockerfilee: Dockerfile\n  context: .\n", true},
-		{"MY_ARG livre em args", "build:\n  dockerfile: Dockerfile\n  context: .\n  args:\n    MY_ARG: value\n    OUTRO_ARG: x\n", false},
-		{"itens de lista em cacheFrom", "build:\n  dockerfile: Dockerfile\n  context: .\n  cacheFrom:\n    - myregistry/image:cache\n    - outra:cache\n", false},
-		{"build completo correto", "build:\n  dockerfile: Dockerfile\n  context: .\n  args:\n    MY_ARG: value\n  target: dev\n  cacheFrom:\n    - myregistry/image:cache\n  output: type=local,dest=./out\n  ssh:\n    - default\n", false},
+		{"typo subfield", "build:\n  dockerfilee: Dockerfile\n  context: .\n", true},
+		{"free-form args", "build:\n  dockerfile: Dockerfile\n  context: .\n  args:\n    MY_ARG: value\n    OTHER_ARG: x\n", false},
+		{"list items in cacheFrom", "build:\n  dockerfile: Dockerfile\n  context: .\n  cacheFrom:\n    - myregistry/image:cache\n    - other:cache\n", false},
+		{"fully populated build", "build:\n  dockerfile: Dockerfile\n  context: .\n  args:\n    MY_ARG: value\n  target: dev\n  cacheFrom:\n    - myregistry/image:cache\n  output: type=local,dest=./out\n  ssh:\n    - default\n", false},
 	}
 	for _, c := range cases {
 		t.Run(c.desc, func(t *testing.T) {

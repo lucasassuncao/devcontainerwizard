@@ -17,7 +17,8 @@ func Validate(dc model.DevContainer) error {
 	return v.Struct(dc)
 }
 
-// DevContainerStructLevelValidation garante exclusividade entre Image, Build e DockerComposeFile.
+// DevContainerStructLevelValidation enforces that exactly one of Image, Build
+// or DockerComposeFile is set on a DevContainer.
 func DevContainerStructLevelValidation(sl validator.StructLevel) {
 	dc := sl.Current().Interface().(model.DevContainer)
 

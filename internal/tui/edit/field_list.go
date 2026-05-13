@@ -84,7 +84,7 @@ func (fl FieldListModel) ToggledField() fieldState {
 // View renders the visible slice of the field list.
 func (fl FieldListModel) View() string {
 	if len(fl.fields) == 0 {
-		return availableItemStyle.Render("  (sem sub-campos)")
+		return availableItemStyle.Render("  (no sub-fields)")
 	}
 
 	var sb strings.Builder

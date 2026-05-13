@@ -1,6 +1,6 @@
 # Documentation Index
 
-This documentation describes all available configuration structurees.
+This documentation describes all available configuration structures.
 
 ## Available Configurations
 

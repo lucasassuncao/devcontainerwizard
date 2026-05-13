@@ -3,7 +3,6 @@ package edit
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -14,15 +13,6 @@ type Block struct {
 	Key     string
 	Line    int // line of the key node
 	EndLine int // last line occupied by this block (exclusive of next key)
-}
-
-// ParseBlocks reads path and returns its top-level blocks.
-func ParseBlocks(path string) ([]Block, error) {
-	raw, err := os.ReadFile(path) // #nosec G304 -- path is user-supplied via CLI arg
-	if err != nil {
-		return nil, fmt.Errorf("reading %s: %w", path, err)
-	}
-	return ParseBlocksFromBytes(raw)
 }
 
 // ParseBlocksFromBytes parses raw YAML bytes and returns top-level blocks.

@@ -42,8 +42,8 @@ func runInit(cmd *cobra.Command, args []string) {
 
 	// Check if file exists
 	if _, err := os.Stat(configPath); err == nil && !initForce {
-		fmt.Printf("❌ File '%s' already exists. Use --force to overwrite.\n", configPath)
-		return
+		fmt.Fprintf(os.Stderr, "❌ File '%s' already exists. Use --force to overwrite.\n", configPath)
+		os.Exit(1)
 	}
 
 	var content string
@@ -75,7 +75,7 @@ func getTemplateContent(template string) (string, error) {
 
 	data, err := templatesFS.ReadFile(filename)
 	if err != nil {
-		// Fallback para image se template não encontrado
+		// Fall back to the image template if the requested one is missing.
 		if template != "image" {
 			fmt.Printf("⚠️  Template '%s' not found, using 'image'\n", template)
 			return getTemplateContent("image")

@@ -34,12 +34,8 @@ func (g *SchemaGenerator) getAnchorForProperty(propName string, prop *jsonschema
 	return ""
 }
 
-// getDisplayType returns a human-readable type description for a schema property
-func (g *SchemaGenerator) getDisplayType(prop *jsonschema.Schema) string {
-	return g.describeType(prop)
-}
-
-// describeType returns a string description of the type represented by the schema
+// describeType returns a human-readable type description for a schema property
+// (e.g. "string", "array[object]", "map[string]int").
 func (g *SchemaGenerator) describeType(s *jsonschema.Schema) string {
 	if s == nil {
 		return "-"

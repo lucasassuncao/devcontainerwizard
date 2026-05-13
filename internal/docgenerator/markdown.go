@@ -56,7 +56,7 @@ func (g *SchemaGenerator) writePropertiesTable(sb *strings.Builder, schema *json
 			displayName = fmt.Sprintf("[%s](#%s)", propName, anchor)
 		}
 
-		displayType := g.getDisplayType(prop)
+		displayType := g.describeType(prop)
 		fmt.Fprintf(sb, "| %s | %s | %s | %s | %s |\n", displayName, description, displayType, required, defaultValue)
 	}
 	sb.WriteString("\n")
