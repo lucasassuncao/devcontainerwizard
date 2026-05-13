@@ -4,47 +4,36 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/lucasassuncao/devcontainerwizard/internal/tui/theme"
 )
 
-// ── Palette ───────────────────────────────────────────────────────────────────
+// Reused directly from the shared palette. Defined here only as short aliases
+// to keep the call sites in this package tidy.
 var (
-	colorAccent       = lipgloss.Color("63")  // blue — active borders
-	colorAccentBright = lipgloss.Color("212") // pink — titles, selection
-	colorMuted        = lipgloss.Color("240") // grey — inactive borders, hints
-	colorDim          = lipgloss.Color("245") // lighter grey — secondary text
-	colorSuccess      = lipgloss.Color("82")  // green — added items
-	colorWarning      = lipgloss.Color("214") // orange — dirty marker
-)
-
-var (
-	// List items
-	existingItemStyle  = lipgloss.NewStyle().Foreground(colorSuccess)
-	availableItemStyle = lipgloss.NewStyle().Foreground(colorDim)
-	selectedItemStyle  = lipgloss.NewStyle().Bold(true).Foreground(colorAccentBright)
-	sectionLabelStyle  = lipgloss.NewStyle().Bold(true).Foreground(colorDim).PaddingLeft(1)
+	existingItemStyle  = theme.ExistingItem
+	availableItemStyle = theme.AvailableItem
+	selectedItemStyle  = theme.SelectedItem
+	sectionLabelStyle  = lipgloss.NewStyle().Bold(true).Foreground(theme.Dim).PaddingLeft(1)
 
 	// Status bar
-	statusStyle = lipgloss.NewStyle().Foreground(colorMuted).PaddingLeft(1)
-	dirtyStyle  = lipgloss.NewStyle().Foreground(colorWarning)
+	statusStyle = theme.StatusBar
+	dirtyStyle  = lipgloss.NewStyle().Foreground(theme.Warning)
 
 	// Header bar
-	headerTitleStyle = lipgloss.NewStyle().Bold(true).Foreground(colorAccentBright).PaddingLeft(1)
-	headerInfoStyle  = lipgloss.NewStyle().Foreground(colorDim).PaddingRight(1)
+	headerTitleStyle = lipgloss.NewStyle().Bold(true).Foreground(theme.AccentBright).PaddingLeft(1)
+	headerInfoStyle  = lipgloss.NewStyle().Foreground(theme.Dim).PaddingRight(1)
 
 	// Overlay
 	overlayBorderStyle = lipgloss.NewStyle().
 				Border(lipgloss.DoubleBorder()).
-				BorderForeground(colorAccent).
+				BorderForeground(theme.Accent).
 				Padding(0, 1)
-	overlayTitleStyle = lipgloss.NewStyle().Bold(true).Foreground(colorAccentBright)
+	overlayTitleStyle = lipgloss.NewStyle().Bold(true).Foreground(theme.AccentBright)
 
-	// Panel borders (used by the two-panel overlay; root panels use renderTitledPanel)
-	panelStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(colorMuted)
-	activePanelStyle = lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(colorAccent)
+	// Panel borders (used by the two-panel overlay; root panels use renderTitledPanel).
+	panelStyle       = theme.PanelBorder(false)
+	activePanelStyle = theme.PanelBorder(true)
 )
 
 // renderTitledPanel renders a rounded-border panel with the title embedded in
@@ -57,11 +46,11 @@ func renderTitledPanel(title string, width, height int, active bool, content str
 		height = 3
 	}
 
-	borderColor := colorMuted
-	titleColor := colorDim
+	borderColor := theme.Muted
+	titleColor := theme.Dim
 	if active {
-		borderColor = colorAccent
-		titleColor = colorAccentBright
+		borderColor = theme.Accent
+		titleColor = theme.AccentBright
 	}
 
 	innerW := width - 2

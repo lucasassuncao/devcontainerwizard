@@ -20,12 +20,12 @@ Package docgenerator ...
 
 ## Index
 
-- [func GenerateIndex\(docsDir string, configs \[\]interface\{\}\) error](<#GenerateIndex>)
+- [func GenerateIndex\(docsDir string, configs \[\]any\) error](<#GenerateIndex>)
 - [func RenderMarkdownDocsInTerminal\(docs map\[string\]string\) error](<#RenderMarkdownDocsInTerminal>)
 - [type SchemaGenerator](<#SchemaGenerator>)
   - [func NewSchemaGenerator\(docsDir, schemasDir string, cleanupSchemas bool\) \(\*SchemaGenerator, error\)](<#NewSchemaGenerator>)
-  - [func \(g \*SchemaGenerator\) GenerateSchemaAndDocs\(v interface\{\}\) error](<#SchemaGenerator.GenerateSchemaAndDocs>)
-  - [func \(g \*SchemaGenerator\) GenerateSchemaAndDocsInMemory\(types \[\]interface\{\}\) \(map\[string\]string, error\)](<#SchemaGenerator.GenerateSchemaAndDocsInMemory>)
+  - [func \(g \*SchemaGenerator\) GenerateSchemaAndDocs\(v any\) error](<#SchemaGenerator.GenerateSchemaAndDocs>)
+  - [func \(g \*SchemaGenerator\) GenerateSchemaAndDocsInMemory\(types \[\]any\) \(map\[string\]string, error\)](<#SchemaGenerator.GenerateSchemaAndDocsInMemory>)
 - [type SectionArgs](<#SectionArgs>)
 
 
@@ -33,13 +33,13 @@ Package docgenerator ...
 ## func [GenerateIndex](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/index.go#L13>)
 
 ```go
-func GenerateIndex(docsDir string, configs []interface{}) error
+func GenerateIndex(docsDir string, configs []any) error
 ```
 
 GenerateIndex creates an index markdown file listing all configuration structures.
 
 <a name="RenderMarkdownDocsInTerminal"></a>
-## func [RenderMarkdownDocsInTerminal](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/viewport.go#L269>)
+## func [RenderMarkdownDocsInTerminal](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/viewport.go#L242>)
 
 ```go
 func RenderMarkdownDocsInTerminal(docs map[string]string) error
@@ -72,7 +72,7 @@ NewSchemaGenerator creates a new SchemaGenerator
 ### func \(\*SchemaGenerator\) [GenerateSchemaAndDocs](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L55>)
 
 ```go
-func (g *SchemaGenerator) GenerateSchemaAndDocs(v interface{}) error
+func (g *SchemaGenerator) GenerateSchemaAndDocs(v any) error
 ```
 
 GenerateSchemaAndDocs generates JSON schema and markdown docs for the given type
@@ -81,7 +81,7 @@ GenerateSchemaAndDocs generates JSON schema and markdown docs for the given type
 ### func \(\*SchemaGenerator\) [GenerateSchemaAndDocsInMemory](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/schema.go#L86>)
 
 ```go
-func (g *SchemaGenerator) GenerateSchemaAndDocsInMemory(types []interface{}) (map[string]string, error)
+func (g *SchemaGenerator) GenerateSchemaAndDocsInMemory(types []any) (map[string]string, error)
 ```
 
 GenerateSchemaAndDocsInMemory generates Markdown docs in memory while respecting the schema generation and cleanup logic.

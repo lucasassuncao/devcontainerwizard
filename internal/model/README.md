@@ -12,7 +12,7 @@ Package model defines the data structures used to represent dev container config
 
 ## Index
 
-- [func GetAllTypes\(\) \[\]interface\{\}](<#GetAllTypes>)
+- [func GetAllTypes\(\) \[\]any](<#GetAllTypes>)
 - [type BuildConfig](<#BuildConfig>)
 - [type BuildSecret](<#BuildSecret>)
 - [type CodespacesCustomization](<#CodespacesCustomization>)
@@ -36,7 +36,7 @@ Package model defines the data structures used to represent dev container config
 ## func [GetAllTypes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L159>)
 
 ```go
-func GetAllTypes() []interface{}
+func GetAllTypes() []any
 ```
 
 GetAllTypes returns all model types for documentation generation
@@ -124,8 +124,8 @@ type DevContainer struct {
     RemoteEnv    map[string]string `json:"remoteEnv,omitempty" yaml:"remoteEnv,omitempty" jsonschema_description:"Environment variables for remote connections (like SSH)."`
     LocalEnv     map[string]string `json:"-" yaml:"localEnv,omitempty" jsonschema_description:"Environment variables local to the host (not exported to JSON)."`
 
-    ForwardPorts         []interface{}              `json:"forwardPorts,omitempty" yaml:"forwardPorts,omitempty" jsonschema_description:"Ports that are forwarded from the container to the local machine. Can be an integer port number, or a string of the format \"host:port_number\""`
-    AppPort              []interface{}              `json:"appPort,omitempty" yaml:"appPort,omitempty" jsonschema_description:"Legacy: ports to publish from the container. Prefer forwardPorts instead."`
+    ForwardPorts         []any                      `json:"forwardPorts,omitempty" yaml:"forwardPorts,omitempty" jsonschema_description:"Ports that are forwarded from the container to the local machine. Can be an integer port number, or a string of the format \"host:port_number\""`
+    AppPort              []any                      `json:"appPort,omitempty" yaml:"appPort,omitempty" jsonschema_description:"Legacy: ports to publish from the container. Prefer forwardPorts instead."`
     PortsAttributes      map[string]*PortAttributes `json:"portsAttributes,omitempty" yaml:"portsAttributes,omitempty" validate:"omitempty" jsonschema_description:"Additional attributes for forwarded ports."`
     OtherPortsAttributes *PortAttributes            `json:"otherPortsAttributes,omitempty" yaml:"otherPortsAttributes,omitempty" validate:"omitempty" jsonschema_description:"Default attributes applied to all forwarded ports not defined in portsAttributes."`
     Mounts               []Mount                    `json:"mounts,omitempty" yaml:"mounts,omitempty" validate:"omitempty,dive" jsonschema_description:"Mount points inside the container."`

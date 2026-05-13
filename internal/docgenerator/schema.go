@@ -52,7 +52,7 @@ func NewSchemaGenerator(docsDir, schemasDir string, cleanupSchemas bool) (*Schem
 }
 
 // GenerateSchemaAndDocs generates JSON schema and markdown docs for the given type
-func (g *SchemaGenerator) GenerateSchemaAndDocs(v interface{}) error {
+func (g *SchemaGenerator) GenerateSchemaAndDocs(v any) error {
 	t := reflect.TypeOf(v)
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -83,7 +83,7 @@ func (g *SchemaGenerator) GenerateSchemaAndDocs(v interface{}) error {
 
 // GenerateSchemaAndDocsInMemory generates Markdown docs in memory
 // while respecting the schema generation and cleanup logic.
-func (g *SchemaGenerator) GenerateSchemaAndDocsInMemory(types []interface{}) (map[string]string, error) {
+func (g *SchemaGenerator) GenerateSchemaAndDocsInMemory(types []any) (map[string]string, error) {
 	result := make(map[string]string)
 
 	for _, v := range types {

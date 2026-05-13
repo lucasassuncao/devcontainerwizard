@@ -10,7 +10,7 @@ import (
 )
 
 // GenerateIndex creates an index markdown file listing all configuration structures.
-func GenerateIndex(docsDir string, configs []interface{}) error {
+func GenerateIndex(docsDir string, configs []any) error {
 	var sb strings.Builder
 
 	sb.WriteString("# Documentation Index\n\n")

@@ -264,16 +264,14 @@ func (m Model) handleSpace(it ListItem) (tea.Model, tea.Cmd) {
 	}
 
 	ov := NewOverlay(it.Key, initial, m.width, m.height)
+	action := "Add"
 	if it.Existing {
 		ov.isEdit = true
 		ov.editKey = it.Key
+		action = "Edit"
 	}
 	m.overlay = &ov
-	if it.Existing {
-		m.statusMsg = fmt.Sprintf("Edit block %q — Tab panel, Ctrl+S confirm, Esc cancel.", it.Key)
-	} else {
-		m.statusMsg = fmt.Sprintf("Add block %q — Tab panel, Ctrl+S confirm, Esc cancel.", it.Key)
-	}
+	m.statusMsg = fmt.Sprintf("%s block %q — Tab panel, Ctrl+S confirm, Esc cancel.", action, it.Key)
 	return m, nil
 }
 
@@ -384,8 +382,7 @@ func (m *Model) relayout() {
 		previewW = 10
 	}
 
-	m.list.height = m.innerH
-	m.list.clampScroll()
+	m.list.SetHeight(m.innerH)
 	m.preview.SetWidth(previewW - 2)
 	m.preview.SetHeight(m.innerH)
 }

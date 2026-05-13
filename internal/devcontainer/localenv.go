@@ -47,9 +47,11 @@ func resolveLocalEnv(local map[string]string) map[string]string {
 
 // substituteLocalEnv replaces ${localEnv:KEY} in each map value with the
 // corresponding resolved value. Unrecognised keys are left unexpanded.
+// Always returns a freshly allocated map (or nil when the input is empty)
+// so callers can rely on not aliasing the original.
 func substituteLocalEnv(m map[string]string, resolved map[string]string) map[string]string {
 	if len(m) == 0 {
-		return m
+		return nil
 	}
 	result := make(map[string]string, len(m))
 	for k, v := range m {

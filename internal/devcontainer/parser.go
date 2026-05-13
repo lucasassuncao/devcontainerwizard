@@ -27,16 +27,16 @@ func Parse(k *koanf.Koanf) (model.DevContainer, error) {
 	return dc, nil
 }
 
-// stringOrSliceDecodeHook converts string or []interface{} values to model.StringOrSlice
+// stringOrSliceDecodeHook converts string or []any values to model.StringOrSlice
 // so that koanf/mapstructure can bind both YAML scalars and sequences to the type.
-func stringOrSliceDecodeHook(f, t reflect.Type, data interface{}) (interface{}, error) {
+func stringOrSliceDecodeHook(f, t reflect.Type, data any) (any, error) {
 	if t != reflect.TypeOf(model.StringOrSlice{}) {
 		return data, nil
 	}
 	switch v := data.(type) {
 	case string:
 		return model.StringOrSlice{v}, nil
-	case []interface{}:
+	case []any:
 		result := make(model.StringOrSlice, len(v))
 		for i, item := range v {
 			str, ok := item.(string)

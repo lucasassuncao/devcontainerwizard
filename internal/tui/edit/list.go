@@ -96,6 +96,12 @@ func BuildListItems(existing []Block) []ListItem {
 	return items
 }
 
+// SetHeight updates the visible row count and reclamps the scroll offset.
+func (lm *ListModel) SetHeight(h int) {
+	lm.height = h
+	lm.clampScroll()
+}
+
 // NewListModel creates the list model.
 func NewListModel(existing []Block, height int) ListModel {
 	items := BuildListItems(existing)
@@ -181,6 +187,9 @@ func (lm ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd) {
 	return lm, nil
 }
 
+// moveCursor advances by delta, wrapping at the list edges and skipping
+// separator rows. The +n term keeps the modulus positive for negative deltas.
+// The outer bound (i < n) prevents an infinite loop if every row is a separator.
 func (lm *ListModel) moveCursor(delta int) {
 	n := len(lm.items)
 	if n == 0 {

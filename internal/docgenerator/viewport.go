@@ -10,6 +10,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/lucasassuncao/devcontainerwizard/internal/tui/theme"
 )
 
 type docPane int
@@ -20,27 +22,6 @@ const (
 )
 
 const docStatusLines = 1
-
-var (
-	docPanelStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("240"))
-
-	docActivePanelStyle = lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("63"))
-
-	docSelectedStyle = lipgloss.NewStyle().
-				Bold(true).
-				Foreground(lipgloss.Color("212"))
-
-	docItemStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("245"))
-
-	docStatusStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("240")).
-			PaddingLeft(1)
-)
 
 type docTUIModel struct {
 	names    []string
@@ -231,34 +212,26 @@ func (m docTUIModel) View() string {
 		label := m.names[i]
 		var line string
 		if i == m.cursor {
-			line = docSelectedStyle.Render("▶ " + label)
+			line = theme.SelectedItem.Render("▶ " + label)
 		} else {
-			line = docItemStyle.Render("  " + label)
+			line = theme.AvailableItem.Render("  " + label)
 		}
 		listSB.WriteString(line + "\n")
 	}
 
-	listBorder := docPanelStyle
-	if m.active == docPaneList {
-		listBorder = docActivePanelStyle
-	}
-	leftPanel := listBorder.
+	leftPanel := theme.PanelBorder(m.active == docPaneList).
 		Width(m.listColW - 2).
 		Height(m.listH).
 		Render(listSB.String())
 
 	// ── Right panel (viewport) ───────────────────────────────────────────────
-	vpBorder := docPanelStyle
-	if m.active == docPaneView {
-		vpBorder = docActivePanelStyle
-	}
-	rightPanel := vpBorder.
+	rightPanel := theme.PanelBorder(m.active == docPaneView).
 		Width(m.vpColW - 2).
 		Height(m.vpH).
 		Render(m.vp.View())
 
 	// ── Status bar ───────────────────────────────────────────────────────────
-	status := docStatusStyle.Render(
+	status := theme.StatusBar.Render(
 		"[Tab] switch panel  [↑/↓ j/k] navigate / scroll  [PgUp/PgDn] half-page  [q] quit",
 	)
 

@@ -160,7 +160,7 @@ func BlockContent(raw []byte, blocks []Block, key string) (string, error) {
 
 // ValidateSnippet returns an error if the YAML text is not parseable.
 func ValidateSnippet(text string) error {
-	var check interface{}
+	var check any
 	return yaml.Unmarshal([]byte(text), &check)
 }
 
@@ -199,7 +199,7 @@ func buildKnownChildren() map[string]map[string]bool {
 // ValidateKnownKeys returns the dotted paths of any YAML keys that are not
 // recognised by the schema. Free-form sub-trees are skipped.
 func ValidateKnownKeys(raw []byte) []string {
-	var doc map[string]interface{}
+	var doc map[string]any
 	if err := yaml.Unmarshal(raw, &doc); err != nil {
 		return nil
 	}
@@ -208,7 +208,7 @@ func ValidateKnownKeys(raw []byte) []string {
 	return unknown
 }
 
-func walkKnown(obj map[string]interface{}, prefix string, unknown *[]string) {
+func walkKnown(obj map[string]any, prefix string, unknown *[]string) {
 	allowed, validated := knownChildren[prefix]
 	if !validated {
 		return // free-form node
@@ -222,7 +222,7 @@ func walkKnown(obj map[string]interface{}, prefix string, unknown *[]string) {
 			*unknown = append(*unknown, path)
 			continue
 		}
-		if nested, ok := val.(map[string]interface{}); ok {
+		if nested, ok := val.(map[string]any); ok {
 			walkKnown(nested, path, unknown)
 		}
 	}
@@ -243,11 +243,11 @@ func rebuildYAML(key string, fields []fieldState) string {
 // syncFieldsFromYAML updates Checked on each field to reflect what is present
 // in content (the current textarea value for the given key).
 func syncFieldsFromYAML(key string, fields []fieldState, content string) []fieldState {
-	var doc map[string]interface{}
+	var doc map[string]any
 	if err := yaml.Unmarshal([]byte(content), &doc); err != nil {
 		return fields
 	}
-	sub, _ := doc[key].(map[string]interface{})
+	sub, _ := doc[key].(map[string]any)
 	out := make([]fieldState, len(fields))
 	copy(out, fields)
 	for i := range out {

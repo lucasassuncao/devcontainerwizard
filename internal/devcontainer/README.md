@@ -47,7 +47,7 @@ Two\-pass expansion:
 localEnv itself is never written to the JSON output \(json:"\-" on the field\).
 
 <a name="HumanizeValidationError"></a>
-## func [HumanizeValidationError](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L44>)
+## func [HumanizeValidationError](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L65>)
 
 ```go
 func HumanizeValidationError(err error) string
