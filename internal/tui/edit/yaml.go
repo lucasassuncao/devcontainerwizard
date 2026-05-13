@@ -75,12 +75,12 @@ func RemoveBlock(raw []byte, blocks []Block, key string) ([]byte, error) {
 		return nil, fmt.Errorf("key %q not found in blocks", key)
 	}
 
-	lines := splitLines(raw)
+	lines := strings.Split(string(raw), "\n")
 	// Lines are 1-based; slice indices are 0-based.
 	start := target.Line - 1
 	end := target.EndLine // exclusive upper bound (0-based = EndLine)
 	lines = append(lines[:start:start], lines[end:]...)
-	return joinLines(lines), nil
+	return []byte(strings.Join(lines, "\n")), nil
 }
 
 // InsertBlock inserts a YAML snippet into raw, respecting the canonical key
@@ -129,10 +129,10 @@ func InsertBlock(raw []byte, snippet string) ([]byte, error) {
 	}
 
 	// Insert snippet lines before insertBeforeLine (convert to 0-based index).
-	lines := splitLines(raw)
+	lines := strings.Split(string(raw), "\n")
 	idx := insertBeforeLine - 1
-	snippetLines := splitLines([]byte(snippet))
-	// Remove trailing empty string that splitLines adds for a newline-terminated snippet.
+	snippetLines := strings.Split(snippet, "\n")
+	// Drop trailing empty string from a newline-terminated snippet.
 	if len(snippetLines) > 0 && snippetLines[len(snippetLines)-1] == "" {
 		snippetLines = snippetLines[:len(snippetLines)-1]
 	}
@@ -140,7 +140,7 @@ func InsertBlock(raw []byte, snippet string) ([]byte, error) {
 	merged = append(merged, lines[:idx]...)
 	merged = append(merged, snippetLines...)
 	merged = append(merged, lines[idx:]...)
-	return joinLines(merged), nil
+	return []byte(strings.Join(merged, "\n")), nil
 }
 
 // appendBlock adds snippet after the last non-empty line of raw.
@@ -156,13 +156,13 @@ func appendBlock(raw []byte, snippet string) []byte {
 func BlockContent(raw []byte, blocks []Block, key string) (string, error) {
 	for _, b := range blocks {
 		if b.Key == key {
-			lines := splitLines(raw)
+			lines := strings.Split(string(raw), "\n")
 			start := b.Line - 1
 			end := b.EndLine
 			if end > len(lines) {
 				end = len(lines)
 			}
-			return string(joinLines(lines[start:end])), nil
+			return strings.Join(lines[start:end], "\n"), nil
 		}
 	}
 	return "", fmt.Errorf("key %q not found", key)
@@ -174,103 +174,68 @@ func ValidateSnippet(text string) error {
 	return yaml.Unmarshal([]byte(text), &check)
 }
 
-// schemaNode represents a node in the validation tree.
-// children != nil means this node has a known set of valid keys.
-// children == nil means the value is free-form and its keys are not validated.
-type schemaNode struct {
-	children map[string]*schemaNode
-}
+// knownChildren maps a dotted-path prefix to its allowed direct children.
+// Prefixes absent from the map are free-form: their children are not
+// validated (e.g. build.args, customizations.vscode.settings).
+// The empty string "" represents the document root.
+var knownChildren = buildKnownChildren()
 
-func freeForm() *schemaNode { return nil }
+func buildKnownChildren() map[string]map[string]bool {
+	m := make(map[string]map[string]bool)
 
-func node(entries map[string]*schemaNode) *schemaNode {
-	return &schemaNode{children: entries}
-}
-
-// devcontainerSchema is the validation tree for devcontainer.json.
-// Only nodes with a non-nil schemaNode have their children validated;
-// nil leaves are free-form (e.g. args map, settings object, list items).
-var devcontainerSchema = buildDevcontainerSchema()
-
-func buildDevcontainerSchema() *schemaNode {
-	// Build second-level nodes from blockFields.
-	topChildren := make(map[string]*schemaNode, len(allKnownKeys))
-
-	// Keys without blockFields entries are free-form at the second level.
+	top := make(map[string]bool, len(allKnownKeys))
 	for _, k := range allKnownKeys {
-		topChildren[k] = freeForm()
+		top[k] = true
 	}
+	m[""] = top
 
-	// Keys with blockFields entries get a node with their sub-keys.
 	for topKey, defs := range blockFields {
-		children := make(map[string]*schemaNode, len(defs))
+		sub := make(map[string]bool, len(defs))
 		for _, d := range defs {
-			children[d.Key] = freeForm() // default: sub-key value is free-form
+			sub[d.Key] = true
 		}
-		topChildren[topKey] = node(children)
+		m[topKey] = sub
 	}
 
-	// Extend specific nodes with deeper schemas.
-	topChildren["customizations"] = node(map[string]*schemaNode{
-		"vscode": node(map[string]*schemaNode{
-			"extensions": freeForm(), // list of strings — not validated
-			"settings":   freeForm(), // free-form editor settings map
-		}),
-		"jetbrains": node(map[string]*schemaNode{
-			"plugins": freeForm(),
-		}),
-		"codespaces": node(map[string]*schemaNode{
-			"openFiles": freeForm(),
-		}),
-	})
+	// customizations has a deeper, hand-curated schema.
+	m["customizations"] = map[string]bool{"vscode": true, "jetbrains": true, "codespaces": true}
+	m["customizations.vscode"] = map[string]bool{"extensions": true, "settings": true}
+	m["customizations.jetbrains"] = map[string]bool{"plugins": true}
+	m["customizations.codespaces"] = map[string]bool{"openFiles": true}
 
-	return node(topChildren)
+	return m
 }
 
 // ValidateKnownKeys returns the dotted paths of any YAML keys that are not
-// recognised by the schema. Validation is recursive: every object node in the
-// schema is checked; nil (free-form) nodes are left untouched.
+// recognised by the schema. Free-form sub-trees are skipped.
 func ValidateKnownKeys(raw []byte) []string {
 	var doc map[string]interface{}
 	if err := yaml.Unmarshal(raw, &doc); err != nil {
 		return nil
 	}
 	var unknown []string
-	walkSchema(doc, devcontainerSchema, "", &unknown)
+	walkKnown(doc, "", &unknown)
 	return unknown
 }
 
-// walkSchema recursively validates obj against schema, accumulating dotted
-// paths for unrecognised keys into unknown.
-func walkSchema(obj map[string]interface{}, schema *schemaNode, prefix string, unknown *[]string) {
-	if schema == nil {
-		return // free-form node: don't inspect children
+func walkKnown(obj map[string]interface{}, prefix string, unknown *[]string) {
+	allowed, validated := knownChildren[prefix]
+	if !validated {
+		return // free-form node
 	}
 	for key, val := range obj {
 		path := key
 		if prefix != "" {
 			path = prefix + "." + key
 		}
-		childSchema, known := schema.children[key]
-		if !known {
+		if !allowed[key] {
 			*unknown = append(*unknown, path)
 			continue
 		}
-		// Recurse into nested objects only when the child schema is non-nil.
-		if childSchema != nil {
-			if nested, ok := val.(map[string]interface{}); ok {
-				walkSchema(nested, childSchema, path, unknown)
-			}
+		if nested, ok := val.(map[string]interface{}); ok {
+			walkKnown(nested, path, unknown)
 		}
 	}
-}
-
-func splitLines(raw []byte) []string {
-	return strings.Split(string(raw), "\n")
-}
-
-func joinLines(lines []string) []byte {
-	return []byte(strings.Join(lines, "\n"))
 }
 
 // rebuildYAML constructs the YAML content for key from the checked field states.

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -39,7 +40,7 @@ type Model struct {
 	blocks  []Block
 
 	list    ListModel
-	preview PreviewModel
+	preview textarea.Model
 	overlay *OverlayModel
 	alert   *AlertModel
 
@@ -69,6 +70,21 @@ func (m Model) activePane() pane {
 	}
 }
 
+// scrollPreviewToKey moves the preview cursor to the line where key starts.
+// A no-op if the key is empty or not present.
+func (m *Model) scrollPreviewToKey(key string) {
+	if key == "" {
+		return
+	}
+	target := key + ":"
+	for i, l := range strings.Split(string(m.rawYAML), "\n") {
+		if strings.HasPrefix(l, target) {
+			m.preview.SetCursor(i)
+			return
+		}
+	}
+}
+
 // New loads the YAML file and initialises the model.
 func New(filePath string) (Model, error) {
 	raw, err := os.ReadFile(filePath) // #nosec G304 -- path is user-supplied via CLI arg
@@ -85,8 +101,11 @@ func New(filePath string) (Model, error) {
 	}
 
 	list := NewListModel(blocks, 0)
-	preview := NewPreviewModel(0, 0)
-	preview.SetContent(string(raw))
+	preview := textarea.New()
+	preview.CharLimit = 0
+	preview.ShowLineNumbers = false
+	preview.Blur()
+	preview.SetValue(strings.ReplaceAll(string(raw), "\r\n", "\n"))
 
 	return Model{
 		filePath:  filePath,
@@ -101,98 +120,103 @@ func New(filePath string) (Model, error) {
 func (m Model) Init() tea.Cmd { return nil }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// 1. Root-level messages handled regardless of the active pane.
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
 		m.relayout()
 		return m, nil
-
-	case tea.KeyMsg:
-		return m.handleKey(msg)
-
 	case SpaceOnItemMsg:
 		return m.handleSpace(msg.Item)
-
 	case OverlayConfirmedMsg:
 		return m.handleOverlayConfirmed(msg.Snippet)
-
 	case OverlayCancelledMsg:
 		m.overlay = nil
 		m.statusMsg = "Cancelled."
 		return m, nil
-
 	case DeleteItemMsg:
 		return m.handleDelete(msg.Key)
-
 	case AlertDismissedMsg:
 		m.alert = nil
 		return m, nil
 	}
 
-	return m.forwardToActive(msg)
-}
-
-func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	// Quit-confirm prompt intercepts all keys.
-	if m.quitting == quitAsking {
-		switch msg.String() {
-		case "y", "Y":
+	// 2. Quit-confirm prompt intercepts keys before pane dispatch.
+	if key, ok := msg.(tea.KeyMsg); ok && m.quitting == quitAsking {
+		if s := key.String(); s == "y" || s == "Y" {
 			return m, tea.Quit
-		default:
-			m.quitting = quitNone
-			m.statusMsg = "Quit cancelled."
-			return m, nil
 		}
+		m.quitting = quitNone
+		m.statusMsg = "Quit cancelled."
+		return m, nil
 	}
 
-	// Alert active — forward to it.
-	if m.alert != nil {
-		al, cmd := m.alert.Update(msg)
-		m.alert = &al
-		return m, cmd
-	}
-
-	// Overlay active — forward to it.
-	if m.overlay != nil {
+	// 3. Delegate to the active pane.
+	switch m.activePane() {
+	case paneAlert:
+		if key, ok := msg.(tea.KeyMsg); ok {
+			al, cmd := m.alert.Update(key)
+			m.alert = &al
+			return m, cmd
+		}
+	case paneOverlay:
 		ov, cmd := m.overlay.Update(msg)
 		m.overlay = &ov
 		return m, cmd
+	case panePreview:
+		if key, ok := msg.(tea.KeyMsg); ok {
+			return m.handlePreviewKey(key)
+		}
+		var cmd tea.Cmd
+		m.preview, cmd = m.preview.Update(msg)
+		return m, cmd
+	case paneList:
+		if key, ok := msg.(tea.KeyMsg); ok {
+			return m.handleListKey(key)
+		}
 	}
+	return m, nil
+}
 
+// handleListKey processes keys while the list pane has focus.
+func (m Model) handleListKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "ctrl+s":
 		return m.save()
 	case "ctrl+l":
 		return m.validateKeys()
+	case "tab":
+		return m.togglePreviewPane()
 	case "q", "ctrl+c":
-		if m.previewFocused {
-			break // let q through to the textarea
-		}
 		if m.dirty {
 			m.quitting = quitAsking
 			m.statusMsg = "Unsaved changes. Quit without saving? (y/N)"
 			return m, nil
 		}
 		return m, tea.Quit
-	case "tab":
-		return m.togglePreviewPane()
-	case "esc":
-		if m.previewFocused {
-			return m.togglePreviewPane()
-		}
-	}
-
-	if m.previewFocused {
-		return m.updatePreviewEditor(msg)
 	}
 
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
 	if it := m.list.SelectedItem(); it != nil {
-		m.preview.ScrollToKey(it.Key)
+		m.scrollPreviewToKey(it.Key)
 	}
 	return m, cmd
+}
+
+// handlePreviewKey processes keys while the preview pane has focus.
+// q/ctrl+c are NOT quit shortcuts here — they go to the textarea as input.
+func (m Model) handlePreviewKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "ctrl+s":
+		return m.save()
+	case "ctrl+l":
+		return m.validateKeys()
+	case "tab", "esc":
+		return m.togglePreviewPane()
+	}
+	return m.updatePreviewEditor(msg)
 }
 
 func (m Model) togglePreviewPane() (tea.Model, tea.Cmd) {
@@ -209,8 +233,8 @@ func (m Model) togglePreviewPane() (tea.Model, tea.Cmd) {
 }
 
 func (m Model) updatePreviewEditor(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	prev, cmd := m.preview.Update(msg)
-	m.preview = prev
+	var cmd tea.Cmd
+	m.preview, cmd = m.preview.Update(msg)
 	raw := []byte(m.preview.Value())
 	if blocks, err := ParseBlocksFromBytes(raw); err == nil {
 		m.rawYAML = raw
@@ -307,9 +331,9 @@ func (m *Model) applyRaw(raw []byte) {
 		m.blocks = blocks
 	}
 	m.list.Rebuild(m.blocks)
-	m.preview.SetContent(string(raw))
+	m.preview.SetValue(strings.ReplaceAll(string(raw), "\r\n", "\n"))
 	if it := m.list.SelectedItem(); it != nil {
-		m.preview.ScrollToKey(it.Key)
+		m.scrollPreviewToKey(it.Key)
 	}
 	m.dirty = true
 }
@@ -360,21 +384,8 @@ func (m *Model) relayout() {
 
 	m.list.height = m.innerH
 	m.list.clampScroll()
-	m.preview.Resize(previewW-2, m.innerH)
-}
-
-func (m Model) forwardToActive(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.overlay != nil {
-		ov, cmd := m.overlay.Update(msg)
-		m.overlay = &ov
-		return m, cmd
-	}
-	if m.previewFocused {
-		var cmd tea.Cmd
-		m.preview, cmd = m.preview.Update(msg)
-		return m, cmd
-	}
-	return m, nil
+	m.preview.SetWidth(previewW - 2)
+	m.preview.SetHeight(m.innerH)
 }
 
 func (m Model) View() string {

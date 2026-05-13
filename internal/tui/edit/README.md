@@ -55,16 +55,6 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
   - [func \(om OverlayModel\) Init\(\) tea.Cmd](<#OverlayModel.Init>)
   - [func \(om OverlayModel\) Update\(msg tea.Msg\) \(OverlayModel, tea.Cmd\)](<#OverlayModel.Update>)
   - [func \(om OverlayModel\) View\(\) string](<#OverlayModel.View>)
-- [type PreviewModel](<#PreviewModel>)
-  - [func NewPreviewModel\(width, height int\) PreviewModel](<#NewPreviewModel>)
-  - [func \(pm \*PreviewModel\) Blur\(\)](<#PreviewModel.Blur>)
-  - [func \(pm \*PreviewModel\) Focus\(\) tea.Cmd](<#PreviewModel.Focus>)
-  - [func \(pm \*PreviewModel\) Resize\(width, height int\)](<#PreviewModel.Resize>)
-  - [func \(pm \*PreviewModel\) ScrollToKey\(key string\)](<#PreviewModel.ScrollToKey>)
-  - [func \(pm \*PreviewModel\) SetContent\(yaml string\)](<#PreviewModel.SetContent>)
-  - [func \(pm PreviewModel\) Update\(msg tea.Msg\) \(PreviewModel, tea.Cmd\)](<#PreviewModel.Update>)
-  - [func \(pm PreviewModel\) Value\(\) string](<#PreviewModel.Value>)
-  - [func \(pm PreviewModel\) View\(\) string](<#PreviewModel.View>)
 - [type SpaceOnItemMsg](<#SpaceOnItemMsg>)
 
 
@@ -105,13 +95,13 @@ func Template(key string) string
 Template returns the YAML snippet for a key, or a minimal fallback if no template is defined.
 
 <a name="ValidateKnownKeys"></a>
-## func [ValidateKnownKeys](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L233>)
+## func [ValidateKnownKeys](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L211>)
 
 ```go
 func ValidateKnownKeys(raw []byte) []string
 ```
 
-ValidateKnownKeys returns the dotted paths of any YAML keys that are not recognised by the schema. Validation is recursive: every object node in the schema is checked; nil \(free\-form\) nodes are left untouched.
+ValidateKnownKeys returns the dotted paths of any YAML keys that are not recognised by the schema. Free\-form sub\-trees are skipped.
 
 <a name="ValidateSnippet"></a>
 ## func [ValidateSnippet](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L172>)
@@ -385,7 +375,7 @@ func (lm ListModel) View() string
 View renders the visible slice of the list.
 
 <a name="Model"></a>
-## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L35-L55>)
+## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L36-L56>)
 
 Model is the root Bubble Tea model for the edit TUI.
 
@@ -403,7 +393,7 @@ type Model struct {
 ```
 
 <a name="New"></a>
-### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L73>)
+### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L89>)
 
 ```go
 func New(filePath string) (Model, error)
@@ -412,7 +402,7 @@ func New(filePath string) (Model, error)
 New loads the YAML file and initialises the model.
 
 <a name="Model.Init"></a>
-### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L101>)
+### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L120>)
 
 ```go
 func (m Model) Init() tea.Cmd
@@ -421,7 +411,7 @@ func (m Model) Init() tea.Cmd
 
 
 <a name="Model.Update"></a>
-### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L103>)
+### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L122>)
 
 ```go
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
@@ -430,7 +420,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
 
 
 <a name="Model.View"></a>
-### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L380>)
+### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L391>)
 
 ```go
 func (m Model) View() string
@@ -501,98 +491,6 @@ func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd)
 
 ```go
 func (om OverlayModel) View() string
-```
-
-
-
-<a name="PreviewModel"></a>
-## type [PreviewModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preview.go#L11-L14>)
-
-PreviewModel wraps a textarea that is always visible as the right panel.
-
-```go
-type PreviewModel struct {
-    // contains filtered or unexported fields
-}
-```
-
-<a name="NewPreviewModel"></a>
-### func [NewPreviewModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preview.go#L16>)
-
-```go
-func NewPreviewModel(width, height int) PreviewModel
-```
-
-
-
-<a name="PreviewModel.Blur"></a>
-### func \(\*PreviewModel\) [Blur](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preview.go#L53>)
-
-```go
-func (pm *PreviewModel) Blur()
-```
-
-
-
-<a name="PreviewModel.Focus"></a>
-### func \(\*PreviewModel\) [Focus](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preview.go#L49>)
-
-```go
-func (pm *PreviewModel) Focus() tea.Cmd
-```
-
-
-
-<a name="PreviewModel.Resize"></a>
-### func \(\*PreviewModel\) [Resize](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preview.go#L57>)
-
-```go
-func (pm *PreviewModel) Resize(width, height int)
-```
-
-
-
-<a name="PreviewModel.ScrollToKey"></a>
-### func \(\*PreviewModel\) [ScrollToKey](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preview.go#L35>)
-
-```go
-func (pm *PreviewModel) ScrollToKey(key string)
-```
-
-
-
-<a name="PreviewModel.SetContent"></a>
-### func \(\*PreviewModel\) [SetContent](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preview.go#L26>)
-
-```go
-func (pm *PreviewModel) SetContent(yaml string)
-```
-
-
-
-<a name="PreviewModel.Update"></a>
-### func \(PreviewModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preview.go#L62>)
-
-```go
-func (pm PreviewModel) Update(msg tea.Msg) (PreviewModel, tea.Cmd)
-```
-
-
-
-<a name="PreviewModel.Value"></a>
-### func \(PreviewModel\) [Value](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preview.go#L31>)
-
-```go
-func (pm PreviewModel) Value() string
-```
-
-
-
-<a name="PreviewModel.View"></a>
-### func \(PreviewModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preview.go#L68>)
-
-```go
-func (pm PreviewModel) View() string
 ```
 
 
