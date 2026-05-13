@@ -36,14 +36,7 @@ func NewAlert(title, message string, kind alertKind, totalW, totalH int) AlertMo
 	}
 }
 
-func (a AlertModel) borderColor() lipgloss.Color {
-	if a.kind == alertSuccess {
-		return lipgloss.Color("82")
-	}
-	return lipgloss.Color("196")
-}
-
-func (a AlertModel) buttonBG() lipgloss.Color {
+func (a AlertModel) accentColor() lipgloss.Color {
 	if a.kind == alertSuccess {
 		return lipgloss.Color("82")
 	}
@@ -59,7 +52,7 @@ func (a AlertModel) Update(msg tea.KeyMsg) (AlertModel, tea.Cmd) {
 }
 
 func (a AlertModel) View() string {
-	color := a.borderColor()
+	color := a.accentColor()
 
 	titleStyle := lipgloss.NewStyle().Bold(true).Foreground(color)
 	title := titleStyle.Render(a.title)
@@ -75,7 +68,7 @@ func (a AlertModel) View() string {
 	ok := lipgloss.NewStyle().
 		Bold(true).
 		Foreground(lipgloss.Color("231")).
-		Background(a.buttonBG()).
+		Background(color).
 		Padding(0, 2).
 		Render("  OK  ")
 

@@ -26,6 +26,12 @@ const (
 )
 
 // Model is the root Bubble Tea model for the edit TUI.
+//
+// The active pane is derived from state, not tracked explicitly:
+//   - alert != nil       → paneAlert
+//   - overlay != nil     → paneOverlay
+//   - previewFocused     → panePreview
+//   - otherwise          → paneList
 type Model struct {
 	filePath string
 
@@ -37,15 +43,30 @@ type Model struct {
 	overlay *OverlayModel
 	alert   *AlertModel
 
-	active    pane
-	dirty     bool
-	quitting  quitState
-	statusMsg string
+	previewFocused bool
+	dirty          bool
+	quitting       quitState
+	statusMsg      string
 
 	width  int
 	height int
 	listW  int // derived by relayout(); read by View()
 	innerH int // derived by relayout(); read by View()
+}
+
+// activePane reports which pane currently owns input/rendering. Derived from
+// state so the four indicators can never disagree.
+func (m Model) activePane() pane {
+	switch {
+	case m.alert != nil:
+		return paneAlert
+	case m.overlay != nil:
+		return paneOverlay
+	case m.previewFocused:
+		return panePreview
+	default:
+		return paneList
+	}
 }
 
 // New loads the YAML file and initialises the model.
@@ -73,7 +94,6 @@ func New(filePath string) (Model, error) {
 		blocks:    blocks,
 		list:      list,
 		preview:   preview,
-		active:    paneList,
 		statusMsg: "",
 	}, nil
 }
@@ -99,7 +119,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case OverlayCancelledMsg:
 		m.overlay = nil
-		m.active = paneList
 		m.statusMsg = "Cancelled."
 		return m, nil
 
@@ -108,7 +127,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case AlertDismissedMsg:
 		m.alert = nil
-		m.active = paneList
 		return m, nil
 	}
 
@@ -129,14 +147,14 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 
 	// Alert active — forward to it.
-	if m.active == paneAlert && m.alert != nil {
+	if m.alert != nil {
 		al, cmd := m.alert.Update(msg)
 		m.alert = &al
 		return m, cmd
 	}
 
 	// Overlay active — forward to it.
-	if m.active == paneOverlay && m.overlay != nil {
+	if m.overlay != nil {
 		ov, cmd := m.overlay.Update(msg)
 		m.overlay = &ov
 		return m, cmd
@@ -148,7 +166,7 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "ctrl+l":
 		return m.validateKeys()
 	case "q", "ctrl+c":
-		if m.active == panePreview {
+		if m.previewFocused {
 			break // let q through to the textarea
 		}
 		if m.dirty {
@@ -160,12 +178,12 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "tab":
 		return m.togglePreviewPane()
 	case "esc":
-		if m.active == panePreview {
+		if m.previewFocused {
 			return m.togglePreviewPane()
 		}
 	}
 
-	if m.active == panePreview {
+	if m.previewFocused {
 		return m.updatePreviewEditor(msg)
 	}
 
@@ -178,13 +196,13 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) togglePreviewPane() (tea.Model, tea.Cmd) {
-	if m.active == panePreview {
-		m.active = paneList
+	if m.previewFocused {
+		m.previewFocused = false
 		m.preview.Blur()
 		m.statusMsg = ""
 		return m, nil
 	}
-	m.active = panePreview
+	m.previewFocused = true
 	cmd := m.preview.Focus()
 	m.statusMsg = "Editing YAML directly — Tab/Esc back to list."
 	return m, cmd
@@ -227,7 +245,6 @@ func (m Model) handleSpace(it ListItem) (tea.Model, tea.Cmd) {
 		ov.editKey = it.Key
 	}
 	m.overlay = &ov
-	m.active = paneOverlay
 	if it.Existing {
 		m.statusMsg = fmt.Sprintf("Edit block %q — Tab panel, Ctrl+S confirm, Esc cancel.", it.Key)
 	} else {
@@ -256,7 +273,6 @@ func (m Model) handleOverlayConfirmed(snippet string) (tea.Model, tea.Cmd) {
 		if err != nil {
 			m.statusMsg = fmt.Sprintf("Remove error: %v", err)
 			m.overlay = nil
-			m.active = paneList
 			return m, nil
 		}
 		raw = removed
@@ -272,12 +288,10 @@ func (m Model) handleOverlayConfirmed(snippet string) (tea.Model, tea.Cmd) {
 	if err != nil {
 		m.statusMsg = fmt.Sprintf("Insert error: %v", err)
 		m.overlay = nil
-		m.active = paneList
 		return m, nil
 	}
 	m.applyRaw(newRaw)
 	m.overlay = nil
-	m.active = paneList
 	if isEdit {
 		m.statusMsg = "Block updated (not saved yet)."
 	} else {
@@ -327,7 +341,6 @@ func (m Model) validateKeys() (tea.Model, tea.Cmd) {
 func (m Model) showAlert(title, message string, kind alertKind) (tea.Model, tea.Cmd) {
 	al := NewAlert(title, message, kind, m.width, m.height)
 	m.alert = &al
-	m.active = paneAlert
 	return m, nil
 }
 
@@ -351,12 +364,12 @@ func (m *Model) relayout() {
 }
 
 func (m Model) forwardToActive(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.active == paneOverlay && m.overlay != nil {
+	if m.overlay != nil {
 		ov, cmd := m.overlay.Update(msg)
 		m.overlay = &ov
 		return m, cmd
 	}
-	if m.active == panePreview {
+	if m.previewFocused {
 		var cmd tea.Cmd
 		m.preview, cmd = m.preview.Update(msg)
 		return m, cmd
@@ -369,17 +382,16 @@ func (m Model) View() string {
 		return "Loading..."
 	}
 
-	if m.active == paneAlert && m.alert != nil {
+	switch m.activePane() {
+	case paneAlert:
 		return m.alert.View()
-	}
-
-	if m.active == paneOverlay && m.overlay != nil {
+	case paneOverlay:
 		return m.overlay.View()
 	}
 
 	listContent := m.list.View()
 	listBorder := panelStyle
-	if m.active == paneList {
+	if !m.previewFocused {
 		listBorder = activePanelStyle
 	}
 	leftPanel := listBorder.
@@ -389,7 +401,7 @@ func (m Model) View() string {
 
 	previewW := m.width - m.listW - 4
 	rightBorder := panelStyle
-	if m.active == panePreview {
+	if m.previewFocused {
 		rightBorder = activePanelStyle
 	}
 	rightPanel := rightBorder.
@@ -412,15 +424,12 @@ func (m Model) View() string {
 
 	// ── Hint line (always visible) ────────────────────────────────────────────
 	var hintText string
-	switch m.active {
-	case panePreview:
+	if m.previewFocused {
 		hintText = "[Tab]/[Esc] back to list • [ctrl+l] validate • [ctrl+s] save"
-	default:
-		if it := m.list.SelectedItem(); it != nil && it.Existing {
-			hintText = "[↑/↓] navigate • [Space] edit block • [d] delete • [Tab] edit YAML • [ctrl+l] validate • [ctrl+s] save • [q] quit"
-		} else {
-			hintText = "[↑/↓] navigate • [Space] add block • [Tab] edit YAML • [ctrl+l] validate • [ctrl+s] save • [q] quit"
-		}
+	} else if it := m.list.SelectedItem(); it != nil && it.Existing {
+		hintText = "[↑/↓] navigate • [Space] edit block • [d] delete • [Tab] edit YAML • [ctrl+l] validate • [ctrl+s] save • [q] quit"
+	} else {
+		hintText = "[↑/↓] navigate • [Space] add block • [Tab] edit YAML • [ctrl+l] validate • [ctrl+s] save • [q] quit"
 	}
 	hint := statusStyle.Render(hintText)
 

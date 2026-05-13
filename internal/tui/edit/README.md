@@ -152,7 +152,7 @@ func NewAlert(title, message string, kind alertKind, totalW, totalH int) AlertMo
 
 
 <a name="AlertModel.Update"></a>
-### func \(AlertModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L53>)
+### func \(AlertModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L46>)
 
 ```go
 func (a AlertModel) Update(msg tea.KeyMsg) (AlertModel, tea.Cmd)
@@ -161,7 +161,7 @@ func (a AlertModel) Update(msg tea.KeyMsg) (AlertModel, tea.Cmd)
 
 
 <a name="AlertModel.View"></a>
-### func \(AlertModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L61>)
+### func \(AlertModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L54>)
 
 ```go
 func (a AlertModel) View() string
@@ -385,9 +385,16 @@ func (lm ListModel) View() string
 View renders the visible slice of the list.
 
 <a name="Model"></a>
-## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L29-L49>)
+## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L35-L55>)
 
 Model is the root Bubble Tea model for the edit TUI.
+
+The active pane is derived from state, not tracked explicitly:
+
+- alert \!= nil → paneAlert
+- overlay \!= nil → paneOverlay
+- previewFocused → panePreview
+- otherwise → paneList
 
 ```go
 type Model struct {
@@ -396,7 +403,7 @@ type Model struct {
 ```
 
 <a name="New"></a>
-### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L52>)
+### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L73>)
 
 ```go
 func New(filePath string) (Model, error)
@@ -405,7 +412,7 @@ func New(filePath string) (Model, error)
 New loads the YAML file and initialises the model.
 
 <a name="Model.Init"></a>
-### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L81>)
+### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L101>)
 
 ```go
 func (m Model) Init() tea.Cmd
@@ -414,7 +421,7 @@ func (m Model) Init() tea.Cmd
 
 
 <a name="Model.Update"></a>
-### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L83>)
+### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L103>)
 
 ```go
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
@@ -423,7 +430,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
 
 
 <a name="Model.View"></a>
-### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L367>)
+### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L380>)
 
 ```go
 func (m Model) View() string
