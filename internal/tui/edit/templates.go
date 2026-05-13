@@ -5,20 +5,6 @@ const (
 `
 	tmplImage = `image: ubuntu:22.04
 `
-	tmplBuild = `build:
-  dockerfile: Dockerfile
-  context: .
-  # args:
-  #   MY_ARG: value
-  # target: dev
-  # cacheFrom:
-  #   - myregistry/myimage:cache
-  # output: type=local,dest=./out
-  # ssh:
-  #   - default
-  # secrets:
-  #   - id=mysecret,src=/path/to/secret
-`
 	tmplDockerComposeFile = `dockerComposeFile:
   - docker-compose.yml
   # - docker-compose.override.yml
@@ -64,29 +50,6 @@ appPort:
   # - 5432
   # - "host:8080"
 `
-	tmplPortsAttributes = `portsAttributes:
-  "3000":
-    label: Web App
-    onAutoForward: notify
-    # protocol: http
-  # "5432":
-  #   label: PostgreSQL
-  #   onAutoForward: silent
-`
-	tmplOtherPortsAttributes = `otherPortsAttributes:
-  onAutoForward: silent
-  # label: Other Port
-`
-	tmplMounts = `mounts:
-  - type: bind
-    source: ${localWorkspaceFolder}/.cache
-    target: /home/vscode/.cache
-    # consistency: cached
-    # readonly: false
-  # - type: volume
-  #   source: myvolume
-  #   target: /data
-`
 	tmplRunArgs = `runArgs:
   - "--network=host"
   # - "--cap-add=SYS_PTRACE"
@@ -117,15 +80,6 @@ appPort:
 `
 	tmplDevices = `devices:
   - /dev/net/tun
-`
-	tmplHostRequirements = `hostRequirements:
-  cpus: 4
-  memory: 8gb
-  storage: 32gb
-  # gpu: true
-  # gpu:
-  #   cores: 4
-  #   memory: 4gb
 `
 	tmplFeatures = `features:
   ghcr.io/devcontainers/features/git:1: {}
@@ -168,30 +122,6 @@ waitFor: updateContentCommand
 `
 	tmplPostAttachCommand = `postAttachCommand: echo 'Attached to container'
 `
-	tmplWatch = `watch:
-  waitFor: postCreateCommand
-  restart: true
-`
-	tmplCustomizations = `customizations:
-  vscode:
-    extensions:
-      - ms-python.python
-      # - esbenp.prettier-vscode
-    settings:
-      editor.formatOnSave: true
-      # terminal.integrated.shell.linux: /bin/zsh
-  # jetbrains:
-  #   plugins:
-  #     - org.rust.lang
-  # codespaces:
-  #   openFiles:
-  #     - README.md
-`
-	tmplSecrets = `secrets:
-  MY_SECRET:
-    description: "Description of the secret"
-    # default: ""
-` // #nosec G101 -- YAML example template, not a real credential
 	tmplShutdownAction = `# Options: none | stopContainer | stopCompose
 shutdownAction: stopContainer
 `
@@ -201,7 +131,6 @@ shutdownAction: stopContainer
 var templates = map[string]string{
 	"name":                        tmplName,
 	"image":                       tmplImage,
-	"build":                       tmplBuild,
 	"dockerComposeFile":           tmplDockerComposeFile,
 	"service":                     tmplService,
 	"runServices":                 tmplRunServices,
@@ -216,9 +145,6 @@ var templates = map[string]string{
 	"localEnv":                    tmplLocalEnv,
 	"appPort":                     tmplAppPort,
 	"forwardPorts":                tmplForwardPorts,
-	"portsAttributes":             tmplPortsAttributes,
-	"otherPortsAttributes":        tmplOtherPortsAttributes,
-	"mounts":                      tmplMounts,
 	"runArgs":                     tmplRunArgs,
 	"startupCommand":              tmplStartupCommand,
 	"overrideCommand":             tmplOverrideCommand,
@@ -230,7 +156,6 @@ var templates = map[string]string{
 	"capDrop":                     tmplCapDrop,
 	"securityOpt":                 tmplSecurityOpt,
 	"devices":                     tmplDevices,
-	"hostRequirements":            tmplHostRequirements,
 	"features":                    tmplFeatures,
 	"overrideFeatureInstallOrder": tmplOverrideFeatureInstallOrder,
 	"initializeCommand":           tmplInitializeCommand,
@@ -240,9 +165,6 @@ var templates = map[string]string{
 	"postCreateCommand":           tmplPostCreateCommand,
 	"postStartCommand":            tmplPostStartCommand,
 	"postAttachCommand":           tmplPostAttachCommand,
-	"watch":                       tmplWatch,
-	"customizations":              tmplCustomizations,
-	"secrets":                     tmplSecrets,
 	"shutdownAction":              tmplShutdownAction,
 }
 

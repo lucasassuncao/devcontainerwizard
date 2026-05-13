@@ -86,7 +86,7 @@ func RemoveBlock(raw []byte, blocks []Block, key string) ([]byte, error)
 RemoveBlock deletes the lines belonging to key from raw YAML bytes.
 
 <a name="Template"></a>
-## func [Template](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/templates.go#L250>)
+## func [Template](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/templates.go#L172>)
 
 ```go
 func Template(key string) string
