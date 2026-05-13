@@ -51,7 +51,7 @@ func runConvert(cmd *cobra.Command, args []string) {
 	// Validate struct
 	if err := devcontainer.Validate(dc); err != nil {
 		fmt.Fprintf(os.Stderr, "Invalid devcontainer config:\n%s\n", devcontainer.HumanizeValidationError(err))
-		return
+		os.Exit(1)
 	}
 
 	// Write devcontainer files

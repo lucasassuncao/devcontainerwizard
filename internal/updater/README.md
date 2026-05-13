@@ -17,7 +17,7 @@ Package updater implements the self\-update mechanism for devcontainerwizard.
 
 
 <a name="CleanOldBinary"></a>
-## func [CleanOldBinary](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L90>)
+## func [CleanOldBinary](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L106>)
 
 ```go
 func CleanOldBinary()
@@ -26,7 +26,7 @@ func CleanOldBinary()
 CleanOldBinary removes a \<exe\>.old file left by a previous self\-update. Call this from main\(\) at startup.
 
 <a name="SelfUpdate"></a>
-## func [SelfUpdate](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L24>)
+## func [SelfUpdate](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L33>)
 
 ```go
 func SelfUpdate(repo, token, currentVersion string) error

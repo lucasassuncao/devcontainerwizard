@@ -165,6 +165,9 @@ func generateInteractiveConfig() (string, error) {
 	if err := yaml.Unmarshal([]byte(content), &doc); err != nil {
 		return "", fmt.Errorf("parsing template: %w", err)
 	}
+	if len(doc.Content) == 0 || doc.Content[0].Kind != yaml.MappingNode {
+		return "", fmt.Errorf("template %q: expected a YAML mapping at the document root", selectedTemplate)
+	}
 	root := doc.Content[0] // DocumentNode wraps a MappingNode
 
 	// 1. Customize container name
@@ -184,7 +187,10 @@ func generateInteractiveConfig() (string, error) {
 				return nil
 			},
 		}
-		name, _ := namePrompt.Run()
+		name, err := namePrompt.Run()
+		if err != nil {
+			return "", fmt.Errorf("name prompt cancelled: %w", err)
+		}
 		yamlSetScalar(root, "name", name)
 	}
 
@@ -209,7 +215,10 @@ func generateInteractiveConfig() (string, error) {
 				return nil
 			},
 		}
-		port, _ := portPrompt.Run()
+		port, err := portPrompt.Run()
+		if err != nil {
+			return "", fmt.Errorf("port prompt cancelled: %w", err)
+		}
 		yamlSetFirstPort(root, port)
 	}
 

@@ -9,6 +9,15 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
+)
+
+// apiClient handles short metadata requests against the GitHub API.
+// downloadClient covers the larger binary fetch and uses a longer ceiling.
+// Both have timeouts so a slow or hung server cannot stall the CLI indefinitely.
+var (
+	apiClient      = &http.Client{Timeout: 30 * time.Second}
+	downloadClient = &http.Client{Timeout: 5 * time.Minute}
 )
 
 // osExecutable is a variable so tests can override os.Executable.
@@ -60,7 +69,7 @@ func SelfUpdate(repo, token, currentVersion string) error {
 
 	fmt.Printf("Downloading new binary...\n")
 	tmpPath := exePath + ".new"
-	if err := download(asset.BrowserDownloadURL, tmpPath, token); err != nil {
+	if err := download(asset.BrowserDownloadURL, tmpPath, token, asset.Size); err != nil {
 		return err
 	}
 
@@ -76,8 +85,15 @@ func SelfUpdate(repo, token, currentVersion string) error {
 		return fmt.Errorf("renaming current binary: %w", err)
 	}
 	if err := os.Rename(tmpPath, exePath); err != nil {
-		os.Rename(oldPath, exePath) //nolint:errcheck
-		os.Remove(tmpPath)
+		// Rollback: try to restore the previous binary. Surface any failure so
+		// the user knows the install is in a broken state and where to recover.
+		if rbErr := os.Rename(oldPath, exePath); rbErr != nil {
+			fmt.Fprintf(os.Stderr,
+				"CRITICAL: install failed and rollback failed too — original binary is at %s, downloaded binary at %s. Restore manually. Rollback error: %v\n",
+				oldPath, tmpPath, rbErr)
+		} else {
+			os.Remove(tmpPath)
+		}
 		return fmt.Errorf("installing new binary: %w", err)
 	}
 
@@ -131,7 +147,7 @@ func fetchLatestRelease(repo, token string) (*ghRelease, error) {
 		req.Header.Set("Authorization", "Bearer "+token)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := apiClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("github api: %w", err)
 	}
@@ -208,8 +224,16 @@ func selectAsset(assets []ghAsset) *ghAsset {
 	return best
 }
 
-// download fetches url into destPath.
-func download(url, destPath, token string) error {
+// maxDownloadOverhead caps how much we read beyond the asset's advertised size.
+// A small slack absorbs minor mismatches; anything past it indicates a server
+// lying about Content-Length or serving the wrong asset, so we abort.
+const maxDownloadOverhead = 1 << 20 // 1 MiB
+
+// download fetches url into destPath. expectedSize is the asset size reported by
+// the release metadata; the response body is capped at expectedSize +
+// maxDownloadOverhead to prevent a misconfigured or hostile server from filling
+// the disk.
+func download(url, destPath, token string, expectedSize int64) error {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return err
@@ -219,7 +243,7 @@ func download(url, destPath, token string) error {
 		req.Header.Set("Authorization", "Bearer "+token)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := downloadClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("downloading: %w", err)
 	}
@@ -235,9 +259,24 @@ func download(url, destPath, token string) error {
 	}
 	defer f.Close()
 
-	if _, err := io.Copy(f, resp.Body); err != nil {
+	limit := expectedSize + maxDownloadOverhead
+	if expectedSize <= 0 {
+		limit = 256 << 20 // 256 MiB hard cap when no size is advertised
+	}
+	limited := io.LimitReader(resp.Body, limit+1) // +1 so we can detect overflow
+
+	written, err := io.Copy(f, limited)
+	if err != nil {
 		os.Remove(destPath)
 		return fmt.Errorf("writing binary: %w", err)
+	}
+	if written > limit {
+		os.Remove(destPath)
+		return fmt.Errorf("download exceeded expected size (%d bytes, cap %d)", written, limit)
+	}
+	if expectedSize > 0 && written < expectedSize {
+		os.Remove(destPath)
+		return fmt.Errorf("download truncated: got %d bytes, expected %d", written, expectedSize)
 	}
 	if err := f.Sync(); err != nil {
 		os.Remove(destPath)

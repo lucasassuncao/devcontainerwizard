@@ -2,6 +2,7 @@
 package devcontainer
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -46,7 +47,8 @@ func HumanizeValidationError(err error) string {
 
 	var sb strings.Builder
 
-	if errs, ok := err.(validator.ValidationErrors); ok {
+	var errs validator.ValidationErrors
+	if errors.As(err, &errs) {
 		for _, e := range errs {
 			field := e.Field()
 			tag := e.Tag()
