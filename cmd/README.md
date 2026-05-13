@@ -23,7 +23,7 @@ var DefaultRepo = ""
 ```
 
 <a name="Execute"></a>
-## func [Execute](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/cmd/root.go#L17>)
+## func [Execute](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/cmd/root.go#L18>)
 
 ```go
 func Execute(version string)

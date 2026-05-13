@@ -8,6 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
+	"github.com/lucasassuncao/devcontainerwizard/internal/presets"
 	"github.com/lucasassuncao/devcontainerwizard/internal/tui/theme"
 )
 
@@ -50,6 +51,10 @@ type OverlayModel struct {
 
 	totalW int
 	totalH int
+
+	// Preset state.
+	currentPreset string             // "base" by default; "custom" in edit mode
+	presetPicker  *PresetPickerModel // non-nil while the picker popover is open
 }
 
 // NewOverlay builds an overlay for the given key.
@@ -98,10 +103,23 @@ func NewOverlay(key, initialContent string, totalW, totalH int) OverlayModel {
 	}
 
 	om := OverlayModel{
-		key:      key,
-		twoPanel: twoPanel,
-		totalW:   totalW,
-		totalH:   totalH,
+		key:           key,
+		twoPanel:      twoPanel,
+		totalW:        totalW,
+		totalH:        totalH,
+		currentPreset: "custom",
+	}
+
+	// Prefer the "base" preset when opening a new (empty) block.
+	trivial := key + ":\n"
+	if initialContent == "" || initialContent == trivial {
+		if y, err := presets.PresetYAML(key, "base"); err == nil {
+			initialContent = y
+			om.currentPreset = "base"
+		} else {
+			// Fall back to the static template so the textarea is never empty.
+			initialContent = Template(key)
+		}
 	}
 
 	if twoPanel {
@@ -174,27 +192,64 @@ func (om *OverlayModel) initSinglePanel(contentW, panelH int, initialContent str
 func (om OverlayModel) Init() tea.Cmd { return textarea.Blink }
 
 func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd) {
-	if msg, ok := msg.(tea.KeyMsg); ok {
-		// Global shortcuts — work from any panel.
-		switch msg.Type {
-		case tea.KeyEsc:
-			return om, func() tea.Msg { return OverlayCancelledMsg{} }
-		case tea.KeyCtrlS:
-			return om.confirm()
-		case tea.KeyTab:
-			if om.twoPanel {
-				return om.switchPanel(), nil
-			}
-		}
+	// Preset messages are handled at the top level, regardless of picker state.
+	switch m := msg.(type) {
+	case PresetSelectedMsg:
+		return om.applyPreset(m.Name), nil
+	case PresetPickerCancelledMsg:
+		om.presetPicker = nil
+		return om, nil
+	}
 
-		// Left-panel navigation when in two-panel mode.
-		if om.twoPanel && om.active == overlayPanelFields {
-			return om.updateFieldPanel(msg), nil
+	// Picker owns key input while open.
+	if om.presetPicker != nil {
+		if key, ok := msg.(tea.KeyMsg); ok {
+			updated, cmd := om.presetPicker.Update(key)
+			om.presetPicker = &updated
+			return om, cmd
+		}
+		return om, nil
+	}
+
+	key, ok := msg.(tea.KeyMsg)
+	if !ok {
+		return om.updateYAMLEditor(msg)
+	}
+	return om.updateKey(key)
+}
+
+func (om OverlayModel) updateKey(msg tea.KeyMsg) (OverlayModel, tea.Cmd) {
+	// Global shortcuts — work from any panel.
+	switch msg.Type {
+	case tea.KeyEsc:
+		return om, func() tea.Msg { return OverlayCancelledMsg{} }
+	case tea.KeyCtrlS:
+		return om.confirm()
+	case tea.KeyTab:
+		if om.twoPanel {
+			return om.switchPanel(), nil
 		}
 	}
 
-	// Forward non-key messages (e.g. textarea.Blink) only when the YAML panel is
-	// active; field-panel mode has no use for textarea ticks.
+	// Left-panel navigation when in two-panel mode.
+	if om.twoPanel && om.active == overlayPanelFields {
+		if msg.String() == "p" {
+			names := presets.ListPresets(om.key)
+			if len(names) > 0 {
+				picker := NewPresetPicker(names, om.currentPreset, om.totalW, om.totalH)
+				om.presetPicker = &picker
+			}
+			return om, nil
+		}
+		return om.updateFieldPanel(msg), nil
+	}
+
+	return om.updateYAMLEditor(msg)
+}
+
+// updateYAMLEditor forwards a message to the textarea when the YAML panel is
+// active. Field-panel mode has no use for textarea ticks.
+func (om OverlayModel) updateYAMLEditor(msg tea.Msg) (OverlayModel, tea.Cmd) {
 	if !om.twoPanel || om.active == overlayPanelYAML {
 		var cmd tea.Cmd
 		om.yamlEditor, cmd = om.yamlEditor.Update(msg)
@@ -204,6 +259,26 @@ func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd) {
 		return om, cmd
 	}
 	return om, nil
+}
+
+// applyPreset replaces the textarea content with the selected preset and
+// closes the picker. In two-panel mode, refreshes the field-toggle state
+// from the new YAML.
+func (om OverlayModel) applyPreset(name string) OverlayModel {
+	y, err := presets.PresetYAML(om.key, name)
+	if err != nil {
+		om.errMsg = fmt.Sprintf("preset error: %v", err)
+		om.presetPicker = nil
+		return om
+	}
+	om.yamlEditor.SetValue(y)
+	om.currentPreset = name
+	om.errMsg = ""
+	if om.twoPanel {
+		om.fieldList.SetFields(syncFieldsFromYAML(om.key, om.fieldList.Fields(), y))
+	}
+	om.presetPicker = nil
+	return om
 }
 
 func (om OverlayModel) confirm() (OverlayModel, tea.Cmd) {
@@ -254,7 +329,8 @@ func (om OverlayModel) View() string {
 	if om.isEdit {
 		action = "edit block"
 	}
-	title := overlayTitleStyle.Render(fmt.Sprintf(" %s [%s] ", om.key, action))
+	titleText := fmt.Sprintf(" %s [%s · preset: %s] ", om.key, action, om.currentPreset)
+	title := overlayTitleStyle.Render(titleText)
 
 	var content string
 	if om.twoPanel {
@@ -263,10 +339,11 @@ func (om OverlayModel) View() string {
 		content = om.yamlEditor.View()
 	}
 
-	hint := statusStyle.Render("[Tab] switch panel • [Space] toggle • [ctrl+s] confirm • [Esc] cancel")
+	hintText := "[Tab] switch panel • [Space] toggle • [p] preset • [ctrl+s] confirm • [Esc] cancel"
 	if !om.twoPanel {
-		hint = statusStyle.Render("[ctrl+s] confirm • [Esc] cancel")
+		hintText = "[ctrl+s] confirm • [Esc] cancel"
 	}
+	hint := statusStyle.Render(hintText)
 
 	parts := []string{title, content}
 	if om.errMsg != "" {
@@ -274,11 +351,8 @@ func (om OverlayModel) View() string {
 	}
 	parts = append(parts, hint)
 
-	// Let the box auto-size to the content — no explicit Width() to avoid the
-	// lipgloss Width-includes-padding gotcha that caused layout overflow.
 	box := overlayBorderStyle.Render(strings.Join(parts, "\n"))
 
-	// Centre within the terminal.
 	bw := lipgloss.Width(box)
 	bh := lipgloss.Height(box)
 	lp := (om.totalW - bw) / 2
@@ -289,7 +363,13 @@ func (om OverlayModel) View() string {
 	if tp < 0 {
 		tp = 0
 	}
-	return lipgloss.NewStyle().PaddingLeft(lp).PaddingTop(tp).Render(box)
+	overlay := lipgloss.NewStyle().PaddingLeft(lp).PaddingTop(tp).Render(box)
+
+	// Layer the picker over the overlay if open.
+	if om.presetPicker != nil {
+		return om.presetPicker.View()
+	}
+	return overlay
 }
 
 func (om OverlayModel) viewTwoPanel() string {

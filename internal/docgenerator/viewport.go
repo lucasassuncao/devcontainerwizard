@@ -20,7 +20,10 @@ const (
 	docPaneView
 )
 
-const docStatusLines = 1
+const (
+	docHeaderLines = 1
+	docStatusLines = 1 // hint line
+)
 
 type docTUIModel struct {
 	names    []string
@@ -128,23 +131,10 @@ func (m *docTUIModel) handleViewportKey(key string) {
 }
 
 func (m *docTUIModel) relayout() {
-	// Size the list column to the longest name + "▶ " prefix (2) + border (2) + 1 margin.
-	maxName := 0
-	for _, n := range m.names {
-		if len(n) > maxName {
-			maxName = len(n)
-		}
-	}
-	m.listColW = maxName + 5 // "▶ " (2) + border L+R (2) + 1 trailing margin
-	if m.listColW < 18 {
-		m.listColW = 18
-	}
-	m.vpColW = m.width - m.listColW
-	if m.vpColW < 22 {
-		m.vpColW = 22
-	}
+	m.listColW = m.width / 6
+	m.vpColW = m.width - m.listColW - 4
 
-	innerH := m.height - docStatusLines - 2 // 2 = top+bottom panel border
+	innerH := m.height - docHeaderLines - docStatusLines - 2
 	if innerH < 1 {
 		innerH = 1
 	}
@@ -209,32 +199,29 @@ func (m docTUIModel) View() string {
 	}
 	for i := m.listOffset; i < end; i++ {
 		label := m.names[i]
-		var line string
 		if i == m.cursor {
-			line = theme.SelectedItem.Render("▶ " + label)
+			listSB.WriteString(theme.SelectedItem.Render("▶ "+label) + "\n")
 		} else {
-			line = theme.AvailableItem.Render("  " + label)
+			listSB.WriteString(theme.AvailableItem.Render("  "+label) + "\n")
 		}
-		listSB.WriteString(line + "\n")
 	}
 
-	leftPanel := theme.PanelBorder(m.active == docPaneList).
-		Width(m.listColW - 2).
-		Height(m.listH).
-		Render(listSB.String())
+	leftPanel := theme.RenderTitledPanel("Topics", m.listColW, m.listH+2, m.active == docPaneList, listSB.String())
 
 	// ── Right panel (viewport) ───────────────────────────────────────────────
-	rightPanel := theme.PanelBorder(m.active == docPaneView).
-		Width(m.vpColW - 2).
-		Height(m.vpH).
-		Render(m.vp.View())
+	rightTitle := "Documentation"
+	if m.cursor >= 0 && m.cursor < len(m.names) {
+		rightTitle = m.names[m.cursor]
+	}
+	rightPanel := theme.RenderTitledPanel(rightTitle, m.vpColW, m.vpH+2, m.active == docPaneView, m.vp.View())
 
-	// ── Status bar ───────────────────────────────────────────────────────────
-	status := theme.StatusBar.Render(
+	// ── Status / hint bar ────────────────────────────────────────────────────
+	hint := theme.StatusBar.Render(
 		"[Tab] switch panel  [↑/↓ j/k] navigate / scroll  [PgUp/PgDn] half-page  [q] quit",
 	)
 
-	return lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel) + "\n" + status
+	header := theme.RenderHeader("docs", "", m.width)
+	return strings.Join([]string{header, lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel), hint}, "\n")
 }
 
 // RenderMarkdownDocsInTerminal launches the two-panel documentation TUI.

@@ -1,8 +1,6 @@
 package edit
 
 import (
-	"strings"
-
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/lucasassuncao/devcontainerwizard/internal/tui/theme"
@@ -20,10 +18,6 @@ var (
 	statusStyle = theme.StatusBar
 	dirtyStyle  = lipgloss.NewStyle().Foreground(theme.Warning)
 
-	// Header bar
-	headerTitleStyle = lipgloss.NewStyle().Bold(true).Foreground(theme.AccentBright).PaddingLeft(1)
-	headerInfoStyle  = lipgloss.NewStyle().Foreground(theme.Dim).PaddingRight(1)
-
 	// Overlay
 	overlayBorderStyle = lipgloss.NewStyle().
 				Border(lipgloss.DoubleBorder()).
@@ -36,57 +30,16 @@ var (
 	activePanelStyle = theme.PanelBorder(true)
 )
 
-// renderTitledPanel renders a rounded-border panel with the title embedded in
-// the top edge. width and height are the OUTER dimensions (including borders).
+// renderTitledPanel delegates to the shared theme implementation.
 func renderTitledPanel(title string, width, height int, active bool, content string) string {
-	if width < 4 {
-		width = 4
-	}
-	if height < 3 {
-		height = 3
-	}
-
-	borderColor := theme.Muted
-	titleColor := theme.Dim
-	if active {
-		borderColor = theme.Accent
-		titleColor = theme.AccentBright
-	}
-
-	innerW := width - 2
-	titleSegment := lipgloss.NewStyle().Bold(true).Foreground(titleColor).Render(" " + title + " ")
-	fillLen := innerW - 1 - lipgloss.Width(titleSegment)
-	if fillLen < 0 {
-		fillLen = 0
-	}
-
-	borderInk := lipgloss.NewStyle().Foreground(borderColor)
-	top := borderInk.Render("╭─") + titleSegment + borderInk.Render(strings.Repeat("─", fillLen)+"╮")
-
-	body := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderTop(false).
-		BorderForeground(borderColor).
-		Width(innerW).
-		Height(height - 2).
-		Render(content)
-
-	return lipgloss.JoinVertical(lipgloss.Left, top, body)
+	return theme.RenderTitledPanel(title, width, height, active, content)
 }
 
 // renderHeader returns the single-line app header.
 func renderHeader(file string, dirty bool, width int) string {
-	left := headerTitleStyle.Render("devcontainer wizard")
-
 	info := file
 	if dirty {
 		info = file + " ● modified"
 	}
-	right := headerInfoStyle.Render(info)
-
-	spacerW := width - lipgloss.Width(left) - lipgloss.Width(right)
-	if spacerW < 1 {
-		spacerW = 1
-	}
-	return left + strings.Repeat(" ", spacerW) + right
+	return theme.RenderHeader(info, "", width)
 }

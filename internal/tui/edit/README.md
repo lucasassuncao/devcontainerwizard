@@ -55,6 +55,13 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
   - [func \(om OverlayModel\) Init\(\) tea.Cmd](<#OverlayModel.Init>)
   - [func \(om OverlayModel\) Update\(msg tea.Msg\) \(OverlayModel, tea.Cmd\)](<#OverlayModel.Update>)
   - [func \(om OverlayModel\) View\(\) string](<#OverlayModel.View>)
+- [type PresetPickerCancelledMsg](<#PresetPickerCancelledMsg>)
+- [type PresetPickerModel](<#PresetPickerModel>)
+  - [func NewPresetPicker\(names \[\]string, current string, totalW, totalH int\) PresetPickerModel](<#NewPresetPicker>)
+  - [func \(p PresetPickerModel\) SelectedName\(\) string](<#PresetPickerModel.SelectedName>)
+  - [func \(p PresetPickerModel\) Update\(msg tea.Msg\) \(PresetPickerModel, tea.Cmd\)](<#PresetPickerModel.Update>)
+  - [func \(p PresetPickerModel\) View\(\) string](<#PresetPickerModel.View>)
+- [type PresetSelectedMsg](<#PresetSelectedMsg>)
 - [type SpaceOnItemMsg](<#SpaceOnItemMsg>)
 
 
@@ -429,7 +436,7 @@ func (m Model) View() string
 
 
 <a name="OverlayCancelledMsg"></a>
-## type [OverlayCancelledMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L18>)
+## type [OverlayCancelledMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L19>)
 
 OverlayCancelledMsg is sent when the user presses Esc.
 
@@ -438,7 +445,7 @@ type OverlayCancelledMsg struct{}
 ```
 
 <a name="OverlayConfirmedMsg"></a>
-## type [OverlayConfirmedMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L15>)
+## type [OverlayConfirmedMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L16>)
 
 OverlayConfirmedMsg is sent when the user confirms with Ctrl\+S.
 
@@ -447,7 +454,7 @@ type OverlayConfirmedMsg struct{ Snippet string }
 ```
 
 <a name="OverlayModel"></a>
-## type [OverlayModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L31-L53>)
+## type [OverlayModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L32-L58>)
 
 OverlayModel is the floating overlay for adding or editing a YAML block.
 
@@ -460,7 +467,7 @@ type OverlayModel struct {
 ```
 
 <a name="NewOverlay"></a>
-### func [NewOverlay](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L57>)
+### func [NewOverlay](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L62>)
 
 ```go
 func NewOverlay(key, initialContent string, totalW, totalH int) OverlayModel
@@ -469,7 +476,7 @@ func NewOverlay(key, initialContent string, totalW, totalH int) OverlayModel
 NewOverlay builds an overlay for the given key. Keys with field definitions open in two\-panel mode; all others use a single textarea.
 
 <a name="OverlayModel.Init"></a>
-### func \(OverlayModel\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L174>)
+### func \(OverlayModel\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L192>)
 
 ```go
 func (om OverlayModel) Init() tea.Cmd
@@ -478,7 +485,7 @@ func (om OverlayModel) Init() tea.Cmd
 
 
 <a name="OverlayModel.Update"></a>
-### func \(OverlayModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L176>)
+### func \(OverlayModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L194>)
 
 ```go
 func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd)
@@ -487,13 +494,78 @@ func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd)
 
 
 <a name="OverlayModel.View"></a>
-### func \(OverlayModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L252>)
+### func \(OverlayModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L327>)
 
 ```go
 func (om OverlayModel) View() string
 ```
 
 
+
+<a name="PresetPickerCancelledMsg"></a>
+## type [PresetPickerCancelledMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preset_picker.go#L16>)
+
+PresetPickerCancelledMsg fires when the user dismisses the picker with Esc.
+
+```go
+type PresetPickerCancelledMsg struct{}
+```
+
+<a name="PresetPickerModel"></a>
+## type [PresetPickerModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preset_picker.go#L19-L24>)
+
+PresetPickerModel is a compact list popover for preset selection.
+
+```go
+type PresetPickerModel struct {
+    // contains filtered or unexported fields
+}
+```
+
+<a name="NewPresetPicker"></a>
+### func [NewPresetPicker](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preset_picker.go#L27>)
+
+```go
+func NewPresetPicker(names []string, current string, totalW, totalH int) PresetPickerModel
+```
+
+NewPresetPicker creates a picker preselecting current if present in names.
+
+<a name="PresetPickerModel.SelectedName"></a>
+### func \(PresetPickerModel\) [SelectedName](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preset_picker.go#L44>)
+
+```go
+func (p PresetPickerModel) SelectedName() string
+```
+
+SelectedName returns the name of the currently\-highlighted preset.
+
+<a name="PresetPickerModel.Update"></a>
+### func \(PresetPickerModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preset_picker.go#L51>)
+
+```go
+func (p PresetPickerModel) Update(msg tea.Msg) (PresetPickerModel, tea.Cmd)
+```
+
+
+
+<a name="PresetPickerModel.View"></a>
+### func \(PresetPickerModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preset_picker.go#L74>)
+
+```go
+func (p PresetPickerModel) View() string
+```
+
+
+
+<a name="PresetSelectedMsg"></a>
+## type [PresetSelectedMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/preset_picker.go#L13>)
+
+PresetSelectedMsg fires when the user picks a preset and confirms with Enter.
+
+```go
+type PresetSelectedMsg struct{ Name string }
+```
 
 <a name="SpaceOnItemMsg"></a>
 ## type [SpaceOnItemMsg](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L35-L37>)
