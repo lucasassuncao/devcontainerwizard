@@ -12,7 +12,7 @@ var (
 	existingItemStyle  = theme.ExistingItem
 	availableItemStyle = theme.AvailableItem
 	selectedItemStyle  = theme.SelectedItem
-	sectionLabelStyle  = lipgloss.NewStyle().Bold(true).Foreground(theme.Dim).PaddingLeft(1)
+	sectionLabelStyle  = lipgloss.NewStyle().Bold(true).Foreground(theme.Accent).PaddingLeft(1)
 
 	// Status bar
 	statusStyle = theme.StatusBar

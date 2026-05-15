@@ -109,9 +109,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *Model) relayout() {
-	m.listW = m.width / 6
-	if m.listW < 20 {
-		m.listW = 20
+	m.listW = m.width / 5
+	if m.listW < 40 {
+		m.listW = 40
 	}
 	m.vpW = m.width - m.listW - 4
 	if m.vpW < 20 {

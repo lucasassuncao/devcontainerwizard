@@ -393,7 +393,10 @@ const (
 )
 
 func (m *Model) relayout() {
-	m.listW = m.width / 6
+	m.listW = m.width / 5
+	if m.listW < 40 {
+		m.listW = 40
+	}
 	previewW := m.width - m.listW - 4
 	m.innerH = m.height - headerLines - statusBarLines - 2 // 2 panel borders (top+bottom)
 

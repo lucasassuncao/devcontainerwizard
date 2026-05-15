@@ -131,7 +131,10 @@ func (m *docTUIModel) handleViewportKey(key string) {
 }
 
 func (m *docTUIModel) relayout() {
-	m.listColW = m.width / 6
+	m.listColW = m.width / 5
+	if m.listColW < 40 {
+		m.listColW = 40
+	}
 	m.vpColW = m.width - m.listColW - 4
 
 	innerH := m.height - docHeaderLines - docStatusLines - 2
