@@ -224,6 +224,9 @@ func (lm ListModel) View() string {
 		end = len(lm.items)
 	}
 	for i := lm.offset; i < end; i++ {
+		if i > lm.offset {
+			sb.WriteByte('\n')
+		}
 		it := lm.items[i]
 		switch {
 		case it.Separator:
@@ -239,7 +242,6 @@ func (lm ListModel) View() string {
 		default:
 			sb.WriteString(availableItemStyle.Render("  +  " + it.Key))
 		}
-		sb.WriteByte('\n')
 	}
 	return sb.String()
 }

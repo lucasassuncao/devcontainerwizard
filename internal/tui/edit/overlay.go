@@ -58,10 +58,10 @@ type OverlayModel struct {
 }
 
 // NewOverlay builds an overlay for the given key.
-// Keys with field definitions open in two-panel mode; all others use a single textarea.
+// All overlays use two-panel mode: left panel shows field toggles (or a
+// "(no sub-fields)" hint for simple fields), right panel is the YAML editor.
 func NewOverlay(key, initialContent string, totalW, totalH int) OverlayModel {
 	defs := FieldsForKey(key)
-	twoPanel := len(defs) > 0
 
 	// ── Outer box dimensions (including double border + padding) ──────────────
 	//
@@ -104,7 +104,7 @@ func NewOverlay(key, initialContent string, totalW, totalH int) OverlayModel {
 
 	om := OverlayModel{
 		key:           key,
-		twoPanel:      twoPanel,
+		twoPanel:      true,
 		totalW:        totalW,
 		totalH:        totalH,
 		currentPreset: "custom",
@@ -122,12 +122,7 @@ func NewOverlay(key, initialContent string, totalW, totalH int) OverlayModel {
 		}
 	}
 
-	if twoPanel {
-		om.initTwoPanel(defs, contentW, panelH, initialContent)
-	} else {
-		om.initSinglePanel(contentW, panelH, initialContent)
-	}
-
+	om.initTwoPanel(defs, contentW, panelH, initialContent)
 	return om
 }
 
@@ -159,7 +154,14 @@ func (om *OverlayModel) initTwoPanel(defs []FieldDef, contentW, panelH int, init
 	om.yamlPanelW = yamlPanelW
 	om.yamlPanelH = panelH
 	om.yamlEditor = ta
-	om.active = overlayPanelFields
+
+	// Start in the YAML panel when there are no field toggles to interact with.
+	if len(defs) == 0 {
+		om.active = overlayPanelYAML
+		om.yamlEditor.Focus()
+	} else {
+		om.active = overlayPanelFields
+	}
 
 	// When editing an existing block, seed the textarea with the current
 	// content and derive toggle states from it; otherwise build from defaults.
@@ -171,22 +173,6 @@ func (om *OverlayModel) initTwoPanel(defs []FieldDef, contentW, panelH int, init
 		om.yamlEditor.SetValue(rebuildYAML(om.key, om.fieldList.Fields()))
 		om.errMsg = ""
 	}
-}
-
-func (om *OverlayModel) initSinglePanel(contentW, panelH int, initialContent string) {
-	ta := textarea.New()
-	ta.SetWidth(contentW - 2) // small margin
-	ta.SetHeight(panelH)
-	ta.Placeholder = fmt.Sprintf("%s:\n  # your YAML here", om.key)
-	ta.SetValue(initialContent)
-	ta.Focus()
-	ta.CharLimit = 0
-	ta.ShowLineNumbers = true
-
-	om.yamlEditor = ta
-	om.yamlPanelW = contentW - 2
-	om.yamlPanelH = panelH
-	om.active = overlayPanelYAML
 }
 
 func (om OverlayModel) Init() tea.Cmd { return textarea.Blink }
@@ -219,20 +205,17 @@ func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd) {
 }
 
 func (om OverlayModel) updateKey(msg tea.KeyMsg) (OverlayModel, tea.Cmd) {
-	// Global shortcuts — work from any panel.
 	switch msg.Type {
 	case tea.KeyEsc:
 		return om, func() tea.Msg { return OverlayCancelledMsg{} }
 	case tea.KeyCtrlS:
 		return om.confirm()
 	case tea.KeyTab:
-		if om.twoPanel {
-			return om.switchPanel(), nil
-		}
+		return om.switchPanel(), nil
 	}
 
-	// Left-panel navigation when in two-panel mode.
-	if om.twoPanel && om.active == overlayPanelFields {
+	// Left panel: p opens picker, other keys navigate field toggles.
+	if om.active == overlayPanelFields {
 		if msg.String() == "p" {
 			names := presets.ListPresets(om.key)
 			if len(names) > 0 {
@@ -332,16 +315,17 @@ func (om OverlayModel) View() string {
 	titleText := fmt.Sprintf(" %s [%s · preset: %s] ", om.key, action, om.currentPreset)
 	title := overlayTitleStyle.Render(titleText)
 
-	var content string
-	if om.twoPanel {
-		content = om.viewTwoPanel()
-	} else {
-		content = om.yamlEditor.View()
-	}
+	content := om.viewTwoPanel()
 
-	hintText := "[Tab] switch panel • [Space] toggle • [p] preset • [ctrl+s] confirm • [Esc] cancel"
-	if !om.twoPanel {
-		hintText = "[ctrl+s] confirm • [Esc] cancel"
+	var hintText string
+	if om.active == overlayPanelFields {
+		if len(om.fieldList.Fields()) > 0 {
+			hintText = "[Tab] switch panel • [Space] toggle • [p] preset • [ctrl+s] apply • [Esc] cancel"
+		} else {
+			hintText = "[Tab] switch panel • [p] preset • [ctrl+s] apply • [Esc] cancel"
+		}
+	} else {
+		hintText = "[Tab] switch panel • [ctrl+s] apply • [Esc] cancel"
 	}
 	hint := statusStyle.Render(hintText)
 

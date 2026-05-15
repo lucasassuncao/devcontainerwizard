@@ -35,7 +35,7 @@ devcontainerwizard init -i
 **2. Edit it (optional)**
 
 ```bash
-devcontainerwizard edit config.yaml
+devcontainerwizard edit -c config.yaml
 ```
 
 Opens a two-panel TUI to add, remove, and edit blocks without touching the YAML directly.

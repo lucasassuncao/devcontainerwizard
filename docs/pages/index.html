@@ -132,7 +132,8 @@ devcontainerwizard init -t golang    <span class="cmt"># generate config from th
 devcontainerwizard show-examples     <span class="cmt"># two-panel preset browser</span>
 
 <span class="cmt"># optionally open the TUI editor to tweak config.yaml:</span>
-devcontainerwizard edit              <span class="cmt"># two-panel TUI (press p in fields panel for presets)</span>
+devcontainerwizard edit              <span class="cmt"># uses config.yaml by default</span>
+devcontainerwizard edit -c path/to/config.yaml  <span class="cmt"># custom path</span>
 
 <span class="cmt"># convert config.yaml to .devcontainer/devcontainer.json:</span>
 devcontainerwizard convert
@@ -197,7 +198,7 @@ devcontainerwizard convert -c path/to/config.yaml -o .devcontainer-custom</pre>
         <tr><td>devcontainerwizard init -i</td><td>Launch the interactive setup wizard</td></tr>
         <tr><td>devcontainerwizard init -f</td><td>Overwrite an existing config.yaml</td></tr>
         <tr><td>devcontainerwizard edit</td><td>Open the TUI editor for config.yaml</td></tr>
-        <tr><td>devcontainerwizard edit path/to/file.yaml</td><td>Open the TUI editor for a specific file</td></tr>
+        <tr><td>devcontainerwizard edit -c path/to/file.yaml</td><td>Open the TUI editor for a specific file</td></tr>
         <tr><td>devcontainerwizard show-docs</td><td>Browse documentation interactively in the terminal</td></tr>
         <tr><td>devcontainerwizard show-examples</td><td>Browse built-in YAML presets for every config field</td></tr>
         <tr><td>devcontainerwizard self-update</td><td>Update to the latest release from GitHub</td></tr>

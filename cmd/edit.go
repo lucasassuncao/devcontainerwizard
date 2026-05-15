@@ -10,21 +10,21 @@ import (
 	"github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
 )
 
+var editConfig string
+
 var editCmd = &cobra.Command{
-	Use:   "edit [file]",
+	Use:   "edit",
 	Short: "Interactively edit a devcontainer config YAML file",
 	Long:  "Opens a two-panel TUI to add, remove, and edit top-level blocks in a config.yaml file.",
-	Args:  cobra.MaximumNArgs(1),
 	Run:   runEdit,
 }
 
-func runEdit(cmd *cobra.Command, args []string) {
-	file := "config.yaml"
-	if len(args) == 1 {
-		file = args[0]
-	}
+func init() {
+	editCmd.Flags().StringVarP(&editConfig, "config", "c", "config.yaml", "Path to the config file")
+}
 
-	m, err := edit.New(file)
+func runEdit(cmd *cobra.Command, args []string) {
+	m, err := edit.New(editConfig)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)

@@ -337,11 +337,20 @@ func (m *Model) applyRaw(raw []byte) {
 }
 
 func (m Model) save() (tea.Model, tea.Cmd) {
+	var errs []string
 	if unknown := ValidateKnownKeys(m.rawYAML); len(unknown) > 0 {
-		msg := "The following key(s) are not valid devcontainer fields:\n\n  " +
-			strings.Join(unknown, ", ") +
-			"\n\nFix the YAML before saving."
-		return m.showAlert("Invalid key(s) — cannot save", msg, alertError)
+		errs = append(errs, "Unknown key(s): "+strings.Join(unknown, ", "))
+	}
+	errs = append(errs, ValidateMutualExclusions(m.blocks)...)
+	if len(errs) > 0 {
+		msg := ""
+		for i, e := range errs {
+			if i > 0 {
+				msg += "\n\n"
+			}
+			msg += "• " + e
+		}
+		return m.showAlert("Cannot save — fix errors first", msg, alertError)
 	}
 	if err := os.WriteFile(m.filePath, m.rawYAML, 0o600); err != nil {
 		return m.showAlert("Save failed", err.Error(), alertError)
@@ -351,12 +360,25 @@ func (m Model) save() (tea.Model, tea.Cmd) {
 }
 
 func (m Model) validateKeys() (tea.Model, tea.Cmd) {
+	var errs []string
+
 	if unknown := ValidateKnownKeys(m.rawYAML); len(unknown) > 0 {
-		msg := "The following key(s) are not valid devcontainer fields:\n\n  " +
-			strings.Join(unknown, ", ")
-		return m.showAlert("Validation — unknown key(s)", msg, alertError)
+		errs = append(errs, "Unknown key(s): "+strings.Join(unknown, ", "))
 	}
-	return m.showAlert("Validation passed", "All keys are recognized devcontainer fields.", alertSuccess)
+
+	errs = append(errs, ValidateMutualExclusions(m.blocks)...)
+
+	if len(errs) > 0 {
+		msg := ""
+		for i, e := range errs {
+			if i > 0 {
+				msg += "\n\n"
+			}
+			msg += "• " + e
+		}
+		return m.showAlert("Validation errors", msg, alertError)
+	}
+	return m.showAlert("Validation passed", "All keys are valid devcontainer fields with no conflicts.", alertSuccess)
 }
 
 func (m Model) showAlert(title, message string, kind alertKind) (tea.Model, tea.Cmd) {

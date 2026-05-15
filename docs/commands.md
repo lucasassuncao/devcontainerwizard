@@ -31,10 +31,12 @@ devcontainerwizard init [flags]
 Open a two-panel TUI to add, remove, and edit top-level blocks in a config YAML file.
 
 ```bash
-devcontainerwizard edit [file]
+devcontainerwizard edit [flags]
 ```
 
-If `[file]` is omitted, opens `config.yaml` in the current directory.
+| Flag | Short | Default | Description |
+|------|-------|---------|-------------|
+| `--config` | `-c` | `config.yaml` | Path to the config file |
 
 **Key bindings:**
 
