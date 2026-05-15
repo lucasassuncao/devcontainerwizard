@@ -39,6 +39,7 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
 - [type ListModel](<#ListModel>)
   - [func NewListModel\(existing \[\]Block, height int\) ListModel](<#NewListModel>)
   - [func \(lm ListModel\) AddedCount\(\) int](<#ListModel.AddedCount>)
+  - [func \(lm ListModel\) IsFiltering\(\) bool](<#ListModel.IsFiltering>)
   - [func \(lm \*ListModel\) Rebuild\(existing \[\]Block\)](<#ListModel.Rebuild>)
   - [func \(lm ListModel\) SelectedItem\(\) \*ListItem](<#ListModel.SelectedItem>)
   - [func \(lm \*ListModel\) SetHeight\(h int\)](<#ListModel.SetHeight>)
@@ -309,7 +310,7 @@ type ListItem struct {
 ```
 
 <a name="BuildListItems"></a>
-### func [BuildListItems](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L52>)
+### func [BuildListItems](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L60>)
 
 ```go
 func BuildListItems(existing []Block) []ListItem
@@ -318,7 +319,7 @@ func BuildListItems(existing []Block) []ListItem
 BuildListItems constructs the merged item list from the currently existing blocks. Only keys present in allKnownKeys are shown; unknown keys are silently ignored.
 
 <a name="ListModel"></a>
-## type [ListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L43-L48>)
+## type [ListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L43-L53>)
 
 ListModel is the left\-panel list.
 
@@ -329,7 +330,7 @@ type ListModel struct {
 ```
 
 <a name="NewListModel"></a>
-### func [NewListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L106>)
+### func [NewListModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L114>)
 
 ```go
 func NewListModel(existing []Block, height int) ListModel
@@ -338,7 +339,7 @@ func NewListModel(existing []Block, height int) ListModel
 NewListModel creates the list model.
 
 <a name="ListModel.AddedCount"></a>
-### func \(ListModel\) [AddedCount](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L146>)
+### func \(ListModel\) [AddedCount](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L154>)
 
 ```go
 func (lm ListModel) AddedCount() int
@@ -346,8 +347,17 @@ func (lm ListModel) AddedCount() int
 
 AddedCount returns how many recognised top\-level keys are present.
 
+<a name="ListModel.IsFiltering"></a>
+### func \(ListModel\) [IsFiltering](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L56>)
+
+```go
+func (lm ListModel) IsFiltering() bool
+```
+
+IsFiltering reports whether the list is in filter mode.
+
 <a name="ListModel.Rebuild"></a>
-### func \(\*ListModel\) [Rebuild](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L119>)
+### func \(\*ListModel\) [Rebuild](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L127>)
 
 ```go
 func (lm *ListModel) Rebuild(existing []Block)
@@ -356,16 +366,16 @@ func (lm *ListModel) Rebuild(existing []Block)
 Rebuild refreshes the list after blocks change without losing cursor position.
 
 <a name="ListModel.SelectedItem"></a>
-### func \(ListModel\) [SelectedItem](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L157>)
+### func \(ListModel\) [SelectedItem](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L180>)
 
 ```go
 func (lm ListModel) SelectedItem() *ListItem
 ```
 
-SelectedItem returns the currently highlighted item \(nil if separator\).
+SelectedItem returns the currently highlighted item \(nil if separator or empty\).
 
 <a name="ListModel.SetHeight"></a>
-### func \(\*ListModel\) [SetHeight](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L100>)
+### func \(\*ListModel\) [SetHeight](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L108>)
 
 ```go
 func (lm *ListModel) SetHeight(h int)
@@ -374,7 +384,7 @@ func (lm *ListModel) SetHeight(h int)
 SetHeight updates the visible row count and reclamps the scroll offset.
 
 <a name="ListModel.Update"></a>
-### func \(ListModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L168>)
+### func \(ListModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L199>)
 
 ```go
 func (lm ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd)
@@ -383,7 +393,7 @@ func (lm ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd)
 
 
 <a name="ListModel.View"></a>
-### func \(ListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L220>)
+### func \(ListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L324>)
 
 ```go
 func (lm ListModel) View() string
@@ -392,7 +402,7 @@ func (lm ListModel) View() string
 View renders the visible slice of the list.
 
 <a name="Model"></a>
-## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L36-L56>)
+## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L36-L57>)
 
 Model is the root Bubble Tea model for the edit TUI.
 
@@ -410,7 +420,7 @@ type Model struct {
 ```
 
 <a name="New"></a>
-### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L89>)
+### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L90>)
 
 ```go
 func New(filePath string) (Model, error)
@@ -419,7 +429,7 @@ func New(filePath string) (Model, error)
 New loads the YAML file and initialises the model.
 
 <a name="Model.Init"></a>
-### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L120>)
+### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L121>)
 
 ```go
 func (m Model) Init() tea.Cmd
@@ -428,7 +438,7 @@ func (m Model) Init() tea.Cmd
 
 
 <a name="Model.Update"></a>
-### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L122>)
+### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L123>)
 
 ```go
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
@@ -437,7 +447,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
 
 
 <a name="Model.View"></a>
-### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L415>)
+### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L461>)
 
 ```go
 func (m Model) View() string

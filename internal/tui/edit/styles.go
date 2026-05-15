@@ -18,6 +18,9 @@ var (
 	statusStyle = theme.StatusBar
 	dirtyStyle  = lipgloss.NewStyle().Foreground(theme.Warning)
 
+	// Filter prompt (shown at the bottom of the left panel in filter mode)
+	filterPromptStyle = lipgloss.NewStyle().Bold(true).Foreground(theme.AccentBright)
+
 	// Overlay
 	overlayBorderStyle = lipgloss.NewStyle().
 				Border(lipgloss.DoubleBorder()).

@@ -48,6 +48,7 @@ type Model struct {
 	dirty          bool
 	quitting       quitState
 	statusMsg      string
+	history        [][]byte // undo stack of rawYAML snapshots
 
 	width  int
 	height int
@@ -181,20 +182,29 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // handleListKey processes keys while the list pane has focus.
 func (m Model) handleListKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	// ctrl+s, ctrl+l and ctrl+z always work, even in filter mode.
 	switch msg.String() {
 	case "ctrl+s":
 		return m.save()
 	case "ctrl+l":
 		return m.validateKeys()
-	case "tab":
-		return m.togglePreviewPane()
-	case "q", "ctrl+c":
-		if m.dirty {
-			m.quitting = quitAsking
-			m.statusMsg = "Unsaved changes. Quit without saving? (y/N)"
-			return m, nil
+	case "ctrl+z":
+		return m.undo()
+	}
+
+	// tab and quit shortcuts are blocked in filter mode to avoid key conflicts.
+	if !m.list.IsFiltering() {
+		switch msg.String() {
+		case "tab":
+			return m.togglePreviewPane()
+		case "q", "ctrl+c":
+			if m.dirty {
+				m.quitting = quitAsking
+				m.statusMsg = "Unsaved changes. Quit without saving? (y/N)"
+				return m, nil
+			}
+			return m, tea.Quit
 		}
-		return m, tea.Quit
 	}
 
 	var cmd tea.Cmd
@@ -213,6 +223,8 @@ func (m Model) handlePreviewKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.save()
 	case "ctrl+l":
 		return m.validateKeys()
+	case "ctrl+z":
+		return m.undo()
 	case "tab", "esc":
 		return m.togglePreviewPane()
 	}
@@ -237,6 +249,7 @@ func (m Model) updatePreviewEditor(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	m.preview, cmd = m.preview.Update(msg)
 	raw := []byte(m.preview.Value())
 	if blocks, err := ParseBlocksFromBytes(raw); err == nil {
+		m.pushHistory()
 		m.rawYAML = raw
 		m.blocks = blocks
 		m.list.Rebuild(m.blocks)
@@ -322,7 +335,40 @@ func (m Model) handleOverlayConfirmed(snippet string) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+const maxHistory = 50
+
+func (m *Model) pushHistory() {
+	snap := make([]byte, len(m.rawYAML))
+	copy(snap, m.rawYAML)
+	m.history = append(m.history, snap)
+	if len(m.history) > maxHistory {
+		m.history = m.history[len(m.history)-maxHistory:]
+	}
+}
+
+func (m Model) undo() (tea.Model, tea.Cmd) {
+	if len(m.history) == 0 {
+		m.statusMsg = "Nothing to undo."
+		return m, nil
+	}
+	prev := m.history[len(m.history)-1]
+	m.history = m.history[:len(m.history)-1]
+	m.rawYAML = prev
+	if blocks, err := ParseBlocksFromBytes(prev); err == nil {
+		m.blocks = blocks
+	}
+	m.list.Rebuild(m.blocks)
+	m.preview.SetValue(strings.ReplaceAll(string(prev), "\r\n", "\n"))
+	if it := m.list.SelectedItem(); it != nil {
+		m.scrollPreviewToKey(it.Key)
+	}
+	m.dirty = true
+	m.statusMsg = "Undone."
+	return m, nil
+}
+
 func (m *Model) applyRaw(raw []byte) {
+	m.pushHistory()
 	m.rawYAML = raw
 	blocks, err := ParseBlocksFromBytes(raw)
 	if err == nil {
@@ -444,10 +490,12 @@ func (m Model) View() string {
 	var hintText string
 	if m.previewFocused {
 		hintText = "[Tab]/[Esc] back to list • [ctrl+l] validate • [ctrl+s] save"
+	} else if m.list.IsFiltering() {
+		hintText = "[type] filter • [↑/↓] navigate • [Enter] select • [Esc] clear filter"
 	} else if it := m.list.SelectedItem(); it != nil && it.Existing {
-		hintText = "[↑/↓] navigate • [Space] edit block • [d] delete • [Tab] edit YAML • [ctrl+l] validate • [ctrl+s] save • [q] quit"
+		hintText = "[↑/↓] navigate • [Space] edit block • [d] delete • [/] filter • [Tab] edit YAML • [ctrl+z] undo • [ctrl+s] save • [q] quit"
 	} else {
-		hintText = "[↑/↓] navigate • [Space] add block • [Tab] edit YAML • [ctrl+l] validate • [ctrl+s] save • [q] quit"
+		hintText = "[↑/↓] navigate • [Space] add block • [/] filter • [Tab] edit YAML • [ctrl+z] undo • [ctrl+s] save • [q] quit"
 	}
 	hint := statusStyle.Render(hintText)
 
