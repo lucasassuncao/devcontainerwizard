@@ -33,6 +33,22 @@ var (
 	activePanelStyle = theme.PanelBorder(true)
 )
 
+// centerBox positions box at the centre of a totalW×totalH terminal region
+// by adding padding. Used by all floating overlay/alert/picker views.
+func centerBox(box string, totalW, totalH int) string {
+	bw := lipgloss.Width(box)
+	bh := lipgloss.Height(box)
+	lp := (totalW - bw) / 2
+	tp := (totalH - bh) / 2
+	if lp < 0 {
+		lp = 0
+	}
+	if tp < 0 {
+		tp = 0
+	}
+	return lipgloss.NewStyle().PaddingLeft(lp).PaddingTop(tp).Render(box)
+}
+
 // renderTitledPanel delegates to the shared theme implementation.
 func renderTitledPanel(title string, width, height int, active bool, content string) string {
 	return theme.RenderTitledPanel(title, width, height, active, content)

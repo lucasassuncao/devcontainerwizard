@@ -320,6 +320,21 @@ func (lm *ListModel) clampScroll() {
 	}
 }
 
+// renderListItem renders one non-separator row, with or without selection highlight.
+func renderListItem(it ListItem, selected bool) string {
+	if selected {
+		mark := "+"
+		if it.Existing {
+			mark = "●"
+		}
+		return selectedItemStyle.Render("▶ " + mark + "  " + it.Key)
+	}
+	if it.Existing {
+		return existingItemStyle.Render("  ●  " + it.Key)
+	}
+	return availableItemStyle.Render("  +  " + it.Key)
+}
+
 // View renders the visible slice of the list.
 func (lm ListModel) View() string {
 	if lm.filtering {
@@ -335,19 +350,10 @@ func (lm ListModel) View() string {
 			sb.WriteByte('\n')
 		}
 		it := lm.items[i]
-		switch {
-		case it.Separator:
+		if it.Separator {
 			sb.WriteString(sectionLabelStyle.Render(it.Key))
-		case i == lm.cursor:
-			mark := "+"
-			if it.Existing {
-				mark = "●"
-			}
-			sb.WriteString(selectedItemStyle.Render("▶ " + mark + "  " + it.Key))
-		case it.Existing:
-			sb.WriteString(existingItemStyle.Render("  ●  " + it.Key))
-		default:
-			sb.WriteString(availableItemStyle.Render("  +  " + it.Key))
+		} else {
+			sb.WriteString(renderListItem(it, i == lm.cursor))
 		}
 	}
 	return sb.String()
@@ -364,21 +370,7 @@ func (lm ListModel) viewFilter() string {
 
 	lines := make([]string, 0, lm.height)
 	for i := lm.fOffset; i < end; i++ {
-		it := items[i]
-		var line string
-		switch {
-		case i == lm.fCursor:
-			mark := "+"
-			if it.Existing {
-				mark = "●"
-			}
-			line = selectedItemStyle.Render("▶ " + mark + "  " + it.Key)
-		case it.Existing:
-			line = existingItemStyle.Render("  ●  " + it.Key)
-		default:
-			line = availableItemStyle.Render("  +  " + it.Key)
-		}
-		lines = append(lines, line)
+		lines = append(lines, renderListItem(items[i], i == lm.fCursor))
 	}
 	for len(lines) < visH {
 		lines = append(lines, "")

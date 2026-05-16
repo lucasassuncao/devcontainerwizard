@@ -1,6 +1,9 @@
 package edit
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // mutuallyExclusiveGroups lists sets of fields where at most one may be present.
 // These map to the three ways to define the container in the DevContainer spec.
@@ -55,12 +58,5 @@ func joinQuoted(ss []string) string {
 	for i, s := range ss {
 		out[i] = `"` + s + `"`
 	}
-	result := ""
-	for i, s := range out {
-		if i > 0 {
-			result += ", "
-		}
-		result += s
-	}
-	return result
+	return strings.Join(out, ", ")
 }

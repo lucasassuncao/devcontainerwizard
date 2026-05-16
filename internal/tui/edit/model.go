@@ -180,16 +180,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// handleListKey processes keys while the list pane has focus.
-func (m Model) handleListKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	// ctrl+s, ctrl+l and ctrl+z always work, even in filter mode.
+// handleGlobalKey handles shortcuts that work in any pane.
+// Returns the updated model, a command, and whether the key was consumed.
+func (m Model) handleGlobalKey(msg tea.KeyMsg) (tea.Model, tea.Cmd, bool) {
 	switch msg.String() {
 	case "ctrl+s":
-		return m.save()
+		mo, cmd := m.save()
+		return mo, cmd, true
 	case "ctrl+l":
-		return m.validateKeys()
+		mo, cmd := m.validateKeys()
+		return mo, cmd, true
 	case "ctrl+z":
-		return m.undo()
+		return m.undo(), nil, true
+	}
+	return m, nil, false
+}
+
+// handleListKey processes keys while the list pane has focus.
+func (m Model) handleListKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	if mo, cmd, handled := m.handleGlobalKey(msg); handled {
+		return mo, cmd
 	}
 
 	// tab and quit shortcuts are blocked in filter mode to avoid key conflicts.
@@ -218,13 +228,10 @@ func (m Model) handleListKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 // handlePreviewKey processes keys while the preview pane has focus.
 // q/ctrl+c are NOT quit shortcuts here — they go to the textarea as input.
 func (m Model) handlePreviewKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	if mo, cmd, handled := m.handleGlobalKey(msg); handled {
+		return mo, cmd
+	}
 	switch msg.String() {
-	case "ctrl+s":
-		return m.save()
-	case "ctrl+l":
-		return m.validateKeys()
-	case "ctrl+z":
-		return m.undo()
 	case "tab", "esc":
 		return m.togglePreviewPane()
 	}
@@ -346,10 +353,10 @@ func (m *Model) pushHistory() {
 	}
 }
 
-func (m Model) undo() (tea.Model, tea.Cmd) {
+func (m Model) undo() tea.Model {
 	if len(m.history) == 0 {
 		m.statusMsg = "Nothing to undo."
-		return m, nil
+		return m
 	}
 	prev := m.history[len(m.history)-1]
 	m.history = m.history[:len(m.history)-1]
@@ -364,7 +371,7 @@ func (m Model) undo() (tea.Model, tea.Cmd) {
 	}
 	m.dirty = true
 	m.statusMsg = "Undone."
-	return m, nil
+	return m
 }
 
 func (m *Model) applyRaw(raw []byte) {
@@ -382,6 +389,18 @@ func (m *Model) applyRaw(raw []byte) {
 	m.dirty = true
 }
 
+func formatErrors(errs []string) string {
+	var sb strings.Builder
+	for i, e := range errs {
+		if i > 0 {
+			sb.WriteString("\n\n")
+		}
+		sb.WriteString("• ")
+		sb.WriteString(e)
+	}
+	return sb.String()
+}
+
 func (m Model) save() (tea.Model, tea.Cmd) {
 	var errs []string
 	if unknown := ValidateKnownKeys(m.rawYAML); len(unknown) > 0 {
@@ -389,14 +408,7 @@ func (m Model) save() (tea.Model, tea.Cmd) {
 	}
 	errs = append(errs, ValidateMutualExclusions(m.blocks)...)
 	if len(errs) > 0 {
-		msg := ""
-		for i, e := range errs {
-			if i > 0 {
-				msg += "\n\n"
-			}
-			msg += "• " + e
-		}
-		return m.showAlert("Cannot save — fix errors first", msg, alertError)
+		return m.showAlert("Cannot save — fix errors first", formatErrors(errs), alertError)
 	}
 	if err := os.WriteFile(m.filePath, m.rawYAML, 0o600); err != nil {
 		return m.showAlert("Save failed", err.Error(), alertError)
@@ -407,22 +419,12 @@ func (m Model) save() (tea.Model, tea.Cmd) {
 
 func (m Model) validateKeys() (tea.Model, tea.Cmd) {
 	var errs []string
-
 	if unknown := ValidateKnownKeys(m.rawYAML); len(unknown) > 0 {
 		errs = append(errs, "Unknown key(s): "+strings.Join(unknown, ", "))
 	}
-
 	errs = append(errs, ValidateMutualExclusions(m.blocks)...)
-
 	if len(errs) > 0 {
-		msg := ""
-		for i, e := range errs {
-			if i > 0 {
-				msg += "\n\n"
-			}
-			msg += "• " + e
-		}
-		return m.showAlert("Validation errors", msg, alertError)
+		return m.showAlert("Validation errors", formatErrors(errs), alertError)
 	}
 	return m.showAlert("Validation passed", "All keys are valid devcontainer fields with no conflicts.", alertSuccess)
 }

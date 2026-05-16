@@ -26,14 +26,11 @@ const (
 )
 
 // OverlayModel is the floating overlay for adding or editing a YAML block.
-//
-// Two-panel mode (complex block): left field-toggle list + right YAML editor.
-// Single mode (simple block):     just the YAML textarea.
+// Always uses two-panel layout: left field-toggle list + right YAML editor.
 type OverlayModel struct {
-	key      string
-	twoPanel bool
+	key string
 
-	// Left panel — two-panel mode only
+	// Left panel
 	fieldList   FieldListModel
 	fieldPanelW int // border sizing for viewTwoPanel
 	fieldPanelH int // border sizing for viewTwoPanel
@@ -104,7 +101,6 @@ func NewOverlay(key, initialContent string, totalW, totalH int) OverlayModel {
 
 	om := OverlayModel{
 		key:           key,
-		twoPanel:      true,
 		totalW:        totalW,
 		totalH:        totalH,
 		currentPreset: "custom",
@@ -233,12 +229,10 @@ func (om OverlayModel) updateKey(msg tea.KeyMsg) (OverlayModel, tea.Cmd) {
 // updateYAMLEditor forwards a message to the textarea when the YAML panel is
 // active. Field-panel mode has no use for textarea ticks.
 func (om OverlayModel) updateYAMLEditor(msg tea.Msg) (OverlayModel, tea.Cmd) {
-	if !om.twoPanel || om.active == overlayPanelYAML {
+	if om.active == overlayPanelYAML {
 		var cmd tea.Cmd
 		om.yamlEditor, cmd = om.yamlEditor.Update(msg)
-		if om.twoPanel {
-			om.fieldList.SetFields(syncFieldsFromYAML(om.key, om.fieldList.Fields(), om.yamlEditor.Value()))
-		}
+		om.fieldList.SetFields(syncFieldsFromYAML(om.key, om.fieldList.Fields(), om.yamlEditor.Value()))
 		return om, cmd
 	}
 	return om, nil
@@ -257,9 +251,7 @@ func (om OverlayModel) applyPreset(name string) OverlayModel {
 	om.yamlEditor.SetValue(y)
 	om.currentPreset = name
 	om.errMsg = ""
-	if om.twoPanel {
-		om.fieldList.SetFields(syncFieldsFromYAML(om.key, om.fieldList.Fields(), y))
-	}
+	om.fieldList.SetFields(syncFieldsFromYAML(om.key, om.fieldList.Fields(), y))
 	om.presetPicker = nil
 	return om
 }
@@ -337,23 +329,11 @@ func (om OverlayModel) View() string {
 
 	box := overlayBorderStyle.Render(strings.Join(parts, "\n"))
 
-	bw := lipgloss.Width(box)
-	bh := lipgloss.Height(box)
-	lp := (om.totalW - bw) / 2
-	tp := (om.totalH - bh) / 2
-	if lp < 0 {
-		lp = 0
-	}
-	if tp < 0 {
-		tp = 0
-	}
-	overlay := lipgloss.NewStyle().PaddingLeft(lp).PaddingTop(tp).Render(box)
-
 	// Layer the picker over the overlay if open.
 	if om.presetPicker != nil {
 		return om.presetPicker.View()
 	}
-	return overlay
+	return centerBox(box, om.totalW, om.totalH)
 }
 
 func (om OverlayModel) viewTwoPanel() string {

@@ -113,7 +113,7 @@ func ValidateKnownKeys(raw []byte) []string
 ValidateKnownKeys returns the dotted paths of any YAML keys that are not recognised by the schema. Free\-form sub\-trees are skipped.
 
 <a name="ValidateMutualExclusions"></a>
-## func [ValidateMutualExclusions](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/validate.go#L17>)
+## func [ValidateMutualExclusions](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/validate.go#L20>)
 
 ```go
 func ValidateMutualExclusions(blocks []Block) []string
@@ -393,7 +393,7 @@ func (lm ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd)
 
 
 <a name="ListModel.View"></a>
-### func \(ListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L324>)
+### func \(ListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/list.go#L339>)
 
 ```go
 func (lm ListModel) View() string
@@ -447,7 +447,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
 
 
 <a name="Model.View"></a>
-### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L461>)
+### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L463>)
 
 ```go
 func (m Model) View() string
@@ -474,11 +474,9 @@ type OverlayConfirmedMsg struct{ Snippet string }
 ```
 
 <a name="OverlayModel"></a>
-## type [OverlayModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L32-L58>)
+## type [OverlayModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L30-L55>)
 
-OverlayModel is the floating overlay for adding or editing a YAML block.
-
-Two\-panel mode \(complex block\): left field\-toggle list \+ right YAML editor. Single mode \(simple block\): just the YAML textarea.
+OverlayModel is the floating overlay for adding or editing a YAML block. Always uses two\-panel layout: left field\-toggle list \+ right YAML editor.
 
 ```go
 type OverlayModel struct {
@@ -487,7 +485,7 @@ type OverlayModel struct {
 ```
 
 <a name="NewOverlay"></a>
-### func [NewOverlay](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L63>)
+### func [NewOverlay](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L60>)
 
 ```go
 func NewOverlay(key, initialContent string, totalW, totalH int) OverlayModel
@@ -496,7 +494,7 @@ func NewOverlay(key, initialContent string, totalW, totalH int) OverlayModel
 NewOverlay builds an overlay for the given key. All overlays use two\-panel mode: left panel shows field toggles \(or a "\(no sub\-fields\)" hint for simple fields\), right panel is the YAML editor.
 
 <a name="OverlayModel.Init"></a>
-### func \(OverlayModel\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L178>)
+### func \(OverlayModel\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L174>)
 
 ```go
 func (om OverlayModel) Init() tea.Cmd
@@ -505,7 +503,7 @@ func (om OverlayModel) Init() tea.Cmd
 
 
 <a name="OverlayModel.Update"></a>
-### func \(OverlayModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L180>)
+### func \(OverlayModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L176>)
 
 ```go
 func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd)
@@ -514,7 +512,7 @@ func (om OverlayModel) Update(msg tea.Msg) (OverlayModel, tea.Cmd)
 
 
 <a name="OverlayModel.View"></a>
-### func \(OverlayModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L310>)
+### func \(OverlayModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/overlay.go#L302>)
 
 ```go
 func (om OverlayModel) View() string

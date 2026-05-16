@@ -84,15 +84,5 @@ func (a AlertModel) View() string {
 
 	box := border.Render(strings.Join([]string{title, "", body, "", okLine}, "\n"))
 
-	bw := lipgloss.Width(box)
-	bh := lipgloss.Height(box)
-	lp := (a.totalW - bw) / 2
-	tp := (a.totalH - bh) / 2
-	if lp < 0 {
-		lp = 0
-	}
-	if tp < 0 {
-		tp = 0
-	}
-	return lipgloss.NewStyle().PaddingLeft(lp).PaddingTop(tp).Render(box)
+	return centerBox(box, a.totalW, a.totalH)
 }

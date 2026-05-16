@@ -93,15 +93,5 @@ func (p PresetPickerModel) View() string {
 		Padding(0, 1).
 		Render(strings.Join(lines, "\n"))
 
-	bw := lipgloss.Width(box)
-	bh := lipgloss.Height(box)
-	lp := (p.totalW - bw) / 2
-	tp := (p.totalH - bh) / 2
-	if lp < 0 {
-		lp = 0
-	}
-	if tp < 0 {
-		tp = 0
-	}
-	return lipgloss.NewStyle().PaddingLeft(lp).PaddingTop(tp).Render(box)
+	return centerBox(box, p.totalW, p.totalH)
 }
