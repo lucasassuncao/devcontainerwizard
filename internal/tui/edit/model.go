@@ -19,13 +19,6 @@ const (
 	paneAlert
 )
 
-type quitState int
-
-const (
-	quitNone quitState = iota
-	quitAsking
-)
-
 // Model is the root Bubble Tea model for the edit TUI.
 //
 // The active pane is derived from state, not tracked explicitly:
@@ -46,7 +39,6 @@ type Model struct {
 
 	previewFocused bool
 	dirty          bool
-	quitting       quitState
 	statusMsg      string
 	history        [][]byte // undo stack of rawYAML snapshots
 
@@ -141,19 +133,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case AlertDismissedMsg:
 		m.alert = nil
 		return m, nil
+	case doSaveMsg:
+		return m.execSave()
 	}
 
-	// 2. Quit-confirm prompt intercepts keys before pane dispatch.
-	if key, ok := msg.(tea.KeyMsg); ok && m.quitting == quitAsking {
-		if s := key.String(); s == "y" || s == "Y" {
-			return m, tea.Quit
-		}
-		m.quitting = quitNone
-		m.statusMsg = "Quit cancelled."
-		return m, nil
-	}
-
-	// 3. Delegate to the active pane.
+	// 2. Delegate to the active pane.
 	switch m.activePane() {
 	case paneAlert:
 		if key, ok := msg.(tea.KeyMsg); ok {
@@ -209,9 +193,8 @@ func (m Model) handleListKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m.togglePreviewPane()
 		case "q", "ctrl+c":
 			if m.dirty {
-				m.quitting = quitAsking
-				m.statusMsg = "Unsaved changes. Quit without saving? (y/N)"
-				return m, nil
+				return m.showConfirmAlert("Quit without saving?",
+					"Unsaved changes will be lost.", tea.Quit)
 			}
 			return m, tea.Quit
 		}
@@ -410,6 +393,13 @@ func (m Model) save() (tea.Model, tea.Cmd) {
 	if len(errs) > 0 {
 		return m.showAlert("Cannot save — fix errors first", formatErrors(errs), alertError)
 	}
+	doSave := func() tea.Msg { return doSaveMsg{} }
+	return m.showConfirmAlert("Save changes?", fmt.Sprintf("Save to %s?", m.filePath), doSave)
+}
+
+type doSaveMsg struct{}
+
+func (m Model) execSave() (tea.Model, tea.Cmd) {
 	if err := os.WriteFile(m.filePath, m.rawYAML, 0o600); err != nil {
 		return m.showAlert("Save failed", err.Error(), alertError)
 	}
@@ -431,6 +421,12 @@ func (m Model) validateKeys() (tea.Model, tea.Cmd) {
 
 func (m Model) showAlert(title, message string, kind alertKind) (tea.Model, tea.Cmd) {
 	al := NewAlert(title, message, kind, m.width, m.height)
+	m.alert = &al
+	return m, nil
+}
+
+func (m Model) showConfirmAlert(title, message string, confirmCmd tea.Cmd) (tea.Model, tea.Cmd) {
+	al := NewConfirmAlert(title, message, confirmCmd, m.width, m.height)
 	m.alert = &al
 	return m, nil
 }
@@ -484,9 +480,6 @@ func (m Model) View() string {
 
 	// ── Feedback line (dynamic) ──────────────────────────────────────────────
 	feedback := statusStyle.Render(m.statusMsg)
-	if m.quitting == quitAsking {
-		feedback = dirtyStyle.Render(" " + m.statusMsg)
-	}
 
 	// ── Hint line (always visible) ────────────────────────────────────────────
 	var hintText string

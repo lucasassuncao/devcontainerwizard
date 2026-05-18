@@ -20,6 +20,7 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
 - [type AlertDismissedMsg](<#AlertDismissedMsg>)
 - [type AlertModel](<#AlertModel>)
   - [func NewAlert\(title, message string, kind alertKind, totalW, totalH int\) AlertModel](<#NewAlert>)
+  - [func NewConfirmAlert\(title, message string, confirmCmd tea.Cmd, totalW, totalH int\) AlertModel](<#NewConfirmAlert>)
   - [func \(a AlertModel\) Update\(msg tea.KeyMsg\) \(AlertModel, tea.Cmd\)](<#AlertModel.Update>)
   - [func \(a AlertModel\) View\(\) string](<#AlertModel.View>)
 - [type Block](<#Block>)
@@ -140,9 +141,9 @@ type AlertDismissedMsg struct{}
 ```
 
 <a name="AlertModel"></a>
-## type [AlertModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L23-L29>)
+## type [AlertModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L27-L35>)
 
-AlertModel is a simple modal that shows a message with an OK button.
+AlertModel is a simple modal that shows a message with an OK button, or a Yes/No pair when kind is alertConfirm. confirmYes tracks which button is focused \(true = Yes, false = No\). confirmCmd is the command executed when the user confirms \(confirm kind only\).
 
 ```go
 type AlertModel struct {
@@ -151,16 +152,25 @@ type AlertModel struct {
 ```
 
 <a name="NewAlert"></a>
-### func [NewAlert](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L31>)
+### func [NewAlert](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L38>)
 
 ```go
 func NewAlert(title, message string, kind alertKind, totalW, totalH int) AlertModel
 ```
 
+NewAlert creates an informational alert with a single OK button.
 
+<a name="NewConfirmAlert"></a>
+### func [NewConfirmAlert](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L49>)
+
+```go
+func NewConfirmAlert(title, message string, confirmCmd tea.Cmd, totalW, totalH int) AlertModel
+```
+
+NewConfirmAlert creates a yes/no alert that runs confirmCmd when the user confirms.
 
 <a name="AlertModel.Update"></a>
-### func \(AlertModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L48>)
+### func \(AlertModel\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L72>)
 
 ```go
 func (a AlertModel) Update(msg tea.KeyMsg) (AlertModel, tea.Cmd)
@@ -169,7 +179,7 @@ func (a AlertModel) Update(msg tea.KeyMsg) (AlertModel, tea.Cmd)
 
 
 <a name="AlertModel.View"></a>
-### func \(AlertModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L56>)
+### func \(AlertModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/alert.go#L96>)
 
 ```go
 func (a AlertModel) View() string
@@ -402,7 +412,7 @@ func (lm ListModel) View() string
 View renders the visible slice of the list.
 
 <a name="Model"></a>
-## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L36-L57>)
+## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L29-L49>)
 
 Model is the root Bubble Tea model for the edit TUI.
 
@@ -420,7 +430,7 @@ type Model struct {
 ```
 
 <a name="New"></a>
-### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L90>)
+### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L82>)
 
 ```go
 func New(filePath string) (Model, error)
@@ -429,7 +439,7 @@ func New(filePath string) (Model, error)
 New loads the YAML file and initialises the model.
 
 <a name="Model.Init"></a>
-### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L121>)
+### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L113>)
 
 ```go
 func (m Model) Init() tea.Cmd
@@ -438,7 +448,7 @@ func (m Model) Init() tea.Cmd
 
 
 <a name="Model.Update"></a>
-### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L123>)
+### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L115>)
 
 ```go
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
@@ -447,7 +457,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
 
 
 <a name="Model.View"></a>
-### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L463>)
+### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L459>)
 
 ```go
 func (m Model) View() string
