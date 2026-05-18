@@ -1,4 +1,4 @@
-package examples
+package docs
 
 import (
 	"log"
@@ -9,14 +9,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ShowCmd is the cobra entrypoint for browsing built-in devcontainer presets.
-var ShowCmd = &cobra.Command{
+var ShowExamplesCmd = &cobra.Command{
 	Use:   "show-examples",
 	Short: "Browse built-in devcontainer presets in YAML",
-	Run:   runShow,
+	Run:   runShowExamples,
 }
 
-func runShow(cmd *cobra.Command, args []string) {
+func runShowExamples(cmd *cobra.Command, args []string) {
 	err := examples.Run(presets.ListFields(), presets.ListPresets, presets.PresetYAML)
 	if err != nil {
 		log.Fatalf("examples TUI: %v", err)

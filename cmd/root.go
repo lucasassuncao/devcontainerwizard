@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/lucasassuncao/devcontainerwizard/cmd/docs"
-	"github.com/lucasassuncao/devcontainerwizard/cmd/examples"
 
 	"github.com/spf13/cobra"
 )
@@ -21,7 +20,7 @@ func Execute(version string) {
 		convertCmd,
 		docs.GenerateCmd,
 		docs.ShowCmd,
-		examples.ShowCmd,
+		docs.ShowExamplesCmd,
 		initCmd,
 		selfUpdateCmd(version),
 		editCmd,
