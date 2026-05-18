@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
-	"github.com/charmbracelet/lipgloss"
 
 	"github.com/lucasassuncao/devcontainerwizard/internal/tui/theme"
 )
@@ -22,7 +21,7 @@ const (
 
 const (
 	docHeaderLines = 1
-	docStatusLines = 1 // hint line
+	docStatusLines = 2 // feedback + hint lines
 )
 
 type docTUIModel struct {
@@ -131,11 +130,7 @@ func (m *docTUIModel) handleViewportKey(key string) {
 }
 
 func (m *docTUIModel) relayout() {
-	m.listColW = m.width / 5
-	if m.listColW < 40 {
-		m.listColW = 40
-	}
-	m.vpColW = m.width - m.listColW - 4
+	m.listColW, m.vpColW = theme.TwoColumnWidths(m.width)
 
 	innerH := m.height - docHeaderLines - docStatusLines - 2
 	if innerH < 1 {
@@ -218,13 +213,12 @@ func (m docTUIModel) View() string {
 	}
 	rightPanel := theme.RenderTitledPanel(rightTitle, m.vpColW, m.vpH+2, m.active == docPaneView, m.vp.View())
 
-	// ── Status / hint bar ────────────────────────────────────────────────────
 	hint := theme.StatusBar.Render(
 		"[Tab] switch panel  [↑/↓ j/k] navigate / scroll  [PgUp/PgDn] half-page  [q] quit",
 	)
 
 	header := theme.RenderHeader("docs", "", m.width)
-	return strings.Join([]string{header, lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel), hint}, "\n")
+	return theme.RenderTwoColumnView(header, leftPanel, rightPanel, "", hint)
 }
 
 // RenderMarkdownDocsInTerminal launches the two-panel documentation TUI.

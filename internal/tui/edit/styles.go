@@ -48,11 +48,6 @@ func centerBox(box string, totalW, totalH int) string {
 	return lipgloss.NewStyle().PaddingLeft(lp).PaddingTop(tp).Render(box)
 }
 
-// renderTitledPanel delegates to the shared theme implementation.
-func renderTitledPanel(title string, width, height int, active bool, content string) string {
-	return theme.RenderTitledPanel(title, width, height, active, content)
-}
-
 // renderHeader returns the single-line app header.
 func renderHeader(file string, dirty bool, width int) string {
 	info := file

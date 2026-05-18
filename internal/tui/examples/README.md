@@ -21,7 +21,7 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/examples"
 
 
 <a name="Run"></a>
-## func [Run](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L171>)
+## func [Run](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L159>)
 
 ```go
 func Run(fields []string, listFn ListPresetsFn, yamlFn PresetYAMLFn) error
@@ -30,7 +30,7 @@ func Run(fields []string, listFn ListPresetsFn, yamlFn PresetYAMLFn) error
 Run starts the show\-examples TUI as a blocking call.
 
 <a name="ListPresetsFn"></a>
-## type [ListPresetsFn](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L24>)
+## type [ListPresetsFn](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L22>)
 
 ListPresetsFn returns preset names for a field.
 
@@ -39,7 +39,7 @@ type ListPresetsFn func(field string) []string
 ```
 
 <a name="Model"></a>
-## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L27-L41>)
+## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L25-L39>)
 
 Model is the Bubble Tea root for the show\-examples TUI.
 
@@ -50,7 +50,7 @@ type Model struct {
 ```
 
 <a name="NewModel"></a>
-### func [NewModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L44>)
+### func [NewModel](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L42>)
 
 ```go
 func NewModel(fields []string, listFn ListPresetsFn, yamlFn PresetYAMLFn) Model
@@ -59,7 +59,7 @@ func NewModel(fields []string, listFn ListPresetsFn, yamlFn PresetYAMLFn) Model
 NewModel constructs the TUI given the fields and accessor functions.
 
 <a name="Model.Init"></a>
-### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L58>)
+### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L56>)
 
 ```go
 func (m Model) Init() tea.Cmd
@@ -68,7 +68,7 @@ func (m Model) Init() tea.Cmd
 
 
 <a name="Model.Update"></a>
-### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L60>)
+### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L58>)
 
 ```go
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
@@ -77,7 +77,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
 
 
 <a name="Model.View"></a>
-### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L127>)
+### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L118>)
 
 ```go
 func (m Model) View() string
@@ -86,7 +86,7 @@ func (m Model) View() string
 
 
 <a name="PresetYAMLFn"></a>
-## type [PresetYAMLFn](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L21>)
+## type [PresetYAMLFn](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/examples/model.go#L19>)
 
 PresetYAMLFn returns the YAML body for a \(field, preset\) pair.
 

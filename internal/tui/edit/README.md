@@ -412,7 +412,7 @@ func (lm ListModel) View() string
 View renders the visible slice of the list.
 
 <a name="Model"></a>
-## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L29-L49>)
+## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L31-L51>)
 
 Model is the root Bubble Tea model for the edit TUI.
 
@@ -430,7 +430,7 @@ type Model struct {
 ```
 
 <a name="New"></a>
-### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L82>)
+### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L84>)
 
 ```go
 func New(filePath string) (Model, error)
@@ -439,7 +439,7 @@ func New(filePath string) (Model, error)
 New loads the YAML file and initialises the model.
 
 <a name="Model.Init"></a>
-### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L113>)
+### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L115>)
 
 ```go
 func (m Model) Init() tea.Cmd
@@ -448,7 +448,7 @@ func (m Model) Init() tea.Cmd
 
 
 <a name="Model.Update"></a>
-### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L115>)
+### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L117>)
 
 ```go
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
@@ -457,7 +457,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
 
 
 <a name="Model.View"></a>
-### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L459>)
+### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L453>)
 
 ```go
 func (m Model) View() string

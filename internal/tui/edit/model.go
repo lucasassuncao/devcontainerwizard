@@ -8,6 +8,8 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/lucasassuncao/devcontainerwizard/internal/tui/theme"
 )
 
 type pane int
@@ -437,20 +439,12 @@ const (
 )
 
 func (m *Model) relayout() {
-	m.listW = m.width / 5
-	if m.listW < 40 {
-		m.listW = 40
-	}
-	previewW := m.width - m.listW - 4
+	var previewW int
+	m.listW, previewW = theme.TwoColumnWidths(m.width)
 	m.innerH = m.height - headerLines - statusBarLines - 2 // 2 panel borders (top+bottom)
-
 	if m.innerH < 1 {
 		m.innerH = 1
 	}
-	if previewW < 10 {
-		previewW = 10
-	}
-
 	m.list.SetHeight(m.innerH)
 	m.preview.SetWidth(previewW - 2)
 	m.preview.SetHeight(m.innerH)
@@ -471,17 +465,11 @@ func (m Model) View() string {
 	header := renderHeader(m.filePath, m.dirty, m.width)
 
 	leftTitle := fmt.Sprintf("Blocks (%d/%d)", m.list.AddedCount(), len(allKnownKeys))
-	leftPanel := renderTitledPanel(leftTitle, m.listW, m.innerH+2, !m.previewFocused, m.list.View())
+	leftPanel := theme.RenderTitledPanel(leftTitle, m.listW, m.innerH+2, !m.previewFocused, m.list.View())
 
-	previewW := m.width - m.listW - 4
-	rightPanel := renderTitledPanel("Preview", previewW, m.innerH+2, m.previewFocused, m.preview.View())
+	_, previewW := theme.TwoColumnWidths(m.width)
+	rightPanel := theme.RenderTitledPanel("Preview", previewW, m.innerH+2, m.previewFocused, m.preview.View())
 
-	body := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
-
-	// ── Feedback line (dynamic) ──────────────────────────────────────────────
-	feedback := statusStyle.Render(m.statusMsg)
-
-	// ── Hint line (always visible) ────────────────────────────────────────────
 	var hintText string
 	if m.previewFocused {
 		hintText = "[Tab]/[Esc] back to list • [ctrl+l] validate • [ctrl+s] save"
@@ -492,10 +480,9 @@ func (m Model) View() string {
 	} else {
 		hintText = "[↑/↓] navigate • [Space] add block • [/] filter • [Tab] edit YAML • [ctrl+z] undo • [ctrl+s] save • [q] quit"
 	}
-	hint := statusStyle.Render(hintText)
 
-	feedbackLine := lipgloss.NewStyle().Width(m.width).Render(feedback)
-	hintLine := lipgloss.NewStyle().Width(m.width).Render(hint)
+	feedback := lipgloss.NewStyle().Width(m.width).Render(statusStyle.Render(m.statusMsg))
+	hint := lipgloss.NewStyle().Width(m.width).Render(statusStyle.Render(hintText))
 
-	return strings.Join([]string{header, body, feedbackLine, hintLine}, "\n")
+	return theme.RenderTwoColumnView(header, leftPanel, rightPanel, feedback, hint)
 }

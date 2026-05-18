@@ -2,10 +2,8 @@ package examples
 
 import (
 	"fmt"
-	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 
 	"github.com/lucasassuncao/devcontainerwizard/internal/tui/theme"
 )
@@ -109,15 +107,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *Model) relayout() {
-	m.listW = m.width / 5
-	if m.listW < 40 {
-		m.listW = 40
-	}
-	m.vpW = m.width - m.listW - 4
-	if m.vpW < 20 {
-		m.vpW = 20
-	}
-	innerH := m.height - 4 // 1 header + 1 hint + 2 panel borders
+	m.listW, m.vpW = theme.TwoColumnWidths(m.width)
+	innerH := m.height - 5 // 1 header + 2 status + 2 panel borders
 	if innerH < 3 {
 		innerH = 3
 	}
@@ -147,7 +138,7 @@ func (m Model) View() string {
 		rightTitle = fmt.Sprintf("%s · %s", field, preset)
 	}
 
-	innerH := m.height - 4
+	innerH := m.height - 5
 	if innerH < 3 {
 		innerH = 3
 	}
@@ -156,15 +147,12 @@ func (m Model) View() string {
 	rightPanel := theme.RenderTitledPanel(rightTitle, m.vpW, innerH+2, m.active == paneViewport,
 		renderYAML(yaml, m.vpW-2))
 
-	body := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
-
 	hintText := "[↑/↓] navigate  [Enter/→] open  [Esc/←] back  [Tab] panel  [q] quit"
 	if m.list.Mode() == modePresets {
 		hintText = "[↑/↓] navigate  [Esc/←] back to fields  [Tab] panel  [q] quit"
 	}
-	hint := lipgloss.NewStyle().Faint(true).Render(hintText)
 	header := theme.RenderHeader("presets", "", m.width)
-	return strings.Join([]string{header, body, hint}, "\n")
+	return theme.RenderTwoColumnView(header, leftPanel, rightPanel, "", theme.StatusBar.Render(hintText))
 }
 
 // Run starts the show-examples TUI as a blocking call.

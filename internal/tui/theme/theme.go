@@ -64,6 +64,29 @@ func PanelBorder(active bool) lipgloss.Style {
 		BorderForeground(colour)
 }
 
+// TwoColumnWidths computes left and right column widths for the standard
+// two-panel layout: left is totalWidth/5 (min 40); right gets the remainder
+// minus 4 chars for the two border pairs.
+func TwoColumnWidths(totalWidth int) (listW, rightW int) {
+	listW = totalWidth / 5
+	if listW < 40 {
+		listW = 40
+	}
+	rightW = totalWidth - listW - 4
+	if rightW < 10 {
+		rightW = 10
+	}
+	return
+}
+
+// RenderTwoColumnView assembles the standard two-panel screen: header, panels
+// side by side, a feedback line, and a hint line. Pass "" for feedback when
+// there is nothing to report.
+func RenderTwoColumnView(header, leftPanel, rightPanel, feedback, hint string) string {
+	body := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
+	return strings.Join([]string{header, body, feedback, hint}, "\n")
+}
+
 // RenderTitledPanel renders a rounded-border panel with the title embedded in
 // the top edge: ╭─ Title ──────╮. width and height are OUTER dimensions
 // (including the border rows/cols). Same visual as the main edit TUI panels.
