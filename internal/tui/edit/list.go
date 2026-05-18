@@ -5,24 +5,13 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+
+	"github.com/lucasassuncao/devcontainerwizard/internal/model"
 )
 
-// allKnownKeys lists every top-level key recognised by the DevContainer model,
-// in a sensible display order.
-var allKnownKeys = []string{
-	"name", "image", "build", "dockerComposeFile", "service", "runServices",
-	"workspaceFolder", "workspaceMount",
-	"remoteUser", "containerUser", "updateRemoteUserUID", "userEnvProbe",
-	"containerEnv", "remoteEnv", "localEnv",
-	"forwardPorts", "appPort", "portsAttributes", "otherPortsAttributes", "mounts",
-	"runArgs", "startupCommand", "overrideCommand", "command", "entrypoint",
-	"init", "privileged", "capAdd", "capDrop", "securityOpt", "devices",
-	"hostRequirements",
-	"features", "overrideFeatureInstallOrder",
-	"initializeCommand", "onCreateCommand", "updateContentCommand",
-	"postCreateCommand", "postStartCommand", "postAttachCommand", "waitFor",
-	"watch", "customizations", "secrets", "shutdownAction",
-}
+// allKnownKeys is the display order for the edit TUI left panel.
+// It is derived from model.TopLevelKeys — do not maintain a separate copy here.
+var allKnownKeys = model.TopLevelKeys
 
 // ListItem represents one row in the left panel.
 type ListItem struct {

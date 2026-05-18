@@ -369,13 +369,13 @@ func ListFeaturesPresets() []string
 
 
 <a name="ListFields"></a>
-## func [ListFields](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/presets.go#L154>)
+## func [ListFields](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/presets.go#L118>)
 
 ```go
 func ListFields() []string
 ```
 
-ListFields returns the canonical ordering of preset\-providing fields, matching the source order of model.DevContainer struct fields.
+ListFields returns the canonical ordering of all top\-level DevContainer fields. Delegates to model.TopLevelKeys — the single source of truth.
 
 <a name="ListForwardPortsPresets"></a>
 ## func [ListForwardPortsPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/ports.go#L14>)
@@ -522,7 +522,7 @@ func ListPostStartCommandPresets() []string
 
 
 <a name="ListPresets"></a>
-## func [ListPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/presets.go#L145>)
+## func [ListPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/presets.go#L109>)
 
 ```go
 func ListPresets(field string) []string
@@ -783,7 +783,7 @@ func PostStartCommandPreset(name string) model.StringOrSlice
 
 
 <a name="PresetYAML"></a>
-## func [PresetYAML](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/presets.go#L86>)
+## func [PresetYAML](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/presets.go#L99>)
 
 ```go
 func PresetYAML(field, name string) (string, error)

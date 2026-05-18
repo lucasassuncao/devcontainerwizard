@@ -206,3 +206,39 @@ func TestAllFieldsHaveBasePreset(t *testing.T) {
 		}
 	}
 }
+
+// TestPresetRegistryCoverageAllTopLevelKeys verifies that every field in
+// model.TopLevelKeys has an entry in presetRegistry. A missing entry here means
+// PresetYAML and ListPresets would silently return errors/nil for that field.
+func TestPresetRegistryCoverageAllTopLevelKeys(t *testing.T) {
+	for _, key := range model.TopLevelKeys {
+		if _, ok := presetRegistry[key]; !ok {
+			t.Errorf("field %q is in model.TopLevelKeys but missing from presetRegistry", key)
+		}
+	}
+}
+
+// TestPresetRegistryNoOrphanKeys verifies that presetRegistry has no keys that
+// are absent from model.TopLevelKeys — those entries would never be reachable.
+func TestPresetRegistryNoOrphanKeys(t *testing.T) {
+	known := make(map[string]bool, len(model.TopLevelKeys))
+	for _, k := range model.TopLevelKeys {
+		known[k] = true
+	}
+	for key := range presetRegistry {
+		if !known[key] {
+			t.Errorf("field %q is in presetRegistry but not in model.TopLevelKeys", key)
+		}
+	}
+}
+
+// TestTopLevelKeysNoDuplicates ensures model.TopLevelKeys contains no repeated entries.
+func TestTopLevelKeysNoDuplicates(t *testing.T) {
+	seen := make(map[string]int, len(model.TopLevelKeys))
+	for i, k := range model.TopLevelKeys {
+		if prev, dup := seen[k]; dup {
+			t.Errorf("duplicate key %q at indices %d and %d in model.TopLevelKeys", k, prev, i)
+		}
+		seen[k] = i
+	}
+}

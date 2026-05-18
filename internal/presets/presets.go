@@ -1,6 +1,10 @@
 package presets
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/lucasassuncao/devcontainerwizard/internal/model"
+)
 
 // stringPreset wraps a string-valued preset getter so it returns an error on
 // empty (which signals "not found" for enum/string fields).
@@ -29,141 +33,88 @@ func directPreset(field string, getter func(string) any) func(string) (string, e
 	return func(name string) (string, error) { return marshalAsBlock(field, getter(name)) }
 }
 
-// presetYAMLDispatch maps each field name to its YAML-producing function.
-var presetYAMLDispatch = map[string]func(string) (string, error){
-	"name":            stringPreset("name", NamePreset),
-	"image":           stringPreset("image", ImagePreset),
-	"service":         stringPreset("service", ServicePreset),
-	"workspaceFolder": stringPreset("workspaceFolder", WorkspaceFolderPreset),
-	"workspaceMount":  stringPreset("workspaceMount", WorkspaceMountPreset),
-	"remoteUser":      stringPreset("remoteUser", RemoteUserPreset),
-	"containerUser":   stringPreset("containerUser", ContainerUserPreset),
-	"userEnvProbe":    stringPreset("userEnvProbe", UserEnvProbePreset),
-	"startupCommand":  stringPreset("startupCommand", StartupCommandPreset),
-	"command":         stringPreset("command", CommandPreset),
-	"entrypoint":      stringPreset("entrypoint", EntrypointPreset),
-	"waitFor":         stringPreset("waitFor", WaitForPreset),
-	"shutdownAction":  stringPreset("shutdownAction", ShutdownActionPreset),
+// presetEntry pairs the YAML-producing function with the preset-name lister for
+// a single field. Both live in one place so adding a field means one map entry.
+type presetEntry struct {
+	yaml func(string) (string, error)
+	list func() []string
+}
 
-	"updateRemoteUserUID": boolPreset("updateRemoteUserUID", updateRemoteUserUIDPresetsMap, UpdateRemoteUserUIDPreset),
-	"overrideCommand":     boolPreset("overrideCommand", overrideCommandPresetsMap, OverrideCommandPreset),
-	"init":                boolPreset("init", initPresetsMap, InitPreset),
-	"privileged":          boolPreset("privileged", privilegedPresetsMap, PrivilegedPreset),
+// presetRegistry is the single map consulted by PresetYAML and ListPresets.
+// Every field in model.TopLevelKeys must have an entry here — the test
+// TestPresetRegistryCoverageAllTopLevelKeys enforces this at test time.
+var presetRegistry = map[string]presetEntry{
+	"name":            {stringPreset("name", NamePreset), ListNamePresets},
+	"image":           {stringPreset("image", ImagePreset), ListImagePresets},
+	"service":         {stringPreset("service", ServicePreset), ListServicePresets},
+	"workspaceFolder": {stringPreset("workspaceFolder", WorkspaceFolderPreset), ListWorkspaceFolderPresets},
+	"workspaceMount":  {stringPreset("workspaceMount", WorkspaceMountPreset), ListWorkspaceMountPresets},
+	"remoteUser":      {stringPreset("remoteUser", RemoteUserPreset), ListRemoteUserPresets},
+	"containerUser":   {stringPreset("containerUser", ContainerUserPreset), ListContainerUserPresets},
+	"userEnvProbe":    {stringPreset("userEnvProbe", UserEnvProbePreset), ListUserEnvProbePresets},
+	"startupCommand":  {stringPreset("startupCommand", StartupCommandPreset), ListStartupCommandPresets},
+	"command":         {stringPreset("command", CommandPreset), ListCommandPresets},
+	"entrypoint":      {stringPreset("entrypoint", EntrypointPreset), ListEntrypointPresets},
+	"waitFor":         {stringPreset("waitFor", WaitForPreset), ListWaitForPresets},
+	"shutdownAction":  {stringPreset("shutdownAction", ShutdownActionPreset), ListShutdownActionPresets},
 
-	"dockerComposeFile":           directPreset("dockerComposeFile", func(n string) any { return DockerComposeFilePreset(n) }),
-	"runServices":                 directPreset("runServices", func(n string) any { return RunServicesPreset(n) }),
-	"runArgs":                     directPreset("runArgs", func(n string) any { return RunArgsPreset(n) }),
-	"capAdd":                      directPreset("capAdd", func(n string) any { return CapAddPreset(n) }),
-	"capDrop":                     directPreset("capDrop", func(n string) any { return CapDropPreset(n) }),
-	"securityOpt":                 directPreset("securityOpt", func(n string) any { return SecurityOptPreset(n) }),
-	"devices":                     directPreset("devices", func(n string) any { return DevicesPreset(n) }),
-	"overrideFeatureInstallOrder": directPreset("overrideFeatureInstallOrder", func(n string) any { return OverrideFeatureInstallOrderPreset(n) }),
-	"forwardPorts":                directPreset("forwardPorts", func(n string) any { return ForwardPortsPreset(n) }),
-	"appPort":                     directPreset("appPort", func(n string) any { return AppPortPreset(n) }),
-	"containerEnv":                directPreset("containerEnv", func(n string) any { return ContainerEnvPreset(n) }),
-	"remoteEnv":                   directPreset("remoteEnv", func(n string) any { return RemoteEnvPreset(n) }),
-	"localEnv":                    directPreset("localEnv", func(n string) any { return LocalEnvPreset(n) }),
-	"build":                       directPreset("build", func(n string) any { return BuildPreset(n) }),
-	"hostRequirements":            directPreset("hostRequirements", func(n string) any { return HostRequirementsPreset(n) }),
-	"watch":                       directPreset("watch", func(n string) any { return WatchPreset(n) }),
-	"mounts":                      directPreset("mounts", func(n string) any { return MountsPreset(n) }),
-	"portsAttributes":             directPreset("portsAttributes", func(n string) any { return PortsAttributesPreset(n) }),
-	"otherPortsAttributes":        directPreset("otherPortsAttributes", func(n string) any { return OtherPortsAttributesPreset(n) }),
-	"secrets":                     directPreset("secrets", func(n string) any { return SecretsPreset(n) }),
-	"features":                    directPreset("features", func(n string) any { return FeaturesPreset(n) }),
-	"initializeCommand":           directPreset("initializeCommand", func(n string) any { return InitializeCommandPreset(n) }),
-	"onCreateCommand":             directPreset("onCreateCommand", func(n string) any { return OnCreateCommandPreset(n) }),
-	"updateContentCommand":        directPreset("updateContentCommand", func(n string) any { return UpdateContentCommandPreset(n) }),
-	"postCreateCommand":           directPreset("postCreateCommand", func(n string) any { return PostCreateCommandPreset(n) }),
-	"postStartCommand":            directPreset("postStartCommand", func(n string) any { return PostStartCommandPreset(n) }),
-	"postAttachCommand":           directPreset("postAttachCommand", func(n string) any { return PostAttachCommandPreset(n) }),
-	"customizations":              directPreset("customizations", func(n string) any { return CustomizationsPreset(n) }),
+	"updateRemoteUserUID": {boolPreset("updateRemoteUserUID", updateRemoteUserUIDPresetsMap, UpdateRemoteUserUIDPreset), ListUpdateRemoteUserUIDPresets},
+	"overrideCommand":     {boolPreset("overrideCommand", overrideCommandPresetsMap, OverrideCommandPreset), ListOverrideCommandPresets},
+	"init":                {boolPreset("init", initPresetsMap, InitPreset), ListInitPresets},
+	"privileged":          {boolPreset("privileged", privilegedPresetsMap, PrivilegedPreset), ListPrivilegedPresets},
+
+	"dockerComposeFile":           {directPreset("dockerComposeFile", func(n string) any { return DockerComposeFilePreset(n) }), ListDockerComposeFilePresets},
+	"runServices":                 {directPreset("runServices", func(n string) any { return RunServicesPreset(n) }), ListRunServicesPresets},
+	"runArgs":                     {directPreset("runArgs", func(n string) any { return RunArgsPreset(n) }), ListRunArgsPresets},
+	"capAdd":                      {directPreset("capAdd", func(n string) any { return CapAddPreset(n) }), ListCapAddPresets},
+	"capDrop":                     {directPreset("capDrop", func(n string) any { return CapDropPreset(n) }), ListCapDropPresets},
+	"securityOpt":                 {directPreset("securityOpt", func(n string) any { return SecurityOptPreset(n) }), ListSecurityOptPresets},
+	"devices":                     {directPreset("devices", func(n string) any { return DevicesPreset(n) }), ListDevicesPresets},
+	"overrideFeatureInstallOrder": {directPreset("overrideFeatureInstallOrder", func(n string) any { return OverrideFeatureInstallOrderPreset(n) }), ListOverrideFeatureInstallOrderPresets},
+	"forwardPorts":                {directPreset("forwardPorts", func(n string) any { return ForwardPortsPreset(n) }), ListForwardPortsPresets},
+	"appPort":                     {directPreset("appPort", func(n string) any { return AppPortPreset(n) }), ListAppPortPresets},
+	"containerEnv":                {directPreset("containerEnv", func(n string) any { return ContainerEnvPreset(n) }), ListContainerEnvPresets},
+	"remoteEnv":                   {directPreset("remoteEnv", func(n string) any { return RemoteEnvPreset(n) }), ListRemoteEnvPresets},
+	"localEnv":                    {directPreset("localEnv", func(n string) any { return LocalEnvPreset(n) }), ListLocalEnvPresets},
+	"build":                       {directPreset("build", func(n string) any { return BuildPreset(n) }), ListBuildPresets},
+	"hostRequirements":            {directPreset("hostRequirements", func(n string) any { return HostRequirementsPreset(n) }), ListHostRequirementsPresets},
+	"watch":                       {directPreset("watch", func(n string) any { return WatchPreset(n) }), ListWatchPresets},
+	"mounts":                      {directPreset("mounts", func(n string) any { return MountsPreset(n) }), ListMountsPresets},
+	"portsAttributes":             {directPreset("portsAttributes", func(n string) any { return PortsAttributesPreset(n) }), ListPortsAttributesPresets},
+	"otherPortsAttributes":        {directPreset("otherPortsAttributes", func(n string) any { return OtherPortsAttributesPreset(n) }), ListOtherPortsAttributesPresets},
+	"secrets":                     {directPreset("secrets", func(n string) any { return SecretsPreset(n) }), ListSecretsPresets},
+	"features":                    {directPreset("features", func(n string) any { return FeaturesPreset(n) }), ListFeaturesPresets},
+	"initializeCommand":           {directPreset("initializeCommand", func(n string) any { return InitializeCommandPreset(n) }), ListInitializeCommandPresets},
+	"onCreateCommand":             {directPreset("onCreateCommand", func(n string) any { return OnCreateCommandPreset(n) }), ListOnCreateCommandPresets},
+	"updateContentCommand":        {directPreset("updateContentCommand", func(n string) any { return UpdateContentCommandPreset(n) }), ListUpdateContentCommandPresets},
+	"postCreateCommand":           {directPreset("postCreateCommand", func(n string) any { return PostCreateCommandPreset(n) }), ListPostCreateCommandPresets},
+	"postStartCommand":            {directPreset("postStartCommand", func(n string) any { return PostStartCommandPreset(n) }), ListPostStartCommandPresets},
+	"postAttachCommand":           {directPreset("postAttachCommand", func(n string) any { return PostAttachCommandPreset(n) }), ListPostAttachCommandPresets},
+	"customizations":              {directPreset("customizations", func(n string) any { return CustomizationsPreset(n) }), ListCustomizationsPresets},
 }
 
 // PresetYAML returns the YAML block for a (field, preset) pair, ready to be
 // inserted into the overlay textarea or rendered by show-examples.
 // Returns an error if the field is unknown or the preset is not found.
 func PresetYAML(field, name string) (string, error) {
-	fn, ok := presetYAMLDispatch[field]
+	e, ok := presetRegistry[field]
 	if !ok {
 		return "", fmt.Errorf("unknown field: %s", field)
 	}
-	return fn(name)
-}
-
-// listPresetsDispatch maps each field name to its List* function.
-var listPresetsDispatch = map[string]func() []string{
-	"name":                        ListNamePresets,
-	"image":                       ListImagePresets,
-	"service":                     ListServicePresets,
-	"workspaceFolder":             ListWorkspaceFolderPresets,
-	"workspaceMount":              ListWorkspaceMountPresets,
-	"remoteUser":                  ListRemoteUserPresets,
-	"containerUser":               ListContainerUserPresets,
-	"userEnvProbe":                ListUserEnvProbePresets,
-	"startupCommand":              ListStartupCommandPresets,
-	"command":                     ListCommandPresets,
-	"entrypoint":                  ListEntrypointPresets,
-	"waitFor":                     ListWaitForPresets,
-	"shutdownAction":              ListShutdownActionPresets,
-	"updateRemoteUserUID":         ListUpdateRemoteUserUIDPresets,
-	"overrideCommand":             ListOverrideCommandPresets,
-	"init":                        ListInitPresets,
-	"privileged":                  ListPrivilegedPresets,
-	"dockerComposeFile":           ListDockerComposeFilePresets,
-	"runServices":                 ListRunServicesPresets,
-	"runArgs":                     ListRunArgsPresets,
-	"capAdd":                      ListCapAddPresets,
-	"capDrop":                     ListCapDropPresets,
-	"securityOpt":                 ListSecurityOptPresets,
-	"devices":                     ListDevicesPresets,
-	"overrideFeatureInstallOrder": ListOverrideFeatureInstallOrderPresets,
-	"forwardPorts":                ListForwardPortsPresets,
-	"appPort":                     ListAppPortPresets,
-	"containerEnv":                ListContainerEnvPresets,
-	"remoteEnv":                   ListRemoteEnvPresets,
-	"localEnv":                    ListLocalEnvPresets,
-	"build":                       ListBuildPresets,
-	"hostRequirements":            ListHostRequirementsPresets,
-	"watch":                       ListWatchPresets,
-	"mounts":                      ListMountsPresets,
-	"portsAttributes":             ListPortsAttributesPresets,
-	"otherPortsAttributes":        ListOtherPortsAttributesPresets,
-	"secrets":                     ListSecretsPresets,
-	"features":                    ListFeaturesPresets,
-	"initializeCommand":           ListInitializeCommandPresets,
-	"onCreateCommand":             ListOnCreateCommandPresets,
-	"updateContentCommand":        ListUpdateContentCommandPresets,
-	"postCreateCommand":           ListPostCreateCommandPresets,
-	"postStartCommand":            ListPostStartCommandPresets,
-	"postAttachCommand":           ListPostAttachCommandPresets,
-	"customizations":              ListCustomizationsPresets,
+	return e.yaml(name)
 }
 
 // ListPresets returns the preset names for a field, sorted with "base" first.
 // Returns nil for unknown fields.
 func ListPresets(field string) []string {
-	if fn, ok := listPresetsDispatch[field]; ok {
-		return fn()
+	if e, ok := presetRegistry[field]; ok {
+		return e.list()
 	}
 	return nil
 }
 
-// ListFields returns the canonical ordering of preset-providing fields,
-// matching the source order of model.DevContainer struct fields.
+// ListFields returns the canonical ordering of all top-level DevContainer fields.
+// Delegates to model.TopLevelKeys — the single source of truth.
 func ListFields() []string {
-	return []string{
-		"name", "image", "build", "dockerComposeFile", "service", "runServices",
-		"workspaceFolder", "workspaceMount", "remoteUser", "containerUser",
-		"updateRemoteUserUID", "userEnvProbe",
-		"containerEnv", "remoteEnv", "localEnv",
-		"forwardPorts", "appPort", "portsAttributes", "otherPortsAttributes",
-		"mounts", "runArgs", "startupCommand", "overrideCommand",
-		"command", "entrypoint",
-		"init", "privileged", "capAdd", "capDrop", "securityOpt", "devices",
-		"hostRequirements", "overrideFeatureInstallOrder", "features",
-		"initializeCommand", "onCreateCommand", "updateContentCommand",
-		"postCreateCommand", "postStartCommand", "postAttachCommand", "waitFor",
-		"watch", "customizations", "secrets", "shutdownAction",
-	}
+	return model.TopLevelKeys
 }

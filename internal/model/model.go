@@ -155,6 +155,25 @@ type GPURequirement struct {
 	Memory string `json:"memory,omitempty" yaml:"memory,omitempty" jsonschema_description:"Minimum GPU memory required (e.g. \"4gb\")."`
 }
 
+// TopLevelKeys is the single source of truth for every recognised top-level
+// DevContainer field, in canonical display/insertion order.
+// Both the edit TUI (allKnownKeys) and the presets package (ListFields) derive
+// their lists from this slice so they can never diverge.
+var TopLevelKeys = []string{
+	"name", "image", "build", "dockerComposeFile", "service", "runServices",
+	"workspaceFolder", "workspaceMount", "remoteUser", "containerUser",
+	"updateRemoteUserUID", "userEnvProbe",
+	"containerEnv", "remoteEnv", "localEnv",
+	"forwardPorts", "appPort", "portsAttributes", "otherPortsAttributes",
+	"mounts", "runArgs", "startupCommand", "overrideCommand",
+	"command", "entrypoint",
+	"init", "privileged", "capAdd", "capDrop", "securityOpt", "devices",
+	"hostRequirements", "overrideFeatureInstallOrder", "features",
+	"initializeCommand", "onCreateCommand", "updateContentCommand",
+	"postCreateCommand", "postStartCommand", "postAttachCommand", "waitFor",
+	"watch", "customizations", "secrets", "shutdownAction",
+}
+
 // GetAllTypes returns all model types for documentation generation
 func GetAllTypes() []any {
 	return []any{

@@ -12,6 +12,7 @@ Package model defines the data structures used to represent dev container config
 
 ## Index
 
+- [Variables](<#variables>)
 - [func GetAllTypes\(\) \[\]any](<#GetAllTypes>)
 - [type BuildConfig](<#BuildConfig>)
 - [type BuildSecret](<#BuildSecret>)
@@ -32,8 +33,29 @@ Package model defines the data structures used to represent dev container config
 - [type WatchConfig](<#WatchConfig>)
 
 
+## Variables
+
+<a name="TopLevelKeys"></a>TopLevelKeys is the single source of truth for every recognised top\-level DevContainer field, in canonical display/insertion order. Both the edit TUI \(allKnownKeys\) and the presets package \(ListFields\) derive their lists from this slice so they can never diverge.
+
+```go
+var TopLevelKeys = []string{
+    "name", "image", "build", "dockerComposeFile", "service", "runServices",
+    "workspaceFolder", "workspaceMount", "remoteUser", "containerUser",
+    "updateRemoteUserUID", "userEnvProbe",
+    "containerEnv", "remoteEnv", "localEnv",
+    "forwardPorts", "appPort", "portsAttributes", "otherPortsAttributes",
+    "mounts", "runArgs", "startupCommand", "overrideCommand",
+    "command", "entrypoint",
+    "init", "privileged", "capAdd", "capDrop", "securityOpt", "devices",
+    "hostRequirements", "overrideFeatureInstallOrder", "features",
+    "initializeCommand", "onCreateCommand", "updateContentCommand",
+    "postCreateCommand", "postStartCommand", "postAttachCommand", "waitFor",
+    "watch", "customizations", "secrets", "shutdownAction",
+}
+```
+
 <a name="GetAllTypes"></a>
-## func [GetAllTypes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L159>)
+## func [GetAllTypes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L178>)
 
 ```go
 func GetAllTypes() []any
