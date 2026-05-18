@@ -16,10 +16,17 @@ func hostRequirementsPresetsMap() map[string]*model.HostRequirements {
 		"gpu": {
 			CPUs:   4,
 			Memory: "16gb",
-			GPU: &model.GPURequirement{
-				Cores:  1,
-				Memory: "4gb",
-			},
+			GPU:    model.GPURequirePtr(model.GPURequirement{Cores: 1, Memory: "4gb"}),
+		},
+		"gpu-required": {
+			CPUs:   4,
+			Memory: "16gb",
+			GPU:    model.GPUBoolPtr(true),
+		},
+		"gpu-optional": {
+			CPUs:   2,
+			Memory: "8gb",
+			GPU:    model.GPUOptionalPtr(),
 		},
 	}
 }

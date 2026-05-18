@@ -15,31 +15,25 @@ Package presets provides preset value maps for each top\-level field of the DevC
 - [func AppPortPreset\(name string\) \[\]any](<#AppPortPreset>)
 - [func BuildPreset\(name string\) \*model.BuildConfig](<#BuildPreset>)
 - [func CapAddPreset\(name string\) \[\]string](<#CapAddPreset>)
-- [func CapDropPreset\(name string\) \[\]string](<#CapDropPreset>)
-- [func CommandPreset\(name string\) string](<#CommandPreset>)
 - [func ContainerEnvPreset\(name string\) map\[string\]string](<#ContainerEnvPreset>)
 - [func ContainerUserPreset\(name string\) string](<#ContainerUserPreset>)
 - [func CustomizationsPreset\(name string\) \*model.Customizations](<#CustomizationsPreset>)
 - [func DevicesPreset\(name string\) \[\]string](<#DevicesPreset>)
 - [func DockerComposeFilePreset\(name string\) \[\]string](<#DockerComposeFilePreset>)
-- [func EntrypointPreset\(name string\) string](<#EntrypointPreset>)
 - [func FeaturesPreset\(name string\) map\[string\]map\[string\]any](<#FeaturesPreset>)
 - [func ForwardPortsPreset\(name string\) \[\]any](<#ForwardPortsPreset>)
 - [func HostRequirementsPreset\(name string\) \*model.HostRequirements](<#HostRequirementsPreset>)
 - [func ImagePreset\(name string\) string](<#ImagePreset>)
 - [func InitPreset\(name string\) bool](<#InitPreset>)
-- [func InitializeCommandPreset\(name string\) model.StringOrSlice](<#InitializeCommandPreset>)
+- [func InitializeCommandPreset\(name string\) \*model.CommandValue](<#InitializeCommandPreset>)
 - [func ListAppPortPresets\(\) \[\]string](<#ListAppPortPresets>)
 - [func ListBuildPresets\(\) \[\]string](<#ListBuildPresets>)
 - [func ListCapAddPresets\(\) \[\]string](<#ListCapAddPresets>)
-- [func ListCapDropPresets\(\) \[\]string](<#ListCapDropPresets>)
-- [func ListCommandPresets\(\) \[\]string](<#ListCommandPresets>)
 - [func ListContainerEnvPresets\(\) \[\]string](<#ListContainerEnvPresets>)
 - [func ListContainerUserPresets\(\) \[\]string](<#ListContainerUserPresets>)
 - [func ListCustomizationsPresets\(\) \[\]string](<#ListCustomizationsPresets>)
 - [func ListDevicesPresets\(\) \[\]string](<#ListDevicesPresets>)
 - [func ListDockerComposeFilePresets\(\) \[\]string](<#ListDockerComposeFilePresets>)
-- [func ListEntrypointPresets\(\) \[\]string](<#ListEntrypointPresets>)
 - [func ListFeaturesPresets\(\) \[\]string](<#ListFeaturesPresets>)
 - [func ListFields\(\) \[\]string](<#ListFields>)
 - [func ListForwardPortsPresets\(\) \[\]string](<#ListForwardPortsPresets>)
@@ -47,7 +41,6 @@ Package presets provides preset value maps for each top\-level field of the DevC
 - [func ListImagePresets\(\) \[\]string](<#ListImagePresets>)
 - [func ListInitPresets\(\) \[\]string](<#ListInitPresets>)
 - [func ListInitializeCommandPresets\(\) \[\]string](<#ListInitializeCommandPresets>)
-- [func ListLocalEnvPresets\(\) \[\]string](<#ListLocalEnvPresets>)
 - [func ListMountsPresets\(\) \[\]string](<#ListMountsPresets>)
 - [func ListNamePresets\(\) \[\]string](<#ListNamePresets>)
 - [func ListOnCreateCommandPresets\(\) \[\]string](<#ListOnCreateCommandPresets>)
@@ -68,7 +61,6 @@ Package presets provides preset value maps for each top\-level field of the DevC
 - [func ListSecurityOptPresets\(\) \[\]string](<#ListSecurityOptPresets>)
 - [func ListServicePresets\(\) \[\]string](<#ListServicePresets>)
 - [func ListShutdownActionPresets\(\) \[\]string](<#ListShutdownActionPresets>)
-- [func ListStartupCommandPresets\(\) \[\]string](<#ListStartupCommandPresets>)
 - [func ListUpdateContentCommandPresets\(\) \[\]string](<#ListUpdateContentCommandPresets>)
 - [func ListUpdateRemoteUserUIDPresets\(\) \[\]string](<#ListUpdateRemoteUserUIDPresets>)
 - [func ListUserEnvProbePresets\(\) \[\]string](<#ListUserEnvProbePresets>)
@@ -76,17 +68,16 @@ Package presets provides preset value maps for each top\-level field of the DevC
 - [func ListWatchPresets\(\) \[\]string](<#ListWatchPresets>)
 - [func ListWorkspaceFolderPresets\(\) \[\]string](<#ListWorkspaceFolderPresets>)
 - [func ListWorkspaceMountPresets\(\) \[\]string](<#ListWorkspaceMountPresets>)
-- [func LocalEnvPreset\(name string\) map\[string\]string](<#LocalEnvPreset>)
-- [func MountsPreset\(name string\) \[\]model.Mount](<#MountsPreset>)
+- [func MountsPreset\(name string\) \[\]model.MountOrString](<#MountsPreset>)
 - [func NamePreset\(name string\) string](<#NamePreset>)
-- [func OnCreateCommandPreset\(name string\) model.StringOrSlice](<#OnCreateCommandPreset>)
+- [func OnCreateCommandPreset\(name string\) \*model.CommandValue](<#OnCreateCommandPreset>)
 - [func OtherPortsAttributesPreset\(name string\) \*model.PortAttributes](<#OtherPortsAttributesPreset>)
 - [func OverrideCommandPreset\(name string\) bool](<#OverrideCommandPreset>)
 - [func OverrideFeatureInstallOrderPreset\(name string\) \[\]string](<#OverrideFeatureInstallOrderPreset>)
 - [func PortsAttributesPreset\(name string\) map\[string\]\*model.PortAttributes](<#PortsAttributesPreset>)
-- [func PostAttachCommandPreset\(name string\) model.StringOrSlice](<#PostAttachCommandPreset>)
-- [func PostCreateCommandPreset\(name string\) model.StringOrSlice](<#PostCreateCommandPreset>)
-- [func PostStartCommandPreset\(name string\) model.StringOrSlice](<#PostStartCommandPreset>)
+- [func PostAttachCommandPreset\(name string\) \*model.CommandValue](<#PostAttachCommandPreset>)
+- [func PostCreateCommandPreset\(name string\) \*model.CommandValue](<#PostCreateCommandPreset>)
+- [func PostStartCommandPreset\(name string\) \*model.CommandValue](<#PostStartCommandPreset>)
 - [func PresetYAML\(field, name string\) \(string, error\)](<#PresetYAML>)
 - [func PrivilegedPreset\(name string\) bool](<#PrivilegedPreset>)
 - [func RemoteEnvPreset\(name string\) map\[string\]string](<#RemoteEnvPreset>)
@@ -97,8 +88,7 @@ Package presets provides preset value maps for each top\-level field of the DevC
 - [func SecurityOptPreset\(name string\) \[\]string](<#SecurityOptPreset>)
 - [func ServicePreset\(name string\) string](<#ServicePreset>)
 - [func ShutdownActionPreset\(name string\) string](<#ShutdownActionPreset>)
-- [func StartupCommandPreset\(name string\) string](<#StartupCommandPreset>)
-- [func UpdateContentCommandPreset\(name string\) model.StringOrSlice](<#UpdateContentCommandPreset>)
+- [func UpdateContentCommandPreset\(name string\) \*model.CommandValue](<#UpdateContentCommandPreset>)
 - [func UpdateRemoteUserUIDPreset\(name string\) bool](<#UpdateRemoteUserUIDPreset>)
 - [func UserEnvProbePreset\(name string\) string](<#UserEnvProbePreset>)
 - [func WaitForPreset\(name string\) string](<#WaitForPreset>)
@@ -117,7 +107,7 @@ func AppPortPreset(name string) []any
 
 
 <a name="BuildPreset"></a>
-## func [BuildPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/image.go#L40>)
+## func [BuildPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/image.go#L45>)
 
 ```go
 func BuildPreset(name string) *model.BuildConfig
@@ -130,24 +120,6 @@ func BuildPreset(name string) *model.BuildConfig
 
 ```go
 func CapAddPreset(name string) []string
-```
-
-
-
-<a name="CapDropPreset"></a>
-## func [CapDropPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/security.go#L37>)
-
-```go
-func CapDropPreset(name string) []string
-```
-
-
-
-<a name="CommandPreset"></a>
-## func [CommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/commands.go#L9>)
-
-```go
-func CommandPreset(name string) string
 ```
 
 
@@ -171,7 +143,7 @@ func ContainerUserPreset(name string) string
 
 
 <a name="CustomizationsPreset"></a>
-## func [CustomizationsPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/extensions.go#L109>)
+## func [CustomizationsPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/extensions.go#L104>)
 
 ```go
 func CustomizationsPreset(name string) *model.Customizations
@@ -180,7 +152,7 @@ func CustomizationsPreset(name string) *model.Customizations
 
 
 <a name="DevicesPreset"></a>
-## func [DevicesPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/security.go#L57>)
+## func [DevicesPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/security.go#L48>)
 
 ```go
 func DevicesPreset(name string) []string
@@ -193,15 +165,6 @@ func DevicesPreset(name string) []string
 
 ```go
 func DockerComposeFilePreset(name string) []string
-```
-
-
-
-<a name="EntrypointPreset"></a>
-## func [EntrypointPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/commands.go#L18>)
-
-```go
-func EntrypointPreset(name string) string
 ```
 
 
@@ -225,7 +188,7 @@ func ForwardPortsPreset(name string) []any
 
 
 <a name="HostRequirementsPreset"></a>
-## func [HostRequirementsPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/host_requirements.go#L27>)
+## func [HostRequirementsPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/host_requirements.go#L34>)
 
 ```go
 func HostRequirementsPreset(name string) *model.HostRequirements
@@ -252,10 +215,10 @@ func InitPreset(name string) bool
 
 
 <a name="InitializeCommandPreset"></a>
-## func [InitializeCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L14>)
+## func [InitializeCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L17>)
 
 ```go
-func InitializeCommandPreset(name string) model.StringOrSlice
+func InitializeCommandPreset(name string) *model.CommandValue
 ```
 
 
@@ -270,7 +233,7 @@ func ListAppPortPresets() []string
 
 
 <a name="ListBuildPresets"></a>
-## func [ListBuildPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/image.go#L41>)
+## func [ListBuildPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/image.go#L46>)
 
 ```go
 func ListBuildPresets() []string
@@ -283,24 +246,6 @@ func ListBuildPresets() []string
 
 ```go
 func ListCapAddPresets() []string
-```
-
-
-
-<a name="ListCapDropPresets"></a>
-## func [ListCapDropPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/security.go#L38>)
-
-```go
-func ListCapDropPresets() []string
-```
-
-
-
-<a name="ListCommandPresets"></a>
-## func [ListCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/commands.go#L10>)
-
-```go
-func ListCommandPresets() []string
 ```
 
 
@@ -324,7 +269,7 @@ func ListContainerUserPresets() []string
 
 
 <a name="ListCustomizationsPresets"></a>
-## func [ListCustomizationsPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/extensions.go#L112>)
+## func [ListCustomizationsPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/extensions.go#L107>)
 
 ```go
 func ListCustomizationsPresets() []string
@@ -333,7 +278,7 @@ func ListCustomizationsPresets() []string
 
 
 <a name="ListDevicesPresets"></a>
-## func [ListDevicesPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/security.go#L58>)
+## func [ListDevicesPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/security.go#L49>)
 
 ```go
 func ListDevicesPresets() []string
@@ -350,15 +295,6 @@ func ListDockerComposeFilePresets() []string
 
 
 
-<a name="ListEntrypointPresets"></a>
-## func [ListEntrypointPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/commands.go#L19>)
-
-```go
-func ListEntrypointPresets() []string
-```
-
-
-
 <a name="ListFeaturesPresets"></a>
 ## func [ListFeaturesPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/extensions.go#L32>)
 
@@ -369,7 +305,7 @@ func ListFeaturesPresets() []string
 
 
 <a name="ListFields"></a>
-## func [ListFields](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/presets.go#L118>)
+## func [ListFields](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/presets.go#L113>)
 
 ```go
 func ListFields() []string
@@ -387,7 +323,7 @@ func ListForwardPortsPresets() []string
 
 
 <a name="ListHostRequirementsPresets"></a>
-## func [ListHostRequirementsPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/host_requirements.go#L30>)
+## func [ListHostRequirementsPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/host_requirements.go#L37>)
 
 ```go
 func ListHostRequirementsPresets() []string
@@ -414,7 +350,7 @@ func ListInitPresets() []string
 
 
 <a name="ListInitializeCommandPresets"></a>
-## func [ListInitializeCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L17>)
+## func [ListInitializeCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L20>)
 
 ```go
 func ListInitializeCommandPresets() []string
@@ -422,17 +358,8 @@ func ListInitializeCommandPresets() []string
 
 
 
-<a name="ListLocalEnvPresets"></a>
-## func [ListLocalEnvPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/env.go#L38>)
-
-```go
-func ListLocalEnvPresets() []string
-```
-
-
-
 <a name="ListMountsPresets"></a>
-## func [ListMountsPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/runtime.go#L36>)
+## func [ListMountsPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/runtime.go#L38>)
 
 ```go
 func ListMountsPresets() []string
@@ -450,7 +377,7 @@ func ListNamePresets() []string
 
 
 <a name="ListOnCreateCommandPresets"></a>
-## func [ListOnCreateCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L27>)
+## func [ListOnCreateCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L33>)
 
 ```go
 func ListOnCreateCommandPresets() []string
@@ -459,7 +386,7 @@ func ListOnCreateCommandPresets() []string
 
 
 <a name="ListOtherPortsAttributesPresets"></a>
-## func [ListOtherPortsAttributesPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/ports.go#L61>)
+## func [ListOtherPortsAttributesPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/ports.go#L70>)
 
 ```go
 func ListOtherPortsAttributesPresets() []string
@@ -468,7 +395,7 @@ func ListOtherPortsAttributesPresets() []string
 
 
 <a name="ListOverrideCommandPresets"></a>
-## func [ListOverrideCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/commands.go#L37>)
+## func [ListOverrideCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/commands.go#L10>)
 
 ```go
 func ListOverrideCommandPresets() []string
@@ -486,7 +413,7 @@ func ListOverrideFeatureInstallOrderPresets() []string
 
 
 <a name="ListPortsAttributesPresets"></a>
-## func [ListPortsAttributesPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/ports.go#L45>)
+## func [ListPortsAttributesPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/ports.go#L54>)
 
 ```go
 func ListPortsAttributesPresets() []string
@@ -495,7 +422,7 @@ func ListPortsAttributesPresets() []string
 
 
 <a name="ListPostAttachCommandPresets"></a>
-## func [ListPostAttachCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L76>)
+## func [ListPostAttachCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L83>)
 
 ```go
 func ListPostAttachCommandPresets() []string
@@ -504,7 +431,7 @@ func ListPostAttachCommandPresets() []string
 
 
 <a name="ListPostCreateCommandPresets"></a>
-## func [ListPostCreateCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L54>)
+## func [ListPostCreateCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L61>)
 
 ```go
 func ListPostCreateCommandPresets() []string
@@ -513,7 +440,7 @@ func ListPostCreateCommandPresets() []string
 
 
 <a name="ListPostStartCommandPresets"></a>
-## func [ListPostStartCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L65>)
+## func [ListPostStartCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L72>)
 
 ```go
 func ListPostStartCommandPresets() []string
@@ -522,7 +449,7 @@ func ListPostStartCommandPresets() []string
 
 
 <a name="ListPresets"></a>
-## func [ListPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/presets.go#L109>)
+## func [ListPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/presets.go#L104>)
 
 ```go
 func ListPresets(field string) []string
@@ -576,7 +503,7 @@ func ListRunServicesPresets() []string
 
 
 <a name="ListSecretsPresets"></a>
-## func [ListSecretsPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/secrets.go#L21>)
+## func [ListSecretsPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/secrets.go#L26>)
 
 ```go
 func ListSecretsPresets() []string
@@ -585,7 +512,7 @@ func ListSecretsPresets() []string
 
 
 <a name="ListSecurityOptPresets"></a>
-## func [ListSecurityOptPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/security.go#L48>)
+## func [ListSecurityOptPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/security.go#L39>)
 
 ```go
 func ListSecurityOptPresets() []string
@@ -603,7 +530,7 @@ func ListServicePresets() []string
 
 
 <a name="ListShutdownActionPresets"></a>
-## func [ListShutdownActionPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L100>)
+## func [ListShutdownActionPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L106>)
 
 ```go
 func ListShutdownActionPresets() []string
@@ -611,17 +538,8 @@ func ListShutdownActionPresets() []string
 
 
 
-<a name="ListStartupCommandPresets"></a>
-## func [ListStartupCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/commands.go#L28>)
-
-```go
-func ListStartupCommandPresets() []string
-```
-
-
-
 <a name="ListUpdateContentCommandPresets"></a>
-## func [ListUpdateContentCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L40>)
+## func [ListUpdateContentCommandPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L46>)
 
 ```go
 func ListUpdateContentCommandPresets() []string
@@ -648,7 +566,7 @@ func ListUserEnvProbePresets() []string
 
 
 <a name="ListWaitForPresets"></a>
-## func [ListWaitForPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L89>)
+## func [ListWaitForPresets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L96>)
 
 ```go
 func ListWaitForPresets() []string
@@ -683,20 +601,11 @@ func ListWorkspaceMountPresets() []string
 
 
 
-<a name="LocalEnvPreset"></a>
-## func [LocalEnvPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/env.go#L37>)
-
-```go
-func LocalEnvPreset(name string) map[string]string
-```
-
-
-
 <a name="MountsPreset"></a>
-## func [MountsPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/runtime.go#L35>)
+## func [MountsPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/runtime.go#L37>)
 
 ```go
-func MountsPreset(name string) []model.Mount
+func MountsPreset(name string) []model.MountOrString
 ```
 
 
@@ -711,16 +620,16 @@ func NamePreset(name string) string
 
 
 <a name="OnCreateCommandPreset"></a>
-## func [OnCreateCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L26>)
+## func [OnCreateCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L30>)
 
 ```go
-func OnCreateCommandPreset(name string) model.StringOrSlice
+func OnCreateCommandPreset(name string) *model.CommandValue
 ```
 
 
 
 <a name="OtherPortsAttributesPreset"></a>
-## func [OtherPortsAttributesPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/ports.go#L58>)
+## func [OtherPortsAttributesPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/ports.go#L67>)
 
 ```go
 func OtherPortsAttributesPreset(name string) *model.PortAttributes
@@ -729,7 +638,7 @@ func OtherPortsAttributesPreset(name string) *model.PortAttributes
 
 
 <a name="OverrideCommandPreset"></a>
-## func [OverrideCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/commands.go#L36>)
+## func [OverrideCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/commands.go#L9>)
 
 ```go
 func OverrideCommandPreset(name string) bool
@@ -747,7 +656,7 @@ func OverrideFeatureInstallOrderPreset(name string) []string
 
 
 <a name="PortsAttributesPreset"></a>
-## func [PortsAttributesPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/ports.go#L42>)
+## func [PortsAttributesPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/ports.go#L51>)
 
 ```go
 func PortsAttributesPreset(name string) map[string]*model.PortAttributes
@@ -756,34 +665,34 @@ func PortsAttributesPreset(name string) map[string]*model.PortAttributes
 
 
 <a name="PostAttachCommandPreset"></a>
-## func [PostAttachCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L73>)
+## func [PostAttachCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L80>)
 
 ```go
-func PostAttachCommandPreset(name string) model.StringOrSlice
+func PostAttachCommandPreset(name string) *model.CommandValue
 ```
 
 
 
 <a name="PostCreateCommandPreset"></a>
-## func [PostCreateCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L51>)
+## func [PostCreateCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L58>)
 
 ```go
-func PostCreateCommandPreset(name string) model.StringOrSlice
+func PostCreateCommandPreset(name string) *model.CommandValue
 ```
 
 
 
 <a name="PostStartCommandPreset"></a>
-## func [PostStartCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L62>)
+## func [PostStartCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L69>)
 
 ```go
-func PostStartCommandPreset(name string) model.StringOrSlice
+func PostStartCommandPreset(name string) *model.CommandValue
 ```
 
 
 
 <a name="PresetYAML"></a>
-## func [PresetYAML](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/presets.go#L99>)
+## func [PresetYAML](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/presets.go#L94>)
 
 ```go
 func PresetYAML(field, name string) (string, error)
@@ -837,7 +746,7 @@ func RunServicesPreset(name string) []string
 
 
 <a name="SecretsPreset"></a>
-## func [SecretsPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/secrets.go#L20>)
+## func [SecretsPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/secrets.go#L25>)
 
 ```go
 func SecretsPreset(name string) map[string]model.Secret
@@ -846,7 +755,7 @@ func SecretsPreset(name string) map[string]model.Secret
 
 
 <a name="SecurityOptPreset"></a>
-## func [SecurityOptPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/security.go#L47>)
+## func [SecurityOptPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/security.go#L38>)
 
 ```go
 func SecurityOptPreset(name string) []string
@@ -864,7 +773,7 @@ func ServicePreset(name string) string
 
 
 <a name="ShutdownActionPreset"></a>
-## func [ShutdownActionPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L99>)
+## func [ShutdownActionPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L105>)
 
 ```go
 func ShutdownActionPreset(name string) string
@@ -872,20 +781,11 @@ func ShutdownActionPreset(name string) string
 
 
 
-<a name="StartupCommandPreset"></a>
-## func [StartupCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/commands.go#L27>)
-
-```go
-func StartupCommandPreset(name string) string
-```
-
-
-
 <a name="UpdateContentCommandPreset"></a>
-## func [UpdateContentCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L37>)
+## func [UpdateContentCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L43>)
 
 ```go
-func UpdateContentCommandPreset(name string) model.StringOrSlice
+func UpdateContentCommandPreset(name string) *model.CommandValue
 ```
 
 
@@ -909,7 +809,7 @@ func UserEnvProbePreset(name string) string
 
 
 <a name="WaitForPreset"></a>
-## func [WaitForPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L88>)
+## func [WaitForPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L95>)
 
 ```go
 func WaitForPreset(name string) string

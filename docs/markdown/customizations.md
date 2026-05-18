@@ -9,7 +9,6 @@ The following arguments are supported:
 | [vscode](#vscode) | VS Code specific customizations. | object | No | - |
 | [codespaces](#codespaces) | Codespaces specific customizations. | object | No | - |
 | [jetbrains](#jetbrains) | JetBrains IDE specific customizations. | object | No | - |
-| [neovim](#neovim) | Neovim specific customizations. | object | No | - |
 
 ### vscode
 
@@ -21,7 +20,7 @@ The following arguments are supported:
 |------|------|-------------|----------|---------|
 | settings | Key-value settings for VS Code. | object | No | - |
 | extensions | List of VS Code extensions to install. | array[string] | No | - |
-| remoteUser | Remote user for VS Code container setup. | string | No | - |
+| devPort | Port on which the VS Code server listens inside the container. | integer | No | - |
 
 ### codespaces
 
@@ -43,14 +42,4 @@ The following arguments are supported:
 | Name | Type | Description | Required | Default |
 |------|------|-------------|----------|---------|
 | plugins | List of JetBrains plugins to install. | array[string] | No | - |
-
-### neovim
-
-Neovim specific customizations.
-
-The following arguments are supported:
-
-| Name | Type | Description | Required | Default |
-|------|------|-------------|----------|---------|
-| plugins | List of Neovim plugins to install. | array[string] | No | - |
 

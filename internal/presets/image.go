@@ -34,6 +34,11 @@ func buildPresetsMap() map[string]*model.BuildConfig {
 			Context:    ".",
 			Target:     "dev",
 		},
+		"with-options": {
+			Dockerfile: "Dockerfile",
+			Context:    ".",
+			Options:    []string{"--no-cache"},
+		},
 	}
 }
 

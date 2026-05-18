@@ -15,9 +15,9 @@
           "type": "array",
           "description": "List of VS Code extensions to install."
         },
-        "remoteUser": {
-          "type": "string",
-          "description": "Remote user for VS Code container setup."
+        "devPort": {
+          "type": "integer",
+          "description": "Port on which the VS Code server listens inside the container."
         }
       },
       "additionalProperties": false,
@@ -55,20 +55,6 @@
       "additionalProperties": false,
       "type": "object",
       "description": "JetBrains IDE specific customizations."
-    },
-    "neovim": {
-      "properties": {
-        "plugins": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array",
-          "description": "List of Neovim plugins to install."
-        }
-      },
-      "additionalProperties": false,
-      "type": "object",
-      "description": "Neovim specific customizations."
     }
   },
   "additionalProperties": false,

@@ -36,6 +36,15 @@ func portsAttributesPresetsMap() map[string]map[string]*model.PortAttributes {
 			"5432": {Label: "PostgreSQL", OnAutoForward: "silent"},
 			"6379": {Label: "Redis", OnAutoForward: "silent"},
 		},
+		"privileged-port": {
+			"80": {
+				Label:            "HTTP",
+				OnAutoForward:    "notify",
+				Protocol:         "http",
+				ElevateIfNeeded:  true,
+				RequireLocalPort: true,
+			},
+		},
 	}
 }
 

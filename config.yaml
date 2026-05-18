@@ -1,13 +1,68 @@
-name: my-devcontainer
-image: mcr.microsoft.com/devcontainers/base:ubuntu-24.04
-startupCommand: echo 'Container started'
+name: devcontainerwizard
+image: mcr.microsoft.com/devcontainers/go:1
+
+remoteUser: vscode
+updateRemoteUserUID: true
+userEnvProbe: loginShell
+
 features:
-  ghcr.io/devcontainers/features/go:1:
-      version: "1.25"
+  ghcr.io/devcontainers/features/github-cli:1: {}
+
+forwardPorts:
+  - 8080
+
+onCreateCommand: >-
+  go install github.com/cweill/gotests/gotests@latest &&
+  go install github.com/josharian/impl@latest &&
+  go install github.com/haya14busa/goplay/cmd/goplay@latest &&
+  go install github.com/go-delve/delve/cmd/dlv@latest &&
+  go install golang.org/x/tools/gopls@latest
+
+postCreateCommand: go mod download
+
 customizations:
   vscode:
-      settings:
-          editor.formatOnSave: true
-          files.insertFinalNewline: true
-      extensions:
-          - editorconfig.editorconfig
+    settings:
+      terminal.integrated.defaultProfile.linux: bash
+      editor.formatOnSave: true
+      files.insertFinalNewline: true
+      go.useLanguageServer: true
+      go.lintOnSave: file
+      go.lintTool: golangci-lint
+      go.lintFlags:
+        - --fast
+      go.testFlags:
+        - -v
+        - -race
+      go.inlayHints.assignVariableTypes: true
+      go.inlayHints.compositeLiteralFields: true
+      go.inlayHints.compositeLiteralTypes: true
+      go.inlayHints.constantValues: true
+      go.inlayHints.functionTypeParameters: true
+      go.inlayHints.parameterNames: true
+      go.inlayHints.rangeVariableTypes: true
+      go.toolsManagement.checkForUpdates: "off"
+      go.delveConfig:
+        apiVersion: 2
+        dlvLoadConfig:
+          followPointers: true
+          maxVariableRecurse: 1
+          maxStringLen: 512
+          maxArrayValues: 64
+          maxStructFields: -1
+      gopls:
+        ui.diagnostic.staticcheck: true
+    extensions:
+      - golang.go
+      - eamodio.gitlens
+      - usernamehw.errorlens
+      - editorconfig.editorconfig
+      - redhat.vscode-yaml
+      - yzhang.markdown-all-in-one
+      - streetsidesoftware.code-spell-checker
+      - mhutchie.git-graph
+      - ms-vscode.makefile-tools
+      - tamasfe.even-better-toml
+      - github.vscode-github-actions
+
+shutdownAction: stopContainer

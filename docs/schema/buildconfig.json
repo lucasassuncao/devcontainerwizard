@@ -30,34 +30,12 @@
       "type": "array",
       "description": "List of images to cache from."
     },
-    "output": {
-      "type": "string",
-      "description": "Output location of the build."
-    },
-    "ssh": {
+    "options": {
       "items": {
         "type": "string"
       },
       "type": "array",
-      "description": "SSH mount sources to use during build."
-    },
-    "secrets": {
-      "items": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Identifier for the secret."
-          },
-          "src": {
-            "type": "string",
-            "description": "Path or source of the secret."
-          }
-        },
-        "additionalProperties": false,
-        "type": "object"
-      },
-      "type": "array",
-      "description": "Secrets to pass to the build process."
+      "description": "Additional CLI options passed to docker build (e.g. --no-cache)."
     }
   },
   "additionalProperties": false,

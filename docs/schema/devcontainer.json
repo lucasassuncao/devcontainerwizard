@@ -44,34 +44,12 @@
           "type": "array",
           "description": "List of images to cache from."
         },
-        "output": {
-          "type": "string",
-          "description": "Output location of the build."
-        },
-        "ssh": {
+        "options": {
           "items": {
             "type": "string"
           },
           "type": "array",
-          "description": "SSH mount sources to use during build."
-        },
-        "secrets": {
-          "items": {
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "Identifier for the secret."
-              },
-              "src": {
-                "type": "string",
-                "description": "Path or source of the secret."
-              }
-            },
-            "additionalProperties": false,
-            "type": "object"
-          },
-          "type": "array",
-          "description": "Secrets to pass to the build process."
+          "description": "Additional CLI options passed to docker build (e.g. --no-cache)."
         }
       },
       "additionalProperties": false,
@@ -81,6 +59,10 @@
         "context"
       ],
       "description": "Configuration for building the image."
+    },
+    "dockerFile": {
+      "type": "string",
+      "description": "Deprecated: legacy path to the Dockerfile. Use build.dockerfile instead."
     },
     "dockerComposeFile": {
       "items": {
@@ -161,7 +143,15 @@
           },
           "protocol": {
             "type": "string",
-            "description": "Network protocol (tcp/udp) for the port."
+            "description": "Network protocol (http/https) for the port."
+          },
+          "elevateIfNeeded": {
+            "type": "boolean",
+            "description": "Prompt for elevated privileges if the port requires it (e.g. ports below 1024)."
+          },
+          "requireLocalPort": {
+            "type": "boolean",
+            "description": "Require the local port to match the remote port. Shows a modal if not available."
           }
         },
         "additionalProperties": false,
@@ -182,7 +172,15 @@
         },
         "protocol": {
           "type": "string",
-          "description": "Network protocol (tcp/udp) for the port."
+          "description": "Network protocol (http/https) for the port."
+        },
+        "elevateIfNeeded": {
+          "type": "boolean",
+          "description": "Prompt for elevated privileges if the port requires it (e.g. ports below 1024)."
+        },
+        "requireLocalPort": {
+          "type": "boolean",
+          "description": "Require the local port to match the remote port. Shows a modal if not available."
         }
       },
       "additionalProperties": false,
@@ -192,37 +190,41 @@
     "mounts": {
       "items": {
         "properties": {
-          "type": {
-            "type": "string",
-            "description": "Type of mount (e.g., bind, volume)."
+          "Mount": {
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Type of mount: bind, volume, or tmpfs."
+              },
+              "source": {
+                "type": "string",
+                "description": "Source path or volume name. Not required for tmpfs mounts."
+              },
+              "target": {
+                "type": "string",
+                "description": "Target path inside the container."
+              },
+              "readonly": {
+                "type": "boolean",
+                "description": "Whether the mount is read-only."
+              }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "type",
+              "target"
+            ]
           },
-          "source": {
-            "type": "string",
-            "description": "Source path of the mount."
-          },
-          "target": {
-            "type": "string",
-            "description": "Target path inside the container."
-          },
-          "consistency": {
-            "type": "string",
-            "description": "Consistency mode for the mount (e.g., cached, delegated, consistent)."
-          },
-          "readonly": {
-            "type": "boolean",
-            "description": "Whether the mount is read-only."
+          "Str": {
+            "type": "string"
           }
         },
         "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "type",
-          "source",
-          "target"
-        ]
+        "type": "object"
       },
       "type": "array",
-      "description": "Mount points inside the container."
+      "description": "Mount points inside the container. Each entry can be a Mount object or a Docker --mount string."
     },
     "runArgs": {
       "items": {
@@ -231,21 +233,9 @@
       "type": "array",
       "description": "Additional arguments to pass to 'docker run'."
     },
-    "startupCommand": {
-      "type": "string",
-      "description": "Command to run on container startup."
-    },
     "overrideCommand": {
       "type": "boolean",
       "description": "Whether to override the container's default startup command with the devcontainer lifecycle commands."
-    },
-    "command": {
-      "type": "string",
-      "description": "Command to run inside the container instead of the default CMD."
-    },
-    "entrypoint": {
-      "type": "string",
-      "description": "Entrypoint to override in the container."
     },
     "init": {
       "type": "boolean",
@@ -261,13 +251,6 @@
       },
       "type": "array",
       "description": "Linux capabilities to add to the container."
-    },
-    "capDrop": {
-      "items": {
-        "type": "string"
-      },
-      "type": "array",
-      "description": "Linux capabilities to drop from the container."
     },
     "securityOpt": {
       "items": {
@@ -299,18 +282,30 @@
         },
         "gpu": {
           "properties": {
-            "cores": {
-              "type": "integer",
-              "description": "Minimum number of GPU cores required."
+            "Bool": {
+              "type": "boolean"
             },
-            "memory": {
-              "type": "string",
-              "description": "Minimum GPU memory required (e.g. \"4gb\")."
+            "StringVal": {
+              "type": "string"
+            },
+            "Requirement": {
+              "properties": {
+                "cores": {
+                  "type": "integer",
+                  "description": "Minimum number of GPU cores required."
+                },
+                "memory": {
+                  "type": "string",
+                  "description": "Minimum GPU memory required (e.g. \"4gb\")."
+                }
+              },
+              "additionalProperties": false,
+              "type": "object"
             }
           },
           "additionalProperties": false,
           "type": "object",
-          "description": "GPU requirement (true, false, or object with cores/memory)."
+          "description": "GPU requirement: true/false, \"optional\", or object with cores/memory."
         }
       },
       "additionalProperties": false,
@@ -332,46 +327,40 @@
       "description": "Features to install in the container and their options."
     },
     "initializeCommand": {
-      "items": {
-        "type": "string"
-      },
-      "type": "array",
-      "description": "Command to run on the host before the container is created or started. Can be a string or an array of strings."
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Command to run on the host before the container is created or started. Can be a string, an array of strings, or a named command object."
     },
     "onCreateCommand": {
-      "items": {
-        "type": "string"
-      },
-      "type": "array",
-      "description": "Command to run after the container is created. Can be a string or an array of strings."
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Command to run after the container is created. Can be a string, an array of strings, or a named command object."
     },
     "updateContentCommand": {
-      "items": {
-        "type": "string"
-      },
-      "type": "array",
-      "description": "Command to run when the container content is updated. Can be a string or an array of strings."
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Command to run when the container content is updated. Can be a string, an array of strings, or a named command object."
     },
     "postCreateCommand": {
-      "items": {
-        "type": "string"
-      },
-      "type": "array",
-      "description": "Command to run after the container is created and initialized. Can be a string or an array of strings."
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Command to run after the container is created and initialized. Can be a string, an array of strings, or a named command object."
     },
     "postStartCommand": {
-      "items": {
-        "type": "string"
-      },
-      "type": "array",
-      "description": "Command to run after the container starts. Can be a string or an array of strings."
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Command to run after the container starts. Can be a string, an array of strings, or a named command object."
     },
     "postAttachCommand": {
-      "items": {
-        "type": "string"
-      },
-      "type": "array",
-      "description": "Command to run after attaching to the container. Can be a string or an array of strings."
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Command to run after attaching to the container. Can be a string, an array of strings, or a named command object."
     },
     "waitFor": {
       "type": "string",
@@ -413,9 +402,9 @@
               "type": "array",
               "description": "List of VS Code extensions to install."
             },
-            "remoteUser": {
-              "type": "string",
-              "description": "Remote user for VS Code container setup."
+            "devPort": {
+              "type": "integer",
+              "description": "Port on which the VS Code server listens inside the container."
             }
           },
           "additionalProperties": false,
@@ -453,20 +442,6 @@
           "additionalProperties": false,
           "type": "object",
           "description": "JetBrains IDE specific customizations."
-        },
-        "neovim": {
-          "properties": {
-            "plugins": {
-              "items": {
-                "type": "string"
-              },
-              "type": "array",
-              "description": "List of Neovim plugins to install."
-            }
-          },
-          "additionalProperties": false,
-          "type": "object",
-          "description": "Neovim specific customizations."
         }
       },
       "additionalProperties": false,
@@ -480,9 +455,9 @@
             "type": "string",
             "description": "Human-readable description of the secret."
           },
-          "default": {
+          "documentationUrl": {
             "type": "string",
-            "description": "Default value for the secret if none is provided."
+            "description": "URL pointing to documentation for this secret."
           }
         },
         "additionalProperties": false,
@@ -493,7 +468,7 @@
     },
     "shutdownAction": {
       "type": "string",
-      "description": "Action to take when the container is stopped."
+      "description": "Action to take when the container is stopped. Use none or stopContainer (stopCompose is only valid in compose variants)."
     }
   },
   "additionalProperties": false,

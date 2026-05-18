@@ -149,7 +149,7 @@ func TestValidateKnownKeysDepth(t *testing.T) {
 		{"typo subfield", "build:\n  dockerfilee: Dockerfile\n  context: .\n", true},
 		{"free-form args", "build:\n  dockerfile: Dockerfile\n  context: .\n  args:\n    MY_ARG: value\n    OTHER_ARG: x\n", false},
 		{"list items in cacheFrom", "build:\n  dockerfile: Dockerfile\n  context: .\n  cacheFrom:\n    - myregistry/image:cache\n    - other:cache\n", false},
-		{"fully populated build", "build:\n  dockerfile: Dockerfile\n  context: .\n  args:\n    MY_ARG: value\n  target: dev\n  cacheFrom:\n    - myregistry/image:cache\n  output: type=local,dest=./out\n  ssh:\n    - default\n", false},
+		{"fully populated build", "build:\n  dockerfile: Dockerfile\n  context: .\n  args:\n    MY_ARG: value\n  target: dev\n  cacheFrom:\n    - myregistry/image:cache\n  options:\n    - --no-cache\n", false},
 	}
 	for _, c := range cases {
 		t.Run(c.desc, func(t *testing.T) {

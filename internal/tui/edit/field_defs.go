@@ -41,14 +41,9 @@ var blockFields = map[string][]FieldDef{
 			YAML: "  cacheFrom:\n    - myregistry/image:cache\n",
 		},
 		{
-			Key:  "output",
-			Desc: "Build output destination",
-			YAML: "  output: type=local,dest=./out\n",
-		},
-		{
-			Key:  "ssh",
-			Desc: "SSH agent socket / key mounts",
-			YAML: "  ssh:\n    - default\n",
+			Key:  "options",
+			Desc: "Additional docker build CLI options",
+			YAML: "  options:\n    - --no-cache\n",
 		},
 	},
 
@@ -56,7 +51,7 @@ var blockFields = map[string][]FieldDef{
 		{
 			Key:  "vscode",
 			Desc: "VS Code extensions and settings",
-			YAML: "  vscode:\n    extensions:\n      - ms-python.python\n    settings:\n      editor.formatOnSave: true\n",
+			YAML: "  vscode:\n    extensions:\n      - ms-python.python\n    settings:\n      editor.formatOnSave: true\n    devPort: 3000\n",
 		},
 		{
 			Key:  "jetbrains",
@@ -104,7 +99,7 @@ var blockFields = map[string][]FieldDef{
 		},
 		{
 			Key:  "gpu",
-			Desc: "GPU requirement (true or object)",
+			Desc: "GPU requirement: true, false, \"optional\", or object {cores, memory}",
 			YAML: "  gpu: true\n",
 		},
 	},
@@ -117,21 +112,15 @@ var blockFields = map[string][]FieldDef{
 			Required: true,
 		},
 		{
-			Key:      "source",
-			Desc:     "Source path or volume name",
-			YAML:     "    source: ${localWorkspaceFolder}/.cache\n",
-			Required: true,
+			Key:  "source",
+			Desc: "Source path or volume name (not required for tmpfs)",
+			YAML: "    source: ${localWorkspaceFolder}/.cache\n",
 		},
 		{
 			Key:      "target",
 			Desc:     "Target path inside the container",
 			YAML:     "    target: /home/vscode/.cache\n",
 			Required: true,
-		},
-		{
-			Key:  "consistency",
-			Desc: "Mount consistency (cached / delegated / consistent)",
-			YAML: "    consistency: cached\n",
 		},
 		{
 			Key:  "readonly",
@@ -160,8 +149,13 @@ var blockFields = map[string][]FieldDef{
 		},
 		{
 			Key:  "elevateIfNeeded",
-			Desc: "Elevate privileges if port requires it",
+			Desc: "Elevate privileges if port requires it (ports below 1024)",
 			YAML: "    elevateIfNeeded: false\n",
+		},
+		{
+			Key:  "requireLocalPort",
+			Desc: "Require local port to match remote port",
+			YAML: "    requireLocalPort: false\n",
 		},
 	},
 
@@ -173,9 +167,9 @@ var blockFields = map[string][]FieldDef{
 			Required: true,
 		},
 		{
-			Key:  "default",
-			Desc: "Default value if not provided",
-			YAML: "    default: \"\"\n",
+			Key:  "documentationUrl",
+			Desc: "URL pointing to documentation for this secret",
+			YAML: "    documentationUrl: https://example.com/docs/secrets\n",
 		},
 	},
 
@@ -195,6 +189,16 @@ var blockFields = map[string][]FieldDef{
 			Key:  "protocol",
 			Desc: "Network protocol (http / https)",
 			YAML: "  protocol: http\n",
+		},
+		{
+			Key:  "elevateIfNeeded",
+			Desc: "Elevate privileges if port requires it (ports below 1024)",
+			YAML: "  elevateIfNeeded: false\n",
+		},
+		{
+			Key:  "requireLocalPort",
+			Desc: "Require local port to match remote port",
+			YAML: "  requireLocalPort: false\n",
 		},
 	},
 }

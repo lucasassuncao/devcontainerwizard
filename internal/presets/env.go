@@ -25,14 +25,3 @@ func remoteEnvPresetsMap() map[string]map[string]string {
 
 func RemoteEnvPreset(name string) map[string]string { return remoteEnvPresetsMap()[name] }
 func ListRemoteEnvPresets() []string                { return sortedKeys(remoteEnvPresetsMap()) }
-
-func localEnvPresetsMap() map[string]map[string]string {
-	return map[string]map[string]string{
-		"base": {
-			"MY_LOCAL_VAR": "${env:MY_LOCAL_VAR}",
-		},
-	}
-}
-
-func LocalEnvPreset(name string) map[string]string { return localEnvPresetsMap()[name] }
-func ListLocalEnvPresets() []string                { return sortedKeys(localEnvPresetsMap()) }

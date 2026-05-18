@@ -1,22 +1,70 @@
 {
   "$schema": "https://containers.dev/implementors/json_schema",
-  "name": "my-devcontainer",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
-  "startupCommand": "echo 'Container started'",
+  "name": "devcontainerwizard",
+  "image": "mcr.microsoft.com/devcontainers/go:1",
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
+  "userEnvProbe": "loginShell",
+  "forwardPorts": [
+    8080
+  ],
   "features": {
-    "ghcr.io/devcontainers/features/go:1": {
-      "version": "1.25"
-    }
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
+  "onCreateCommand": "go install github.com/cweill/gotests/gotests@latest \u0026\u0026 go install github.com/josharian/impl@latest \u0026\u0026 go install github.com/haya14busa/goplay/cmd/goplay@latest \u0026\u0026 go install github.com/go-delve/delve/cmd/dlv@latest \u0026\u0026 go install golang.org/x/tools/gopls@latest",
+  "postCreateCommand": "go mod download",
   "customizations": {
     "vscode": {
       "settings": {
         "editor.formatOnSave": true,
-        "files.insertFinalNewline": true
+        "files.insertFinalNewline": true,
+        "go.delveConfig": {
+          "apiVersion": 2,
+          "dlvLoadConfig": {
+            "followPointers": true,
+            "maxArrayValues": 64,
+            "maxStringLen": 512,
+            "maxStructFields": -1,
+            "maxVariableRecurse": 1
+          }
+        },
+        "go.inlayHints.assignVariableTypes": true,
+        "go.inlayHints.compositeLiteralFields": true,
+        "go.inlayHints.compositeLiteralTypes": true,
+        "go.inlayHints.constantValues": true,
+        "go.inlayHints.functionTypeParameters": true,
+        "go.inlayHints.parameterNames": true,
+        "go.inlayHints.rangeVariableTypes": true,
+        "go.lintFlags": [
+          "--fast"
+        ],
+        "go.lintOnSave": "file",
+        "go.lintTool": "golangci-lint",
+        "go.testFlags": [
+          "-v",
+          "-race"
+        ],
+        "go.toolsManagement.checkForUpdates": "off",
+        "go.useLanguageServer": true,
+        "gopls": {
+          "ui.diagnostic.staticcheck": true
+        },
+        "terminal.integrated.defaultProfile.linux": "bash"
       },
       "extensions": [
-        "editorconfig.editorconfig"
+        "golang.go",
+        "eamodio.gitlens",
+        "usernamehw.errorlens",
+        "editorconfig.editorconfig",
+        "redhat.vscode-yaml",
+        "yzhang.markdown-all-in-one",
+        "streetsidesoftware.code-spell-checker",
+        "mhutchie.git-graph",
+        "ms-vscode.makefile-tools",
+        "tamasfe.even-better-toml",
+        "github.vscode-github-actions"
       ]
     }
-  }
+  },
+  "shutdownAction": "stopContainer"
 }

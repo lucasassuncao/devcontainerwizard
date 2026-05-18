@@ -12,7 +12,15 @@
     },
     "protocol": {
       "type": "string",
-      "description": "Network protocol (tcp/udp) for the port."
+      "description": "Network protocol (http/https) for the port."
+    },
+    "elevateIfNeeded": {
+      "type": "boolean",
+      "description": "Prompt for elevated privileges if the port requires it (e.g. ports below 1024)."
+    },
+    "requireLocalPort": {
+      "type": "boolean",
+      "description": "Require the local port to match the remote port. Shows a modal if not available."
     }
   },
   "additionalProperties": false,

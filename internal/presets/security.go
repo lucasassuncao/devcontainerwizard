@@ -28,15 +28,6 @@ func capAddPresetsMap() map[string][]string {
 func CapAddPreset(name string) []string { return capAddPresetsMap()[name] }
 func ListCapAddPresets() []string       { return sortedKeys(capAddPresetsMap()) }
 
-func capDropPresetsMap() map[string][]string {
-	return map[string][]string{
-		"base": {"ALL"},
-	}
-}
-
-func CapDropPreset(name string) []string { return capDropPresetsMap()[name] }
-func ListCapDropPresets() []string       { return sortedKeys(capDropPresetsMap()) }
-
 func securityOptPresetsMap() map[string][]string {
 	return map[string][]string{
 		"base":       {"seccomp=unconfined"},

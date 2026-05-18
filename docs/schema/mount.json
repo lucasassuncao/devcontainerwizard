@@ -4,19 +4,15 @@
   "properties": {
     "type": {
       "type": "string",
-      "description": "Type of mount (e.g., bind, volume)."
+      "description": "Type of mount: bind, volume, or tmpfs."
     },
     "source": {
       "type": "string",
-      "description": "Source path of the mount."
+      "description": "Source path or volume name. Not required for tmpfs mounts."
     },
     "target": {
       "type": "string",
       "description": "Target path inside the container."
-    },
-    "consistency": {
-      "type": "string",
-      "description": "Consistency mode for the mount (e.g., cached, delegated, consistent)."
     },
     "readonly": {
       "type": "boolean",
@@ -27,7 +23,6 @@
   "type": "object",
   "required": [
     "type",
-    "source",
     "target"
   ]
 }

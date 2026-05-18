@@ -28,6 +28,9 @@ func DevContainerStructLevelValidation(sl validator.StructLevel) {
 	if dc.Build != nil {
 		count++
 	}
+	if dc.DockerFile != "" {
+		count++
+	}
 	if len(dc.DockerComposeFile) > 0 {
 		count++
 	}
@@ -48,8 +51,8 @@ func DevContainerStructLevelValidation(sl validator.StructLevel) {
 // Tags absent from the map fall through to a generic "failed validation" line.
 var validationMessages = map[string]string{
 	"required":           "Field '%[1]s' is required.",
-	"one_required":       "At least one of the fields 'Image', 'Build' or 'DockerComposeFile' must be set.",
-	"mutually_exclusive": "Only one of the fields 'Image', 'Build' or 'DockerComposeFile' can be set at a time.",
+	"one_required":       "At least one of the fields 'Image', 'Build', 'DockerFile' or 'DockerComposeFile' must be set.",
+	"mutually_exclusive": "Only one of the fields 'Image', 'Build', 'DockerFile' or 'DockerComposeFile' can be set at a time.",
 	"file":               "Field '%[1]s' must point to a valid file path.",
 	"dir":                "Field '%[1]s' must point to a valid directory path.",
 	"oneof":              "Field '%[1]s' must be one of the following values: %[2]s.",

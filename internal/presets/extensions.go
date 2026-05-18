@@ -98,11 +98,6 @@ func customizationsPresetsMap() map[string]*model.Customizations {
 				Plugins: []string{"com.intellij.plugins.github"},
 			},
 		},
-		"neovim-default": {
-			Neovim: &model.NeovimCustomization{
-				Plugins: []string{"nvim-lspconfig", "nvim-treesitter"},
-			},
-		},
 	}
 }
 

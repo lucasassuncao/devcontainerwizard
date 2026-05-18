@@ -233,7 +233,7 @@ type FieldDef struct {
 ```
 
 <a name="FieldsForKey"></a>
-### func [FieldsForKey](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_defs.go#L204>)
+### func [FieldsForKey](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_defs.go#L208>)
 
 ```go
 func FieldsForKey(key string) []FieldDef

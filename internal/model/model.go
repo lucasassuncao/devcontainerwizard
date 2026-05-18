@@ -8,6 +8,7 @@ type DevContainer struct {
 	Name              string       `json:"name,omitempty" yaml:"name,omitempty" validate:"required" jsonschema:"required" jsonschema_description:"Name of the dev container."`
 	Image             string       `json:"image,omitempty" yaml:"image,omitempty" validate:"required_without=Build" jsonschema_description:"Docker image to use for the dev container."`
 	Build             *BuildConfig `json:"build,omitempty" yaml:"build,omitempty" validate:"omitempty" jsonschema_description:"Configuration for building the image."`
+	DockerFile        string       `json:"dockerFile,omitempty" yaml:"dockerFile,omitempty" jsonschema_description:"Deprecated: legacy path to the Dockerfile. Use build.dockerfile instead."`
 	DockerComposeFile []string     `json:"dockerComposeFile,omitempty" yaml:"dockerComposeFile,omitempty" jsonschema_description:"List of Docker Compose files to use."`
 	Service           string       `json:"service,omitempty" yaml:"service,omitempty" validate:"required_with=DockerComposeFile" jsonschema_description:"Specific service to run from Docker Compose."`
 	RunServices       []string     `json:"runServices,omitempty" yaml:"runServices,omitempty" jsonschema_description:"Docker Compose services to start automatically alongside the dev container service."`
@@ -22,24 +23,19 @@ type DevContainer struct {
 	// Environment variables
 	ContainerEnv map[string]string `json:"containerEnv,omitempty" yaml:"containerEnv,omitempty" jsonschema_description:"Environment variables to set in the container."`
 	RemoteEnv    map[string]string `json:"remoteEnv,omitempty" yaml:"remoteEnv,omitempty" jsonschema_description:"Environment variables for remote connections (like SSH)."`
-	LocalEnv     map[string]string `json:"-" yaml:"localEnv,omitempty" jsonschema_description:"Environment variables local to the host (not exported to JSON)."`
 
 	ForwardPorts         []any                      `json:"forwardPorts,omitempty" yaml:"forwardPorts,omitempty" jsonschema_description:"Ports that are forwarded from the container to the local machine. Can be an integer port number, or a string of the format \"host:port_number\""`
 	AppPort              []any                      `json:"appPort,omitempty" yaml:"appPort,omitempty" jsonschema_description:"Legacy: ports to publish from the container. Prefer forwardPorts instead."`
 	PortsAttributes      map[string]*PortAttributes `json:"portsAttributes,omitempty" yaml:"portsAttributes,omitempty" validate:"omitempty" jsonschema_description:"Additional attributes for forwarded ports."`
 	OtherPortsAttributes *PortAttributes            `json:"otherPortsAttributes,omitempty" yaml:"otherPortsAttributes,omitempty" validate:"omitempty" jsonschema_description:"Default attributes applied to all forwarded ports not defined in portsAttributes."`
-	Mounts               []Mount                    `json:"mounts,omitempty" yaml:"mounts,omitempty" validate:"omitempty,dive" jsonschema_description:"Mount points inside the container."`
+	Mounts               []MountOrString            `json:"mounts,omitempty" yaml:"mounts,omitempty" validate:"omitempty,dive" jsonschema_description:"Mount points inside the container. Each entry can be a Mount object or a Docker --mount string."`
 
 	RunArgs         []string `json:"runArgs,omitempty" yaml:"runArgs,omitempty" jsonschema_description:"Additional arguments to pass to 'docker run'."`
-	StartupCommand  string   `json:"startupCommand,omitempty" yaml:"startupCommand,omitempty" jsonschema_description:"Command to run on container startup."`
 	OverrideCommand bool     `json:"overrideCommand,omitempty" yaml:"overrideCommand,omitempty" jsonschema_description:"Whether to override the container's default startup command with the devcontainer lifecycle commands."`
-	Command         string   `json:"command,omitempty" yaml:"command,omitempty" jsonschema_description:"Command to run inside the container instead of the default CMD."`
-	Entrypoint      string   `json:"entrypoint,omitempty" yaml:"entrypoint,omitempty" jsonschema_description:"Entrypoint to override in the container."`
 
 	Init       bool     `json:"init,omitempty" yaml:"init,omitempty" jsonschema_description:"Whether to run an init process inside the container."`
 	Privileged bool     `json:"privileged,omitempty" yaml:"privileged,omitempty" jsonschema_description:"Run the container in privileged mode."`
 	CapAdd     []string `json:"capAdd,omitempty" yaml:"capAdd,omitempty" jsonschema_description:"Linux capabilities to add to the container."`
-	CapDrop    []string `json:"capDrop,omitempty" yaml:"capDrop,omitempty" jsonschema_description:"Linux capabilities to drop from the container."`
 
 	SecurityOpt []string `json:"securityOpt,omitempty" yaml:"securityOpt,omitempty" jsonschema_description:"Security options for the container."`
 	Devices     []string `json:"devices,omitempty" yaml:"devices,omitempty" jsonschema_description:"Devices to expose to the container."`
@@ -48,12 +44,12 @@ type DevContainer struct {
 	OverrideFeatureInstallOrder []string                  `json:"overrideFeatureInstallOrder,omitempty" yaml:"overrideFeatureInstallOrder,omitempty" jsonschema_description:"Order to install features inside the container, overriding defaults."`
 	Features                    map[string]map[string]any `json:"features,omitempty" yaml:"features,omitempty" jsonschema_description:"Features to install in the container and their options."`
 
-	InitializeCommand    StringOrSlice `json:"initializeCommand,omitempty" yaml:"initializeCommand,omitempty" jsonschema_description:"Command to run on the host before the container is created or started. Can be a string or an array of strings."`
-	OnCreateCommand      StringOrSlice `json:"onCreateCommand,omitempty" yaml:"onCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created. Can be a string or an array of strings."`
-	UpdateContentCommand StringOrSlice `json:"updateContentCommand,omitempty" yaml:"updateContentCommand,omitempty" jsonschema_description:"Command to run when the container content is updated. Can be a string or an array of strings."`
-	PostCreateCommand    StringOrSlice `json:"postCreateCommand,omitempty" yaml:"postCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created and initialized. Can be a string or an array of strings."`
-	PostStartCommand     StringOrSlice `json:"postStartCommand,omitempty" yaml:"postStartCommand,omitempty" jsonschema_description:"Command to run after the container starts. Can be a string or an array of strings."`
-	PostAttachCommand    StringOrSlice `json:"postAttachCommand,omitempty" yaml:"postAttachCommand,omitempty" jsonschema_description:"Command to run after attaching to the container. Can be a string or an array of strings."`
+	InitializeCommand    *CommandValue `json:"initializeCommand,omitempty" yaml:"initializeCommand,omitempty" jsonschema_description:"Command to run on the host before the container is created or started. Can be a string, an array of strings, or a named command object."`
+	OnCreateCommand      *CommandValue `json:"onCreateCommand,omitempty" yaml:"onCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created. Can be a string, an array of strings, or a named command object."`
+	UpdateContentCommand *CommandValue `json:"updateContentCommand,omitempty" yaml:"updateContentCommand,omitempty" jsonschema_description:"Command to run when the container content is updated. Can be a string, an array of strings, or a named command object."`
+	PostCreateCommand    *CommandValue `json:"postCreateCommand,omitempty" yaml:"postCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created and initialized. Can be a string, an array of strings, or a named command object."`
+	PostStartCommand     *CommandValue `json:"postStartCommand,omitempty" yaml:"postStartCommand,omitempty" jsonschema_description:"Command to run after the container starts. Can be a string, an array of strings, or a named command object."`
+	PostAttachCommand    *CommandValue `json:"postAttachCommand,omitempty" yaml:"postAttachCommand,omitempty" jsonschema_description:"Command to run after attaching to the container. Can be a string, an array of strings, or a named command object."`
 	WaitFor              string        `json:"waitFor,omitempty" yaml:"waitFor,omitempty" validate:"omitempty,oneof=initializeCommand onCreateCommand updateContentCommand postCreateCommand postStartCommand" jsonschema_description:"Lifecycle command to wait for before the tool considers the container ready."` //nolint:lll
 
 	Watch          *WatchConfig    `json:"watch,omitempty" yaml:"watch,omitempty" validate:"omitempty" jsonschema_description:"Configuration for files/processes to watch for restarts."`
@@ -61,7 +57,7 @@ type DevContainer struct {
 
 	Secrets map[string]Secret `json:"secrets,omitempty" yaml:"secrets,omitempty" validate:"omitempty" jsonschema_description:"Secrets to pass to the container."`
 
-	ShutdownAction string `json:"shutdownAction,omitempty" yaml:"shutdownAction,omitempty" validate:"omitempty,oneof=none stopContainer stopCompose" jsonschema_description:"Action to take when the container is stopped."`
+	ShutdownAction string `json:"shutdownAction,omitempty" yaml:"shutdownAction,omitempty" validate:"omitempty,oneof=none stopContainer" jsonschema_description:"Action to take when the container is stopped. Use none or stopContainer (stopCompose is only valid in compose variants)."`
 }
 
 // BuildConfig defines parameters for building a dev container image.
@@ -71,31 +67,24 @@ type BuildConfig struct {
 	Args       map[string]string `json:"args,omitempty" yaml:"args,omitempty" validate:"omitempty" jsonschema_description:"Build arguments as key-value pairs."`
 	Target     string            `json:"target,omitempty" yaml:"target,omitempty" validate:"omitempty" jsonschema_description:"Target stage for multi-stage Docker builds."`
 	CacheFrom  []string          `json:"cacheFrom,omitempty" yaml:"cacheFrom,omitempty" validate:"omitempty" jsonschema_description:"List of images to cache from."`
-	Output     string            `json:"output,omitempty" yaml:"output,omitempty" validate:"omitempty" jsonschema_description:"Output location of the build."`
-	SSH        []string          `json:"ssh,omitempty" yaml:"ssh,omitempty" validate:"omitempty" jsonschema_description:"SSH mount sources to use during build."`
-	Secrets    []BuildSecret     `json:"secrets,omitempty" yaml:"secrets,omitempty" validate:"omitempty,dive" jsonschema_description:"Secrets to pass to the build process."`
-}
-
-// BuildSecret represents a secret used during build.
-type BuildSecret struct {
-	ID  string `json:"id,omitempty" yaml:"id,omitempty" validate:"required" jsonschema_description:"Identifier for the secret."`
-	Src string `json:"src,omitempty" yaml:"src,omitempty" validate:"required" jsonschema_description:"Path or source of the secret."`
+	Options    []string          `json:"options,omitempty" yaml:"options,omitempty" validate:"omitempty" jsonschema_description:"Additional CLI options passed to docker build (e.g. --no-cache)."`
 }
 
 // Mount represents a filesystem or volume mount for the container.
 type Mount struct {
-	Type        string `json:"type,omitempty" yaml:"type,omitempty" validate:"required,oneof=bind volume" jsonschema:"required" jsonschema_description:"Type of mount (e.g., bind, volume)."`
-	Source      string `json:"source,omitempty" yaml:"source,omitempty" validate:"required" jsonschema:"required" jsonschema_description:"Source path of the mount."`
-	Target      string `json:"target,omitempty" yaml:"target,omitempty" validate:"required" jsonschema:"required" jsonschema_description:"Target path inside the container."`
-	Consistency string `json:"consistency,omitempty" yaml:"consistency,omitempty" validate:"omitempty,oneof=cached delegated consistent" jsonschema_description:"Consistency mode for the mount (e.g., cached, delegated, consistent)."`
-	ReadOnly    bool   `json:"readonly,omitempty" yaml:"readonly,omitempty" jsonschema_description:"Whether the mount is read-only."`
+	Type     string `json:"type,omitempty" yaml:"type,omitempty" validate:"required,oneof=bind volume tmpfs" jsonschema:"required" jsonschema_description:"Type of mount: bind, volume, or tmpfs."`
+	Source   string `json:"source,omitempty" yaml:"source,omitempty" jsonschema_description:"Source path or volume name. Not required for tmpfs mounts."`
+	Target   string `json:"target,omitempty" yaml:"target,omitempty" validate:"required" jsonschema:"required" jsonschema_description:"Target path inside the container."`
+	ReadOnly bool   `json:"readonly,omitempty" yaml:"readonly,omitempty" jsonschema_description:"Whether the mount is read-only."`
 }
 
 // PortAttributes defines additional metadata for a forwarded port.
 type PortAttributes struct {
-	Label         string `json:"label,omitempty" yaml:"label,omitempty" validate:"omitempty" jsonschema_description:"Human-readable label for the port."`
-	OnAutoForward string `json:"onAutoForward,omitempty" yaml:"onAutoForward,omitempty" validate:"omitempty,oneof=notify openBrowser openBrowserOnce openPreview silent ignore" jsonschema_description:"Behavior when the port is auto-forwarded (notify, openBrowser, ignore)."`
-	Protocol      string `json:"protocol,omitempty" yaml:"protocol,omitempty" validate:"omitempty,oneof=http https" jsonschema_description:"Network protocol (tcp/udp) for the port."`
+	Label            string `json:"label,omitempty" yaml:"label,omitempty" validate:"omitempty" jsonschema_description:"Human-readable label for the port."`
+	OnAutoForward    string `json:"onAutoForward,omitempty" yaml:"onAutoForward,omitempty" validate:"omitempty,oneof=notify openBrowser openBrowserOnce openPreview silent ignore" jsonschema_description:"Behavior when the port is auto-forwarded (notify, openBrowser, ignore)."`
+	Protocol         string `json:"protocol,omitempty" yaml:"protocol,omitempty" validate:"omitempty,oneof=http https" jsonschema_description:"Network protocol (http/https) for the port."`
+	ElevateIfNeeded  bool   `json:"elevateIfNeeded,omitempty" yaml:"elevateIfNeeded,omitempty" jsonschema_description:"Prompt for elevated privileges if the port requires it (e.g. ports below 1024)."`
+	RequireLocalPort bool   `json:"requireLocalPort,omitempty" yaml:"requireLocalPort,omitempty" jsonschema_description:"Require the local port to match the remote port. Shows a modal if not available."`
 }
 
 // WatchConfig controls which files or processes trigger restarts.
@@ -109,14 +98,13 @@ type Customizations struct {
 	VSCode     *VSCodeCustomization     `json:"vscode,omitempty" yaml:"vscode,omitempty" validate:"omitempty" jsonschema_description:"VS Code specific customizations."`
 	Codespaces *CodespacesCustomization `json:"codespaces,omitempty" yaml:"codespaces,omitempty" validate:"omitempty" jsonschema_description:"Codespaces specific customizations."`
 	JetBrains  *JetBrainsCustomization  `json:"jetbrains,omitempty" yaml:"jetbrains,omitempty" validate:"omitempty" jsonschema_description:"JetBrains IDE specific customizations."`
-	Neovim     *NeovimCustomization     `json:"neovim,omitempty" yaml:"neovim,omitempty" validate:"omitempty" jsonschema_description:"Neovim specific customizations."`
 }
 
 // VSCodeCustomization defines VS Code-specific settings.
 type VSCodeCustomization struct {
 	Settings   map[string]any `json:"settings,omitempty" yaml:"settings,omitempty" validate:"omitempty" jsonschema_description:"Key-value settings for VS Code."`
 	Extensions []string       `json:"extensions,omitempty" yaml:"extensions,omitempty" validate:"omitempty" jsonschema_description:"List of VS Code extensions to install."`
-	RemoteUser string         `json:"remoteUser,omitempty" yaml:"remoteUser,omitempty" validate:"omitempty" jsonschema_description:"Remote user for VS Code container setup."`
+	DevPort    int            `json:"devPort,omitempty" yaml:"devPort,omitempty" validate:"omitempty,min=1,max=65535" jsonschema_description:"Port on which the VS Code server listens inside the container."`
 }
 
 // CodespacesCustomization defines GitHub Codespaces-specific settings.
@@ -130,23 +118,18 @@ type JetBrainsCustomization struct {
 	Plugins []string `json:"plugins,omitempty" yaml:"plugins,omitempty" validate:"omitempty" jsonschema_description:"List of JetBrains plugins to install."`
 }
 
-// NeovimCustomization defines Neovim-specific configuration.
-type NeovimCustomization struct {
-	Plugins []string `json:"plugins,omitempty" yaml:"plugins,omitempty" validate:"omitempty" jsonschema_description:"List of Neovim plugins to install."`
-}
-
 // Secret defines a reusable secret for builds or runtime.
 type Secret struct {
-	Description string `json:"description,omitempty" yaml:"description,omitempty" validate:"required" jsonschema_description:"Human-readable description of the secret."`
-	Default     string `json:"default,omitempty" yaml:"default,omitempty" validate:"omitempty" jsonschema_description:"Default value for the secret if none is provided."`
+	Description      string `json:"description,omitempty" yaml:"description,omitempty" validate:"required" jsonschema_description:"Human-readable description of the secret."`
+	DocumentationURL string `json:"documentationUrl,omitempty" yaml:"documentationUrl,omitempty" validate:"omitempty,url" jsonschema_description:"URL pointing to documentation for this secret."`
 }
 
 // HostRequirements defines minimum hardware resources the host must provide.
 type HostRequirements struct {
-	CPUs    int             `json:"cpus,omitempty" yaml:"cpus,omitempty" validate:"omitempty,min=1" jsonschema_description:"Minimum number of CPUs required."`
-	Memory  string          `json:"memory,omitempty" yaml:"memory,omitempty" jsonschema_description:"Minimum memory required (e.g. \"4gb\")."`
-	Storage string          `json:"storage,omitempty" yaml:"storage,omitempty" jsonschema_description:"Minimum disk storage required (e.g. \"32gb\")."`
-	GPU     *GPURequirement `json:"gpu,omitempty" yaml:"gpu,omitempty" validate:"omitempty" jsonschema_description:"GPU requirement (true, false, or object with cores/memory)."`
+	CPUs    int       `json:"cpus,omitempty" yaml:"cpus,omitempty" validate:"omitempty,min=1" jsonschema_description:"Minimum number of CPUs required."`
+	Memory  string    `json:"memory,omitempty" yaml:"memory,omitempty" jsonschema_description:"Minimum memory required (e.g. \"4gb\")."`
+	Storage string    `json:"storage,omitempty" yaml:"storage,omitempty" jsonschema_description:"Minimum disk storage required (e.g. \"32gb\")."`
+	GPU     *GPUValue `json:"gpu,omitempty" yaml:"gpu,omitempty" validate:"omitempty" jsonschema_description:"GPU requirement: true/false, \"optional\", or object with cores/memory."`
 }
 
 // GPURequirement describes GPU resource needs within HostRequirements.
@@ -163,11 +146,10 @@ var TopLevelKeys = []string{
 	"name", "image", "build", "dockerComposeFile", "service", "runServices",
 	"workspaceFolder", "workspaceMount", "remoteUser", "containerUser",
 	"updateRemoteUserUID", "userEnvProbe",
-	"containerEnv", "remoteEnv", "localEnv",
+	"containerEnv", "remoteEnv",
 	"forwardPorts", "appPort", "portsAttributes", "otherPortsAttributes",
-	"mounts", "runArgs", "startupCommand", "overrideCommand",
-	"command", "entrypoint",
-	"init", "privileged", "capAdd", "capDrop", "securityOpt", "devices",
+	"mounts", "runArgs", "overrideCommand",
+	"init", "privileged", "capAdd", "securityOpt", "devices",
 	"hostRequirements", "overrideFeatureInstallOrder", "features",
 	"initializeCommand", "onCreateCommand", "updateContentCommand",
 	"postCreateCommand", "postStartCommand", "postAttachCommand", "waitFor",

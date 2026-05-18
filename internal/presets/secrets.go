@@ -7,12 +7,17 @@ func secretsPresetsMap() map[string]map[string]model.Secret {
 		"base": {
 			"MY_SECRET": {
 				Description: "Description of the secret",
-				Default:     "",
 			},
 		},
 		"git-tokens": {
-			"GITHUB_TOKEN": {Description: "GitHub personal access token", Default: ""},
-			"NPM_TOKEN":    {Description: "NPM authentication token", Default: ""},
+			"GITHUB_TOKEN": {
+				Description:      "GitHub personal access token",
+				DocumentationURL: "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens",
+			},
+			"NPM_TOKEN": {
+				Description:      "NPM authentication token",
+				DocumentationURL: "https://docs.npmjs.com/creating-and-viewing-access-tokens",
+			},
 		},
 	}
 }
