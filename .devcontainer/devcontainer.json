@@ -1,12 +1,15 @@
 {
   "$schema": "https://containers.dev/implementors/json_schema",
   "name": "devcontainerwizard",
-  "image": "mcr.microsoft.com/devcontainers/go:1",
+  "image": "mcr.microsoft.com/devcontainers/go:1.26",
   "remoteUser": "vscode",
   "updateRemoteUserUID": true,
   "userEnvProbe": "loginShell",
   "forwardPorts": [
     8080
+  ],
+  "capAdd": [
+    "SYS_PTRACE"
   ],
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {}

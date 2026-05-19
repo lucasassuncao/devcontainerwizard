@@ -1,10 +1,12 @@
 name: devcontainerwizard
-image: mcr.microsoft.com/devcontainers/go:1
+image: mcr.microsoft.com/devcontainers/go:1.26
 
 remoteUser: vscode
 updateRemoteUserUID: true
 userEnvProbe: loginShell
 
+capAdd:
+  - SYS_PTRACE
 features:
   ghcr.io/devcontainers/features/github-cli:1: {}
 

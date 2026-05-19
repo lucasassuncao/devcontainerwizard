@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/glamour"
 
 	"github.com/lucasassuncao/devcontainerwizard/internal/tui/theme"
 )
@@ -36,6 +37,9 @@ type Model struct {
 	vpScroll int
 
 	active pane
+
+	renderer     *glamour.TermRenderer
+	renderedPane string
 }
 
 // NewModel constructs the TUI given the fields and accessor functions.
@@ -61,6 +65,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.relayout()
+		m.refreshRendered()
 		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -76,6 +81,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up", "k":
 			if m.active == paneList {
 				m.list.MoveUp()
+				m.refreshRendered()
 			} else if m.vpScroll > 0 {
 				m.vpScroll--
 			}
@@ -83,6 +89,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "down", "j":
 			if m.active == paneList {
 				m.list.MoveDown()
+				m.refreshRendered()
 			} else {
 				m.vpScroll++
 			}
@@ -91,6 +98,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.active == paneList {
 				if m.list.Mode() == modeFields {
 					m.list.DrillIn()
+					m.refreshRendered()
 				}
 			}
 			return m, nil
@@ -98,6 +106,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.active == paneList {
 				if m.list.Mode() == modePresets {
 					m.list.Back()
+					m.refreshRendered()
 				}
 			}
 			return m, nil
@@ -113,6 +122,28 @@ func (m *Model) relayout() {
 		innerH = 3
 	}
 	m.list.SetSize(m.listW-2, innerH)
+
+	r, err := glamour.NewTermRenderer(
+		glamour.WithAutoStyle(),
+		glamour.WithWordWrap(m.vpW-2),
+	)
+	if err == nil {
+		m.renderer = r
+	}
+	m.renderedPane = ""
+}
+
+func (m *Model) refreshRendered() {
+	field, preset := m.list.Selected()
+	yaml := ""
+	if preset != "" {
+		if y, err := m.yamlFn(field, preset); err == nil {
+			yaml = y
+		} else {
+			yaml = "# error: " + err.Error()
+		}
+	}
+	m.renderedPane = renderYAML(yaml, m.renderer)
 }
 
 func (m Model) View() string {
@@ -124,15 +155,6 @@ func (m Model) View() string {
 	}
 
 	field, preset := m.list.Selected()
-	yaml := ""
-	if preset != "" {
-		if y, err := m.yamlFn(field, preset); err == nil {
-			yaml = y
-		} else {
-			yaml = "# error: " + err.Error()
-		}
-	}
-
 	rightTitle := "Preset"
 	if field != "" && preset != "" {
 		rightTitle = fmt.Sprintf("%s · %s", field, preset)
@@ -145,7 +167,7 @@ func (m Model) View() string {
 
 	leftPanel := theme.RenderTitledPanel("Fields", m.listW, innerH+2, m.active == paneList, m.list.View())
 	rightPanel := theme.RenderTitledPanel(rightTitle, m.vpW, innerH+2, m.active == paneViewport,
-		renderYAML(yaml, m.vpW-2))
+		m.renderedPane)
 
 	hintText := "[↑/↓] navigate  [Enter/→] open  [Esc/←] back  [Tab] panel  [q] quit"
 	if m.list.Mode() == modePresets {

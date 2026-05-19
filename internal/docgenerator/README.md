@@ -31,7 +31,7 @@ func GenerateIndex(docsDir string, configs []any) error
 GenerateIndex creates an index markdown file listing all configuration structures.
 
 <a name="RenderMarkdownDocsInTerminal"></a>
-## func [RenderMarkdownDocsInTerminal](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/viewport.go#L225>)
+## func [RenderMarkdownDocsInTerminal](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/docgenerator/viewport.go#L230>)
 
 ```go
 func RenderMarkdownDocsInTerminal(docs map[string]string) error

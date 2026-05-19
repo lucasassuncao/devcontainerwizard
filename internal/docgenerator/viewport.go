@@ -40,9 +40,10 @@ type docTUIModel struct {
 	vpColW int // total column width (content + 2 border chars)
 	vpH    int // content height inside border
 
-	active docPane
-	width  int
-	height int
+	active   docPane
+	width    int
+	height   int
+	renderer *glamour.TermRenderer
 }
 
 func newDocTUIModel(docs map[string]string) docTUIModel {
@@ -148,6 +149,14 @@ func (m *docTUIModel) relayout() {
 	if m.listOffset < 0 {
 		m.listOffset = 0
 	}
+
+	r, err := glamour.NewTermRenderer(
+		glamour.WithAutoStyle(),
+		glamour.WithWordWrap(m.vp.Width),
+	)
+	if err == nil {
+		m.renderer = r
+	}
 }
 
 func (m *docTUIModel) invalidateRendered() {
@@ -159,15 +168,11 @@ func (m *docTUIModel) renderDoc(name string) string {
 		return r
 	}
 	raw := m.raw[name]
-	renderer, err := glamour.NewTermRenderer(
-		glamour.WithAutoStyle(),
-		glamour.WithWordWrap(m.vp.Width),
-	)
-	if err != nil {
+	if m.renderer == nil {
 		m.rendered[name] = raw
 		return raw
 	}
-	out, err := renderer.Render(raw)
+	out, err := m.renderer.Render(raw)
 	if err != nil {
 		m.rendered[name] = raw
 		return raw
