@@ -182,7 +182,7 @@ func (m *docTUIModel) renderDoc(name string) string {
 }
 
 func (m *docTUIModel) loadCurrent() {
-	if len(m.names) == 0 || m.vp.Width == 0 {
+	if len(m.names) == 0 || m.cursor >= len(m.names) || m.vp.Width == 0 {
 		return
 	}
 	m.vp.SetContent(m.renderDoc(m.names[m.cursor]))

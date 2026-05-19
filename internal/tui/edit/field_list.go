@@ -71,7 +71,10 @@ func (fl FieldListModel) Update(msg tea.KeyMsg) (FieldListModel, bool) {
 
 // ToggledField returns the field at the cursor. Call after Update returns toggled=true.
 func (fl FieldListModel) ToggledField() fieldState {
-	return fl.fields[fl.cursor]
+	if fl.cursor >= 0 && fl.cursor < len(fl.fields) {
+		return fl.fields[fl.cursor]
+	}
+	return fieldState{}
 }
 
 // View renders the visible slice of the field list.

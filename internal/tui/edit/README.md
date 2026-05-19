@@ -298,7 +298,7 @@ func (fl FieldListModel) Update(msg tea.KeyMsg) (FieldListModel, bool)
 Update handles keyboard input. Returns the updated model and a bool indicating whether a toggle occurred \(Space was pressed on a field\).
 
 <a name="FieldListModel.View"></a>
-### func \(FieldListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L78>)
+### func \(FieldListModel\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_list.go#L81>)
 
 ```go
 func (fl FieldListModel) View() string
