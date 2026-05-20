@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/lucasassuncao/devcontainerwizard/cmd/docs"
 
@@ -27,6 +27,6 @@ func Execute(version string) {
 	)
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		os.Exit(1)
 	}
 }

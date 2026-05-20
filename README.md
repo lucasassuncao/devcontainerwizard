@@ -25,11 +25,11 @@ go install
 **1. Create a config.yaml**
 
 ```bash
-# From a template
-devcontainerwizard init -t golang
+# See available templates
+devcontainerwizard init --list
 
-# Or interactively
-devcontainerwizard init -i
+# Create from a template
+devcontainerwizard init -t golang
 ```
 
 **2. Edit it (optional)**

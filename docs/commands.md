@@ -2,7 +2,7 @@
 
 ## init
 
-Create a new `config.yaml` file.
+Create a new `config.yaml` file from a template. Running `init` without flags prints an error with the available templates. Use `--list` to browse them without creating a file.
 
 ```bash
 devcontainerwizard init [flags]
@@ -10,8 +10,8 @@ devcontainerwizard init [flags]
 
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
-| `--template` | `-t` | `image` | Template to use: `image`, `dockerfile`, `dockercompose`, `full`, `golang` |
-| `--interactive` | `-i` | false | Prompt for common fields instead of using a template |
+| `--template` | `-t` | — | Template to use (required). See `--list` for available names. |
+| `--list` | `-l` | false | Print available templates and exit |
 | `--force` | `-f` | false | Overwrite an existing `config.yaml` |
 
 **Templates:**
