@@ -76,6 +76,23 @@ func TestInitTemplate(t *testing.T) {
 	}
 }
 
+func TestInitOutput(t *testing.T) {
+	dir := t.TempDir()
+	outPath := filepath.Join(dir, "myconfig.yaml")
+
+	c, out, _ := setupInitCmd(t, []string{"--template", "image", "--output", outPath})
+
+	if err := c.Execute(); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, err := os.Stat(outPath); err != nil {
+		t.Error("custom output file was not created")
+	}
+	if !strings.Contains(out.String(), outPath) {
+		t.Errorf("expected output path in success message, got: %s", out.String())
+	}
+}
+
 func TestInitInvalidTemplate(t *testing.T) {
 	dir := t.TempDir()
 	orig, err := os.Getwd()

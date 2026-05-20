@@ -11,8 +11,9 @@ devcontainerwizard init [flags]
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
 | `--template` | `-t` | — | Template to use (required). See `--list` for available names. |
+| `--output` | `-o` | `config.yaml` | Output file path |
 | `--list` | `-l` | false | Print available templates and exit |
-| `--force` | `-f` | false | Overwrite an existing `config.yaml` |
+| `--force` | `-f` | false | Overwrite an existing output file |
 
 **Templates:**
 
