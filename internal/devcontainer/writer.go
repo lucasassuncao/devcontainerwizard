@@ -9,7 +9,7 @@ import (
 	"github.com/lucasassuncao/devcontainerwizard/internal/model"
 )
 
-func WriteFile(dc model.DevContainer, outputDir string) error {
+func WriteFile(dc model.DevContainer, outputDir string, force bool) error {
 	if dc.Schema == "" {
 		dc.Schema = "https://containers.dev/implementors/json_schema"
 	}
@@ -24,6 +24,9 @@ func WriteFile(dc model.DevContainer, outputDir string) error {
 	}
 
 	filePath := filepath.Join(outputDir, "devcontainer.json")
+	if _, err := os.Stat(filePath); err == nil && !force {
+		return fmt.Errorf("file '%s' already exists — use --force to overwrite", filePath)
+	}
 	if err := os.WriteFile(filePath, jsonBytes, 0600); err != nil {
 		return fmt.Errorf("error writing file: %w", err)
 	}

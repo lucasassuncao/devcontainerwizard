@@ -15,8 +15,9 @@ func fatal(format string, args ...any) {
 }
 
 var (
-	configFile string
-	outputDir  string
+	configFile   string
+	outputDir    string
+	convertForce bool
 
 	convertCmd = &cobra.Command{
 		Use:   "convert",
@@ -29,6 +30,7 @@ var (
 func init() {
 	convertCmd.Flags().StringVarP(&configFile, "config", "c", "config.yaml", "Config file path")
 	convertCmd.Flags().StringVarP(&outputDir, "output", "o", ".devcontainer", "Output directory")
+	convertCmd.Flags().BoolVarP(&convertForce, "force", "f", false, "Overwrite existing devcontainer.json")
 }
 
 func runConvert(cmd *cobra.Command, args []string) {
@@ -51,7 +53,7 @@ func runConvert(cmd *cobra.Command, args []string) {
 	}
 
 	// Write devcontainer files
-	if err := devcontainer.WriteFile(dc, outputDir); err != nil {
+	if err := devcontainer.WriteFile(dc, outputDir, convertForce); err != nil {
 		fatal("Failed to write devcontainer: %v", err)
 	}
 }

@@ -15,9 +15,6 @@ service: app
 workspaceFolder: /workspace
 remoteUser: vscode
 
-# Override command
-command: /bin/sh -c "while sleep 1000; do :; done"
-
 # Container environment variables
 containerEnv:
   NODE_ENV: development

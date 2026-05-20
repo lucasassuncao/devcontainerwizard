@@ -1,0 +1,77 @@
+# description: DevOps/SRE - Terraform, kubectl, Helm, AWS/GCP/Azure CLIs
+# DevContainer Configuration for DevOps and SRE workflows
+
+name: devops-devcontainer
+
+image: mcr.microsoft.com/devcontainers/base:ubuntu-24.04
+
+workspaceFolder: /workspaces/${localWorkspaceFolderBasename}
+remoteUser: vscode
+
+containerEnv:
+  KUBECONFIG: /home/vscode/.kube/config
+  DOCKER_BUILDKIT: "1"
+
+features:
+  ghcr.io/devcontainers/features/git:1:
+    version: latest
+  ghcr.io/devcontainers/features/docker-outside-of-docker:1:
+    version: latest
+  ghcr.io/devcontainers/features/kubectl-helm-minikube:1:
+    version: latest
+    helm: latest
+    minikube: none
+  ghcr.io/devcontainers/features/terraform:1:
+    version: latest
+    tflint: latest
+  ghcr.io/devcontainers/features/aws-cli:1:
+    version: latest
+  ghcr.io/devcontainers/features/azure-cli:1:
+    version: latest
+  ghcr.io/dhoeric/features/google-cloud-cli:1:
+    version: latest
+  ghcr.io/devcontainers/features/powershell:1:
+    version: latest
+  ghcr.io/sliekens/devcontainer-features/ansible:1: {}
+  ghcr.io/dhoeric/features/trivy:1: {}
+
+forwardPorts:
+  - 8080
+  - 9090
+
+customizations:
+  vscode:
+    extensions:
+      - hashicorp.terraform
+      - ms-azuretools.vscode-docker
+      - ms-kubernetes-tools.vscode-kubernetes-tools
+      - redhat.vscode-yaml
+      - amazonwebservices.aws-toolkit-vscode
+      - ms-azuretools.azure-dev
+      - googlecloudtools.cloudcode
+      - github.vscode-github-actions
+      - ms-toolsai.jupyter
+      - usernamehw.errorlens
+
+    settings:
+      editor.formatOnSave: true
+
+      "[terraform]":
+        editor.defaultFormatter: hashicorp.terraform
+        editor.formatOnSave: true
+        editor.formatOnSaveMode: file
+
+      terraform.experimentalFeatures.validateOnSave: true
+      terraform.experimentalFeatures.prefillRequiredFields: true
+
+      yaml.schemas:
+        https://json.schemastore.org/github-workflow.json: ".github/workflows/*.yml"
+        https://json.schemastore.org/kustomization.json: "kustomization.yaml"
+
+      files.associations:
+        "*.tf": terraform
+        "*.tfvars": terraform
+        "Dockerfile*": dockerfile
+
+      files.trimTrailingWhitespace: true
+      files.insertFinalNewline: true

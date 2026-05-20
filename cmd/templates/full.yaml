@@ -39,17 +39,6 @@ image: mcr.microsoft.com/devcontainers/typescript-node:20
 #     - node:20-alpine
 #     - myregistry.com/myimage:cache
 #
-#   # Build output location
-#   output: type=docker
-#
-#   # SSH agent forwarding for private repos
-#   ssh:
-#     - default
-#
-#   # Build secrets
-#   secrets:
-#     - id: npm_token
-#       src: ~/.npmrc
 
 # Option 3: Docker Compose (comment 'image' above if using this)
 # dockerComposeFile:
@@ -150,7 +139,6 @@ mounts:
   - type: bind
     source: ./data
     target: /data
-    consistency: cached # Options: cached | delegated | consistent
 
   # Another bind mount (read-only)
   - type: bind
@@ -177,15 +165,6 @@ runArgs:
   - --add-host=host.docker.internal:host-gateway
   - --network=my-custom-network
 
-# Command to override container CMD
-# command: /bin/sh -c "while sleep 1000; do :; done"
-
-# Startup command (runs before other lifecycle hooks)
-# startupCommand: echo "Container starting..."
-
-# Entrypoint to override
-# entrypoint: /usr/local/bin/custom-entrypoint.sh
-
 # ==============================================================================
 # CONTAINER CAPABILITIES & SECURITY
 # ==============================================================================
@@ -200,10 +179,6 @@ privileged: false
 capAdd:
   - SYS_PTRACE # For debugging
   - NET_ADMIN # For network configuration
-
-# Linux capabilities to drop
-capDrop:
-  - ALL # Drop all, then add only what's needed
 
 # Security options
 securityOpt:
@@ -534,14 +509,6 @@ customizations:
       - org.jetbrains.plugins.go
       - com.jetbrains.python
 
-  # ============================================================================
-  # NEOVIM
-  # ============================================================================
-  neovim:
-    plugins:
-      - nvim-lspconfig
-      - nvim-treesitter
-      - telescope.nvim
 
 # ==============================================================================
 # SECRETS
@@ -551,22 +518,18 @@ secrets:
   # NPM token for private packages
   NPM_TOKEN:
     description: "NPM authentication token for private registry"
-    default: ""
 
   # GitHub token
   GITHUB_TOKEN:
     description: "GitHub personal access token"
-    default: ""
 
   # Database password
   DB_PASSWORD:
     description: "PostgreSQL database password"
-    default: "postgres"
 
   # API keys
   API_SECRET_KEY:
     description: "Secret key for API authentication"
-    default: ""
 
 # ==============================================================================
 # SHUTDOWN ACTION

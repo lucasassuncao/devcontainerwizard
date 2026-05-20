@@ -15,7 +15,7 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/devcontainer"
 - [func LoadYAMLFile\(path string\) \(\*koanf.Koanf, error\)](<#LoadYAMLFile>)
 - [func Parse\(k \*koanf.Koanf\) \(model.DevContainer, error\)](<#Parse>)
 - [func Validate\(dc model.DevContainer\) error](<#Validate>)
-- [func WriteFile\(dc model.DevContainer, outputDir string\) error](<#WriteFile>)
+- [func WriteFile\(dc model.DevContainer, outputDir string, force bool\) error](<#WriteFile>)
 
 
 <a name="DevContainerStructLevelValidation"></a>
@@ -67,7 +67,7 @@ func Validate(dc model.DevContainer) error
 ## func [WriteFile](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/writer.go#L12>)
 
 ```go
-func WriteFile(dc model.DevContainer, outputDir string) error
+func WriteFile(dc model.DevContainer, outputDir string, force bool) error
 ```
 
 
