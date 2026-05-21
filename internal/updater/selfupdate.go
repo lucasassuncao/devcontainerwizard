@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -24,14 +25,27 @@ var (
 // osExecutable is a variable so tests can override os.Executable.
 var osExecutable = os.Executable
 
-// SelfUpdate downloads the latest release of devcontainerwizard from GitHub and
-// replaces the current binary. The old binary is kept as <name>.old until the
-// next run, when it is cleaned up automatically.
+// Release is the public, presentation-friendly view of a GitHub release
+// returned by ListReleases. It hides API-specific fields.
+type Release struct {
+	Tag         string
+	Prerelease  bool
+	PublishedAt time.Time
+}
+
+// SelfUpdate downloads a release of devcontainerwizard from GitHub and replaces
+// the current binary. The old binary is kept as <name>.old until the next run,
+// when it is cleaned up automatically.
 //
 // repo must be in "owner/repo" format, e.g. "lucasassuncao/devcontainerwizard".
 // currentVersion is the running binary's version (e.g. "1.0.0" or "v1.0.0");
-// the update is skipped when it matches the latest release tag.
-func SelfUpdate(repo, token, currentVersion string) error {
+// the update is skipped when it matches the resolved release tag.
+//
+// version selects the release to install: empty means "latest". includePrerelease
+// only affects the empty-version path: when true, the most recent release wins
+// even if it is a prerelease; otherwise the latest stable is used. When version
+// is non-empty, includePrerelease is ignored — the explicit tag is honored.
+func SelfUpdate(repo, token, currentVersion, version string, includePrerelease bool) error {
 	if repo == "" {
 		return fmt.Errorf("--repo is required (e.g. --repo lucasassuncao/devcontainerwizard)")
 	}
@@ -39,16 +53,14 @@ func SelfUpdate(repo, token, currentVersion string) error {
 	// Clean up any leftover .old binary from a previous update.
 	CleanOldBinary()
 
-	fmt.Printf("Checking latest release of %s...\n", repo)
-
-	rel, err := fetchLatestRelease(repo, token)
+	rel, err := resolveRelease(repo, token, version, includePrerelease)
 	if err != nil {
 		return err
 	}
 
 	// Normalise both versions to a bare "X.Y.Z" form before comparing.
 	if normalizeVersion(currentVersion) == normalizeVersion(rel.TagName) {
-		fmt.Printf("Already up to date (%s).\n", rel.TagName)
+		fmt.Printf("Already on %s.\n", rel.TagName)
 		return nil
 	}
 
@@ -98,8 +110,90 @@ func SelfUpdate(repo, token, currentVersion string) error {
 		return fmt.Errorf("installing new binary: %w", err)
 	}
 
-	fmt.Printf("✓ Updated to %s  (old binary saved as %s.old)\n", rel.TagName, filepath.Base(exePath))
+	fmt.Printf("✓ Installed %s  (old binary saved as %s.old)\n", rel.TagName, filepath.Base(exePath))
 	return nil
+}
+
+// ListReleases returns up to `limit` recent releases for the repo, newest first.
+// Drafts are always excluded. When includePrerelease is false, prereleases are
+// also excluded. limit <= 0 defaults to 20; the GitHub per-page cap is 100.
+func ListReleases(repo, token string, includePrerelease bool, limit int) ([]Release, error) {
+	if repo == "" {
+		return nil, fmt.Errorf("repo is required (e.g. lucasassuncao/devcontainerwizard)")
+	}
+	if limit <= 0 {
+		limit = 20
+	}
+
+	// Over-fetch a little so filtering prereleases still gives us a usable list.
+	perPage := limit
+	if !includePrerelease {
+		perPage *= 2
+	}
+	if perPage > 100 {
+		perPage = 100
+	}
+
+	raw, err := fetchReleases(repo, token, perPage)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]Release, 0, len(raw))
+	for i := range raw {
+		if raw[i].Draft {
+			continue
+		}
+		if raw[i].Prerelease && !includePrerelease {
+			continue
+		}
+		out = append(out, Release{
+			Tag:         raw[i].TagName,
+			Prerelease:  raw[i].Prerelease,
+			PublishedAt: raw[i].PublishedAt,
+		})
+		if len(out) >= limit {
+			break
+		}
+	}
+	return out, nil
+}
+
+// resolveRelease maps the (version, includePrerelease) inputs to a concrete release.
+// Empty version → latest stable (or most recent including prereleases when flag set).
+// Non-empty version → exact tag, with a fallback that retries with a leading "v".
+func resolveRelease(repo, token, version string, includePrerelease bool) (*ghRelease, error) {
+	if version != "" {
+		fmt.Printf("Fetching release %s from %s...\n", version, repo)
+		rel, err := fetchReleaseByTag(repo, token, version)
+		if err == nil {
+			return rel, nil
+		}
+		// Be forgiving: users often pass "1.2.3" when the actual tag is "v1.2.3".
+		if !strings.HasPrefix(version, "v") {
+			if alt, altErr := fetchReleaseByTag(repo, token, "v"+version); altErr == nil {
+				return alt, nil
+			}
+		}
+		return nil, err
+	}
+
+	if includePrerelease {
+		fmt.Printf("Checking most recent release of %s (including prereleases)...\n", repo)
+		all, err := fetchReleases(repo, token, 10)
+		if err != nil {
+			return nil, err
+		}
+		for i := range all {
+			if !all[i].Draft {
+				return &all[i], nil
+			}
+		}
+		return nil, fmt.Errorf("no releases found for %s", repo)
+	}
+
+	fmt.Printf("Checking latest release of %s...\n", repo)
+	return fetchLatestRelease(repo, token)
 }
 
 // CleanOldBinary removes a <exe>.old file left by a previous self-update.
@@ -125,8 +219,11 @@ func normalizeVersion(v string) string {
 // ── GitHub API ────────────────────────────────────────────────────────────────
 
 type ghRelease struct {
-	TagName string    `json:"tag_name"`
-	Assets  []ghAsset `json:"assets"`
+	TagName     string    `json:"tag_name"`
+	Prerelease  bool      `json:"prerelease"`
+	Draft       bool      `json:"draft"`
+	PublishedAt time.Time `json:"published_at"`
+	Assets      []ghAsset `json:"assets"`
 }
 
 type ghAsset struct {
@@ -135,9 +232,8 @@ type ghAsset struct {
 	Size               int64  `json:"size"`
 }
 
-func fetchLatestRelease(repo, token string) (*ghRelease, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/releases/latest", repo)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+func newGitHubRequest(method, url, token string) (*http.Request, error) {
+	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -147,25 +243,57 @@ func fetchLatestRelease(repo, token string) (*ghRelease, error) {
 	if token != "" {
 		req.Header.Set("Authorization", "Bearer "+token)
 	}
+	return req, nil
+}
 
+func fetchLatestRelease(repo, token string) (*ghRelease, error) {
+	u := fmt.Sprintf("https://api.github.com/repos/%s/releases/latest", repo)
+	var rel ghRelease
+	if err := getJSON(u, token, &rel); err != nil {
+		return nil, err
+	}
+	return &rel, nil
+}
+
+func fetchReleaseByTag(repo, token, tag string) (*ghRelease, error) {
+	u := fmt.Sprintf("https://api.github.com/repos/%s/releases/tags/%s", repo, url.PathEscape(tag))
+	var rel ghRelease
+	if err := getJSON(u, token, &rel); err != nil {
+		return nil, err
+	}
+	return &rel, nil
+}
+
+func fetchReleases(repo, token string, perPage int) ([]ghRelease, error) {
+	u := fmt.Sprintf("https://api.github.com/repos/%s/releases?per_page=%d", repo, perPage)
+	var rels []ghRelease
+	if err := getJSON(u, token, &rels); err != nil {
+		return nil, err
+	}
+	return rels, nil
+}
+
+func getJSON(url, token string, out any) error {
+	req, err := newGitHubRequest(http.MethodGet, url, token)
+	if err != nil {
+		return err
+	}
 	resp, err := apiClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("github api: %w", err)
+		return fmt.Errorf("github api: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, fmt.Errorf("no releases found for %s", repo)
+		return fmt.Errorf("not found (404): %s", url)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("github api returned %d", resp.StatusCode)
+		return fmt.Errorf("github api returned %d", resp.StatusCode)
 	}
-
-	var rel ghRelease
-	if err := json.NewDecoder(resp.Body).Decode(&rel); err != nil {
-		return nil, fmt.Errorf("decoding release: %w", err)
+	if err := json.NewDecoder(resp.Body).Decode(out); err != nil {
+		return fmt.Errorf("decoding response: %w", err)
 	}
-	return &rel, nil
+	return nil
 }
 
 // Scoring weights used by selectAsset to rank release assets.
