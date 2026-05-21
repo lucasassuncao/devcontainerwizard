@@ -10,8 +10,6 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/model"
 
 Package model defines the data structures used to represent dev container configuration and related types. These structs are used for parsing, validation and documentation generation.
 
-StringOrSlice was the previous type for lifecycle\-command fields. It has been replaced by CommandValue, which additionally supports the named parallel\-command object form defined in the devcontainer spec.
-
 ## Index
 
 - [Variables](<#variables>)

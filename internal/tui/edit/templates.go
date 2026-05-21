@@ -37,9 +37,6 @@ userEnvProbe: loginInteractiveShell
   MY_REMOTE_VAR: value
   # PATH: ${containerEnv:PATH}:/my/custom/bin
 `
-	tmplLocalEnv = `localEnv:
-  MY_LOCAL_VAR: ${env:MY_LOCAL_VAR}
-`
 	tmplAppPort = `# Legacy field — prefer forwardPorts instead.
 appPort:
   - 3000
@@ -55,13 +52,7 @@ appPort:
   # - "--cap-add=SYS_PTRACE"
   # - "--security-opt=seccomp=unconfined"
 `
-	tmplStartupCommand = `startupCommand: "echo 'Container started'"
-`
 	tmplOverrideCommand = `overrideCommand: true
-`
-	tmplCommand = `command: sleep infinity
-`
-	tmplEntrypoint = `entrypoint: /usr/local/bin/docker-entrypoint.sh
 `
 	tmplInit = `init: true
 `
@@ -70,9 +61,6 @@ appPort:
 	tmplCapAdd = `capAdd:
   - SYS_PTRACE
   # - NET_ADMIN
-`
-	tmplCapDrop = `capDrop:
-  - ALL
 `
 	tmplSecurityOpt = `securityOpt:
   - seccomp=unconfined
@@ -142,18 +130,13 @@ var templates = map[string]string{
 	"userEnvProbe":                tmplUserEnvProbe,
 	"containerEnv":                tmplContainerEnv,
 	"remoteEnv":                   tmplRemoteEnv,
-	"localEnv":                    tmplLocalEnv,
 	"appPort":                     tmplAppPort,
 	"forwardPorts":                tmplForwardPorts,
 	"runArgs":                     tmplRunArgs,
-	"startupCommand":              tmplStartupCommand,
 	"overrideCommand":             tmplOverrideCommand,
-	"command":                     tmplCommand,
-	"entrypoint":                  tmplEntrypoint,
 	"init":                        tmplInit,
 	"privileged":                  tmplPrivileged,
 	"capAdd":                      tmplCapAdd,
-	"capDrop":                     tmplCapDrop,
 	"securityOpt":                 tmplSecurityOpt,
 	"devices":                     tmplDevices,
 	"features":                    tmplFeatures,
