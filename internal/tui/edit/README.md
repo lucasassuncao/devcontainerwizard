@@ -69,7 +69,7 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
 
 
 <a name="BlockContent"></a>
-## func [BlockContent](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L146>)
+## func [BlockContent](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L149>)
 
 ```go
 func BlockContent(raw []byte, blocks []Block, key string) (string, error)
@@ -78,7 +78,7 @@ func BlockContent(raw []byte, blocks []Block, key string) (string, error)
 BlockContent returns the raw lines for a given block key.
 
 <a name="InsertBlock"></a>
-## func [InsertBlock](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L80>)
+## func [InsertBlock](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L83>)
 
 ```go
 func InsertBlock(raw []byte, snippet string) ([]byte, error)
@@ -87,7 +87,7 @@ func InsertBlock(raw []byte, snippet string) ([]byte, error)
 InsertBlock inserts a YAML snippet into raw, respecting the canonical key order defined by allKnownKeys. The snippet is placed before the first existing block whose key follows the new key in that order. If the new key is unknown or no later block exists, the snippet is appended at the end.
 
 <a name="RemoveBlock"></a>
-## func [RemoveBlock](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L56>)
+## func [RemoveBlock](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L59>)
 
 ```go
 func RemoveBlock(raw []byte, blocks []Block, key string) ([]byte, error)
@@ -105,7 +105,7 @@ func Template(key string) string
 Template returns the YAML snippet for a key, or a minimal fallback if no template is defined.
 
 <a name="ValidateKnownKeys"></a>
-## func [ValidateKnownKeys](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L201>)
+## func [ValidateKnownKeys](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L218>)
 
 ```go
 func ValidateKnownKeys(raw []byte) []string
@@ -123,7 +123,7 @@ func ValidateMutualExclusions(blocks []Block) []string
 ValidateMutualExclusions checks the active blocks for mutual\-exclusion violations and returns one human\-readable message per violation.
 
 <a name="ValidateSnippet"></a>
-## func [ValidateSnippet](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L162>)
+## func [ValidateSnippet](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L165>)
 
 ```go
 func ValidateSnippet(text string) error
@@ -188,7 +188,7 @@ func (a AlertModel) View() string
 
 
 <a name="Block"></a>
-## type [Block](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L12-L16>)
+## type [Block](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L15-L19>)
 
 Block represents a top\-level YAML key with its line range \(1\-based\).
 
@@ -201,7 +201,7 @@ type Block struct {
 ```
 
 <a name="ParseBlocksFromBytes"></a>
-### func [ParseBlocksFromBytes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L19>)
+### func [ParseBlocksFromBytes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/yaml.go#L22>)
 
 ```go
 func ParseBlocksFromBytes(raw []byte) ([]Block, error)
@@ -439,7 +439,7 @@ func New(filePath string) (Model, error)
 New loads the YAML file and initialises the model.
 
 <a name="Model.Init"></a>
-### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L115>)
+### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L119>)
 
 ```go
 func (m Model) Init() tea.Cmd
@@ -448,7 +448,7 @@ func (m Model) Init() tea.Cmd
 
 
 <a name="Model.Update"></a>
-### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L117>)
+### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L121>)
 
 ```go
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
@@ -457,7 +457,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
 
 
 <a name="Model.View"></a>
-### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L453>)
+### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L459>)
 
 ```go
 func (m Model) View() string

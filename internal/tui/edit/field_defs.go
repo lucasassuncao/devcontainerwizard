@@ -51,7 +51,7 @@ var blockFields = map[string][]FieldDef{
 		{
 			Key:  "vscode",
 			Desc: "VS Code extensions and settings",
-			YAML: "  vscode:\n    extensions:\n      - ms-python.python\n    settings:\n      editor.formatOnSave: true\n    devPort: 3000\n",
+			YAML: "  vscode:\n    extensions:\n      - ms-python.python\n    settings:\n      editor.formatOnSave: true\n",
 		},
 		{
 			Key:  "jetbrains",

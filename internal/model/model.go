@@ -104,7 +104,6 @@ type Customizations struct {
 type VSCodeCustomization struct {
 	Settings   map[string]any `json:"settings,omitempty" yaml:"settings,omitempty" validate:"omitempty" jsonschema_description:"Key-value settings for VS Code."`
 	Extensions []string       `json:"extensions,omitempty" yaml:"extensions,omitempty" validate:"omitempty" jsonschema_description:"List of VS Code extensions to install."`
-	DevPort    int            `json:"devPort,omitempty" yaml:"devPort,omitempty" validate:"omitempty,min=1,max=65535" jsonschema_description:"Port on which the VS Code server listens inside the container."`
 }
 
 // CodespacesCustomization defines GitHub Codespaces-specific settings.

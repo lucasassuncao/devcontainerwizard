@@ -28,7 +28,7 @@ func DevContainerStructLevelValidation(sl validator.StructLevel)
 DevContainerStructLevelValidation enforces that exactly one of Image, Build or DockerComposeFile is set on a DevContainer.
 
 <a name="HumanizeValidationError"></a>
-## func [HumanizeValidationError](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L67>)
+## func [HumanizeValidationError](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L70>)
 
 ```go
 func HumanizeValidationError(err error) string

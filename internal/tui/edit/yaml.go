@@ -3,9 +3,12 @@ package edit
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/lucasassuncao/devcontainerwizard/internal/model"
 )
 
 // Block represents a top-level YAML key with its line range (1-based).
@@ -187,13 +190,27 @@ func buildKnownChildren() map[string]map[string]bool {
 		m[topKey] = sub
 	}
 
-	// customizations has a deeper, hand-curated schema.
-	m["customizations"] = map[string]bool{"vscode": true, "jetbrains": true, "codespaces": true}
-	m["customizations.vscode"] = map[string]bool{"extensions": true, "settings": true}
-	m["customizations.jetbrains"] = map[string]bool{"plugins": true}
-	m["customizations.codespaces"] = map[string]bool{"settings": true, "extensions": true}
+	// customizations sub-tree is derived from the model structs so the
+	// schema never drifts from the Go types.
+	m["customizations"] = yamlFieldNames(reflect.TypeOf(model.Customizations{}))
+	m["customizations.vscode"] = yamlFieldNames(reflect.TypeOf(model.VSCodeCustomization{}))
+	m["customizations.codespaces"] = yamlFieldNames(reflect.TypeOf(model.CodespacesCustomization{}))
+	m["customizations.jetbrains"] = yamlFieldNames(reflect.TypeOf(model.JetBrainsCustomization{}))
 
 	return m
+}
+
+// yamlFieldNames returns the set of yaml tag names declared on the exported
+// fields of a struct type. Fields tagged "-" or without a yaml tag are skipped.
+func yamlFieldNames(t reflect.Type) map[string]bool {
+	out := make(map[string]bool, t.NumField())
+	for i := 0; i < t.NumField(); i++ {
+		tag, _, _ := strings.Cut(t.Field(i).Tag.Get("yaml"), ",")
+		if tag != "" && tag != "-" {
+			out[tag] = true
+		}
+	}
+	return out
 }
 
 // ValidateKnownKeys returns the dotted paths of any YAML keys that are not

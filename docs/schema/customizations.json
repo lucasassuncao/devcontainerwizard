@@ -14,10 +14,6 @@
           },
           "type": "array",
           "description": "List of VS Code extensions to install."
-        },
-        "devPort": {
-          "type": "integer",
-          "description": "Port on which the VS Code server listens inside the container."
         }
       },
       "additionalProperties": false,

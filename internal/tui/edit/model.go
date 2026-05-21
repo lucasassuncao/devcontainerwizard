@@ -89,6 +89,10 @@ func New(filePath string) (Model, error) {
 	if raw == nil {
 		raw = []byte{}
 	}
+	// Normalise line endings once on load. The model and preview both work
+	// with LF-only content; doing it here avoids re-normalising on every
+	// View, undo, or YAML rebuild.
+	raw = []byte(strings.ReplaceAll(string(raw), "\r\n", "\n"))
 
 	blocks, err := ParseBlocksFromBytes(raw)
 	if err != nil {
@@ -100,7 +104,7 @@ func New(filePath string) (Model, error) {
 	preview.CharLimit = 0
 	preview.ShowLineNumbers = false
 	preview.Blur()
-	preview.SetValue(strings.ReplaceAll(string(raw), "\r\n", "\n"))
+	preview.SetValue(string(raw))
 
 	return Model{
 		filePath:  filePath,
@@ -239,7 +243,9 @@ func (m Model) togglePreviewPane() (tea.Model, tea.Cmd) {
 func (m Model) updatePreviewEditor(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.preview, cmd = m.preview.Update(msg)
-	raw := []byte(m.preview.Value())
+	// Textarea content may contain CRLF if the user pasted from an external
+	// source; normalise here so m.rawYAML always stays LF-only.
+	raw := []byte(strings.ReplaceAll(m.preview.Value(), "\r\n", "\n"))
 	if blocks, err := ParseBlocksFromBytes(raw); err == nil {
 		m.pushHistory()
 		m.rawYAML = raw
@@ -350,7 +356,7 @@ func (m Model) undo() tea.Model {
 		m.blocks = blocks
 	}
 	m.list.Rebuild(m.blocks)
-	m.preview.SetValue(strings.ReplaceAll(string(prev), "\r\n", "\n"))
+	m.preview.SetValue(string(prev))
 	if it := m.list.SelectedItem(); it != nil {
 		m.scrollPreviewToKey(it.Key)
 	}
@@ -367,7 +373,7 @@ func (m *Model) applyRaw(raw []byte) {
 		m.blocks = blocks
 	}
 	m.list.Rebuild(m.blocks)
-	m.preview.SetValue(strings.ReplaceAll(string(raw), "\r\n", "\n"))
+	m.preview.SetValue(string(raw))
 	if it := m.list.SelectedItem(); it != nil {
 		m.scrollPreviewToKey(it.Key)
 	}

@@ -177,7 +177,6 @@ The following arguments are supported:
 |------|------|-------------|----------|---------|
 | settings | Key-value settings for VS Code. | object | No | - |
 | extensions | List of VS Code extensions to install. | array[string] | No | - |
-| devPort | Port on which the VS Code server listens inside the container. | integer | No | - |
 
 #### codespaces
 

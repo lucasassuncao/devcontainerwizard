@@ -19,7 +19,10 @@ func Validate(dc model.DevContainer) error {
 // DevContainerStructLevelValidation enforces that exactly one of Image, Build
 // or DockerComposeFile is set on a DevContainer.
 func DevContainerStructLevelValidation(sl validator.StructLevel) {
-	dc := sl.Current().Interface().(model.DevContainer)
+	dc, ok := sl.Current().Interface().(model.DevContainer)
+	if !ok {
+		return
+	}
 
 	count := 0
 	if dc.Image != "" {

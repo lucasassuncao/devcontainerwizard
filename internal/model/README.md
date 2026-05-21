@@ -75,7 +75,7 @@ var TopLevelKeys = []string{
 ```
 
 <a name="GetAllTypes"></a>
-## func [GetAllTypes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L160>)
+## func [GetAllTypes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L159>)
 
 ```go
 func GetAllTypes() []any
@@ -100,7 +100,7 @@ type BuildConfig struct {
 ```
 
 <a name="CodespacesCustomization"></a>
-## type [CodespacesCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L111-L114>)
+## type [CodespacesCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L110-L113>)
 
 CodespacesCustomization defines GitHub Codespaces\-specific settings.
 
@@ -264,7 +264,7 @@ type DevContainer struct {
 ```
 
 <a name="GPURequirement"></a>
-## type [GPURequirement](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L136-L139>)
+## type [GPURequirement](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L135-L138>)
 
 GPURequirement describes GPU resource needs within HostRequirements.
 
@@ -379,7 +379,7 @@ func (g *GPUValue) UnmarshalYAML(value *yaml.Node) error
 UnmarshalYAML implements yaml.Unmarshaler for direct yaml.v3 decoding.
 
 <a name="HostRequirements"></a>
-## type [HostRequirements](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L128-L133>)
+## type [HostRequirements](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L127-L132>)
 
 HostRequirements defines minimum hardware resources the host must provide.
 
@@ -393,7 +393,7 @@ type HostRequirements struct {
 ```
 
 <a name="JetBrainsCustomization"></a>
-## type [JetBrainsCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L117-L119>)
+## type [JetBrainsCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L116-L118>)
 
 JetBrainsCustomization defines JetBrains IDE configuration.
 
@@ -499,7 +499,7 @@ type PortAttributes struct {
 ```
 
 <a name="Secret"></a>
-## type [Secret](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L122-L125>)
+## type [Secret](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L121-L124>)
 
 Secret defines a reusable secret for builds or runtime.
 
@@ -511,7 +511,7 @@ type Secret struct {
 ```
 
 <a name="VSCodeCustomization"></a>
-## type [VSCodeCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L104-L108>)
+## type [VSCodeCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L104-L107>)
 
 VSCodeCustomization defines VS Code\-specific settings.
 
@@ -519,7 +519,6 @@ VSCodeCustomization defines VS Code\-specific settings.
 type VSCodeCustomization struct {
     Settings   map[string]any `json:"settings,omitempty" yaml:"settings,omitempty" validate:"omitempty" jsonschema_description:"Key-value settings for VS Code."`
     Extensions []string       `json:"extensions,omitempty" yaml:"extensions,omitempty" validate:"omitempty" jsonschema_description:"List of VS Code extensions to install."`
-    DevPort    int            `json:"devPort,omitempty" yaml:"devPort,omitempty" validate:"omitempty,min=1,max=65535" jsonschema_description:"Port on which the VS Code server listens inside the container."`
 }
 ```
 
