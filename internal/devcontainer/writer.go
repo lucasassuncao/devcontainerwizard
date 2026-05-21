@@ -9,28 +9,30 @@ import (
 	"github.com/lucasassuncao/devcontainerwizard/internal/model"
 )
 
-func WriteFile(dc model.DevContainer, outputDir string, force bool) error {
+// WriteFile serialises dc as JSON to outputPath. Parent directories are created
+// as needed. When force is false, returns an error if outputPath already exists.
+// Returns the cleaned absolute-or-relative path actually written.
+func WriteFile(dc model.DevContainer, outputPath string, force bool) (string, error) {
 	if dc.Schema == "" {
 		dc.Schema = "https://containers.dev/implementors/json_schema"
 	}
 
 	jsonBytes, err := json.MarshalIndent(dc, "", "  ")
 	if err != nil {
-		return fmt.Errorf("error marshalling JSON: %w", err)
+		return "", fmt.Errorf("error marshalling JSON: %w", err)
 	}
 
-	if err := os.MkdirAll(outputDir, 0750); err != nil {
-		return fmt.Errorf("error creating directory: %w", err)
+	parent := filepath.Dir(outputPath)
+	if err := os.MkdirAll(parent, 0750); err != nil {
+		return "", fmt.Errorf("creating output directory: %w", err)
 	}
 
-	filePath := filepath.Join(outputDir, "devcontainer.json")
-	if _, err := os.Stat(filePath); err == nil && !force {
-		return fmt.Errorf("file '%s' already exists — use --force to overwrite", filePath)
+	if _, err := os.Stat(outputPath); err == nil && !force {
+		return "", fmt.Errorf("file '%s' already exists — use --force to overwrite", outputPath)
 	}
-	if err := os.WriteFile(filePath, jsonBytes, 0600); err != nil {
-		return fmt.Errorf("error writing file: %w", err)
+	if err := os.WriteFile(outputPath, jsonBytes, 0600); err != nil {
+		return "", fmt.Errorf("error writing file: %w", err)
 	}
 
-	fmt.Printf("Saved devcontainer to %s\n", filePath)
-	return nil
+	return outputPath, nil
 }

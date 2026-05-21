@@ -73,7 +73,7 @@ devcontainerwizard edit [flags]
 
 ## convert
 
-Convert `config.yaml` to `.devcontainer/devcontainer.json`.
+Convert `config.yaml` to a `devcontainer.json` file. By default writes to `.devcontainer/devcontainer.json`. When the output path isn't a canonical devcontainer location, a warning is printed to stderr — VS Code and the devcontainer CLI only auto-detect `.devcontainer/devcontainer.json` and `.devcontainer.json`.
 
 ```bash
 devcontainerwizard convert [flags]
@@ -82,7 +82,8 @@ devcontainerwizard convert [flags]
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
 | `--config` | `-c` | `config.yaml` | Path to the config file |
-| `--output` | `-o` | `.devcontainer` | Output directory |
+| `--output` | `-o` | `.devcontainer/devcontainer.json` | Output devcontainer.json file path |
+| `--force` | `-f` | false | Overwrite existing output file |
 
 ---
 

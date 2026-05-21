@@ -2,58 +2,72 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/lucasassuncao/devcontainerwizard/internal/devcontainer"
 
 	"github.com/spf13/cobra"
 )
 
-func fatal(format string, args ...any) {
-	fmt.Fprintf(os.Stderr, "Error: "+format+"\n", args...)
-	os.Exit(1)
-}
+var convertCmd = newConvertCmd()
 
-var (
-	configFile   string
-	outputDir    string
-	convertForce bool
-
-	convertCmd = &cobra.Command{
-		Use:   "convert",
-		Short: "Convert config.yaml to .devcontainer/devcontainer.json",
-		Long:  "Reads config.yaml (or the file given by --config) and writes a devcontainer.json to the output directory.",
-		Run:   runConvert,
+func newConvertCmd() *cobra.Command {
+	var (
+		configFile string
+		output     string
+		force      bool
+	)
+	cmd := &cobra.Command{
+		Use:           "convert",
+		Short:         "Convert config.yaml to a devcontainer.json file",
+		Long:          "Reads config.yaml (or the file given by --config) and writes a devcontainer.json to the path given by --output.",
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runConvertE(cmd, configFile, output, force)
+		},
 	}
-)
-
-func init() {
-	convertCmd.Flags().StringVarP(&configFile, "config", "c", "config.yaml", "Config file path")
-	convertCmd.Flags().StringVarP(&outputDir, "output", "o", ".devcontainer", "Output directory")
-	convertCmd.Flags().BoolVarP(&convertForce, "force", "f", false, "Overwrite existing devcontainer.json")
+	cmd.Flags().StringVarP(&configFile, "config", "c", "config.yaml", "Config file path")
+	cmd.Flags().StringVarP(&output, "output", "o", ".devcontainer/devcontainer.json", "Output devcontainer.json file path")
+	cmd.Flags().BoolVarP(&force, "force", "f", false, "Overwrite existing output file")
+	return cmd
 }
 
-func runConvert(cmd *cobra.Command, args []string) {
-	// Load YAML file
+func runConvertE(cmd *cobra.Command, configFile, output string, force bool) error {
 	k, err := devcontainer.LoadYAMLFile(configFile)
 	if err != nil {
-		fatal("Failed to load config: %v", err)
+		fmt.Fprintf(cmd.ErrOrStderr(), "Error: failed to load config: %v\n", err)
+		return err
 	}
 
-	// Parse to struct
 	dc, err := devcontainer.Parse(k)
 	if err != nil {
-		fatal("Failed to parse config: %v", err)
+		fmt.Fprintf(cmd.ErrOrStderr(), "Error: failed to parse config: %v\n", err)
+		return err
 	}
 
-	// Validate struct
 	if err := devcontainer.Validate(dc); err != nil {
-		fmt.Fprintf(os.Stderr, "Invalid devcontainer config:\n%s\n", devcontainer.HumanizeValidationError(err))
-		os.Exit(1)
+		fmt.Fprintf(cmd.ErrOrStderr(), "Invalid devcontainer config:\n%s\n", devcontainer.HumanizeValidationError(err))
+		return err
 	}
 
-	// Write devcontainer files
-	if err := devcontainer.WriteFile(dc, outputDir, convertForce); err != nil {
-		fatal("Failed to write devcontainer: %v", err)
+	path, err := devcontainer.WriteFile(dc, output, force)
+	if err != nil {
+		fmt.Fprintf(cmd.ErrOrStderr(), "Error: failed to write devcontainer: %v\n", err)
+		return err
 	}
+
+	clean := filepath.ToSlash(filepath.Clean(path))
+	canonical := clean == ".devcontainer/devcontainer.json" ||
+		clean == ".devcontainer.json" ||
+		strings.HasSuffix(clean, "/.devcontainer/devcontainer.json")
+	if !canonical {
+		fmt.Fprintln(cmd.ErrOrStderr(), "Warning: output path is not a canonical devcontainer location.")
+		fmt.Fprintln(cmd.ErrOrStderr(), "VS Code and the devcontainer CLI won't auto-detect this file.")
+		fmt.Fprintln(cmd.ErrOrStderr(), "Canonical paths: .devcontainer/devcontainer.json or .devcontainer.json")
+	}
+
+	fmt.Fprintf(cmd.OutOrStdout(), "Saved devcontainer to %s\n", path)
+	return nil
 }

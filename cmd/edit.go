@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
@@ -13,26 +12,29 @@ import (
 var editConfig string
 
 var editCmd = &cobra.Command{
-	Use:   "edit",
-	Short: "Interactively edit a devcontainer config YAML file",
-	Long:  "Opens a two-panel TUI to add, remove, and edit top-level blocks in a config.yaml file.",
-	Run:   runEdit,
+	Use:           "edit",
+	Short:         "Interactively edit a devcontainer config YAML file",
+	Long:          "Opens a two-panel TUI to add, remove, and edit top-level blocks in a config.yaml file.",
+	SilenceUsage:  true,
+	SilenceErrors: true,
+	RunE:          runEditE,
 }
 
 func init() {
 	editCmd.Flags().StringVarP(&editConfig, "config", "c", "config.yaml", "Path to the config file")
 }
 
-func runEdit(cmd *cobra.Command, args []string) {
+func runEditE(cmd *cobra.Command, args []string) error {
 	m, err := edit.New(editConfig)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+		fmt.Fprintf(cmd.ErrOrStderr(), "Error: %v\n", err)
+		return err
 	}
 
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "TUI error: %v\n", err)
-		os.Exit(1)
+		fmt.Fprintf(cmd.ErrOrStderr(), "TUI error: %v\n", err)
+		return err
 	}
+	return nil
 }

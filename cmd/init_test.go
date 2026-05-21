@@ -93,6 +93,20 @@ func TestInitOutput(t *testing.T) {
 	}
 }
 
+func TestInitCreatesParentDirs(t *testing.T) {
+	dir := t.TempDir()
+	outPath := filepath.Join(dir, "deeply", "nested", "config.yaml")
+
+	c, _, _ := setupInitCmd(t, []string{"--template", "image", "--output", outPath})
+
+	if err := c.Execute(); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, err := os.Stat(outPath); err != nil {
+		t.Error("nested output file was not created")
+	}
+}
+
 func TestInitInvalidTemplate(t *testing.T) {
 	dir := t.TempDir()
 	orig, err := os.Getwd()

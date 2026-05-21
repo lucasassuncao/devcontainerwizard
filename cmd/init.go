@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -57,6 +58,11 @@ func runInitE(cmd *cobra.Command, list, force bool, output, template string) err
 	if _, err := os.Stat(output); err == nil && !force {
 		fmt.Fprintf(cmd.ErrOrStderr(), "Error: file '%s' already exists — use --force to overwrite\n", output)
 		return fmt.Errorf("file exists")
+	}
+
+	if err := os.MkdirAll(filepath.Dir(output), 0750); err != nil {
+		fmt.Fprintf(cmd.ErrOrStderr(), "Error: creating output directory: %v\n", err)
+		return err
 	}
 
 	content, err := getTemplateContent(template)
