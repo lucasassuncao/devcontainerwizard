@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -170,10 +171,27 @@ func fetchLatestRelease(repo, token string) (*ghRelease, error) {
 // Scoring weights used by selectAsset to rank release assets.
 // Higher weight = stronger signal of compatibility with the current platform.
 const (
-	scoreOS   = 5 // OS name match ("windows", "win64", …) - strongest signal
-	scoreArch = 3 // architecture match ("amd64", "x86_64", …) - secondary signal
-	scoreExe  = 2 // ".exe" extension - confirms Windows binary without OS name
+	scoreOS   = 5 // OS name match - strongest signal
+	scoreArch = 3 // architecture match - secondary signal
+	scoreExt  = 2 // platform-specific extension match (.exe on Windows)
 )
+
+// osAliases maps runtime.GOOS values to substring patterns that release asset
+// names commonly use to indicate the same OS.
+var osAliases = map[string][]string{
+	"windows": {"windows", "win64", "win32", "win"},
+	"linux":   {"linux"},
+	"darwin":  {"darwin", "macos", "mac", "osx"},
+}
+
+// archAliases maps runtime.GOARCH values to substring patterns commonly used
+// in release asset names.
+var archAliases = map[string][]string{
+	"amd64": {"amd64", "x86_64", "x64"},
+	"arm64": {"arm64", "aarch64"},
+	"386":   {"i386", "x86", "386"},
+	"arm":   {"armv7", "armhf", "arm"},
+}
 
 // selectAsset picks the best asset for the current platform.
 // Each candidate is scored: OS name match outweighs arch match, which outweighs
@@ -181,6 +199,9 @@ const (
 // Checksums, signatures, and plain-text files are excluded before scoring.
 func selectAsset(assets []ghAsset) *ghAsset {
 	skip := []string{".sha256", ".sha512", ".sig", ".asc", "checksums", ".txt"}
+
+	osPatterns := osAliases[runtime.GOOS]
+	archPatterns := archAliases[runtime.GOARCH]
 
 	var best *ghAsset
 	bestScore := -1
@@ -199,20 +220,20 @@ func selectAsset(assets []ghAsset) *ghAsset {
 		}
 
 		score := 0
-		for _, w := range []string{"windows", "win64", "win32"} {
+		for _, w := range osPatterns {
 			if strings.Contains(lower, w) {
 				score += scoreOS
 				break
 			}
 		}
-		for _, a := range []string{"amd64", "x86_64", "x64"} {
+		for _, a := range archPatterns {
 			if strings.Contains(lower, a) {
 				score += scoreArch
 				break
 			}
 		}
-		if filepath.Ext(lower) == ".exe" {
-			score += scoreExe
+		if runtime.GOOS == "windows" && filepath.Ext(lower) == ".exe" {
+			score += scoreExt
 		}
 
 		if score > bestScore {

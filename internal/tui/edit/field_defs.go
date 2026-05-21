@@ -60,8 +60,8 @@ var blockFields = map[string][]FieldDef{
 		},
 		{
 			Key:  "codespaces",
-			Desc: "GitHub Codespaces options",
-			YAML: "  codespaces:\n    openFiles:\n      - README.md\n",
+			Desc: "GitHub Codespaces extensions and settings",
+			YAML: "  codespaces:\n    extensions:\n      - github.copilot\n    settings:\n      editor.formatOnSave: true\n",
 		},
 	},
 

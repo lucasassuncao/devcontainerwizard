@@ -191,7 +191,7 @@ func buildKnownChildren() map[string]map[string]bool {
 	m["customizations"] = map[string]bool{"vscode": true, "jetbrains": true, "codespaces": true}
 	m["customizations.vscode"] = map[string]bool{"extensions": true, "settings": true}
 	m["customizations.jetbrains"] = map[string]bool{"plugins": true}
-	m["customizations.codespaces"] = map[string]bool{"openFiles": true}
+	m["customizations.codespaces"] = map[string]bool{"settings": true, "extensions": true}
 
 	return m
 }

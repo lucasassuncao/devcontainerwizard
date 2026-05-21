@@ -210,7 +210,7 @@ type Customizations struct {
 type DevContainer struct {
     Schema            string       `json:"$schema,omitempty" yaml:"$schema,omitempty" jsonschema_description:"URL of the JSON schema that describes the format of this file."`
     Name              string       `json:"name,omitempty" yaml:"name,omitempty" validate:"required" jsonschema:"required" jsonschema_description:"Name of the dev container."`
-    Image             string       `json:"image,omitempty" yaml:"image,omitempty" validate:"required_without=Build" jsonschema_description:"Docker image to use for the dev container."`
+    Image             string       `json:"image,omitempty" yaml:"image,omitempty" jsonschema_description:"Docker image to use for the dev container."`
     Build             *BuildConfig `json:"build,omitempty" yaml:"build,omitempty" validate:"omitempty" jsonschema_description:"Configuration for building the image."`
     DockerFile        string       `json:"dockerFile,omitempty" yaml:"dockerFile,omitempty" jsonschema_description:"Deprecated: legacy path to the Dockerfile. Use build.dockerfile instead."`
     DockerComposeFile []string     `json:"dockerComposeFile,omitempty" yaml:"dockerComposeFile,omitempty" jsonschema_description:"List of Docker Compose files to use."`
