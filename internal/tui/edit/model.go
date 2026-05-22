@@ -2,7 +2,6 @@ package edit
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textarea"
@@ -28,11 +27,11 @@ const (
 //   - overlay != nil     → paneOverlay
 //   - previewFocused     → panePreview
 //   - otherwise          → paneList
+//
+// All YAML state (raw bytes, parsed blocks, undo history, dirty flag, file
+// path) lives on doc. Model is a pure UI orchestrator.
 type Model struct {
-	filePath string
-
-	rawYAML []byte
-	blocks  []Block
+	doc *Document
 
 	list    ListModel
 	preview textarea.Model
@@ -40,9 +39,7 @@ type Model struct {
 	alert   *AlertModel
 
 	previewFocused bool
-	dirty          bool
 	statusMsg      string
-	history        [][]byte // undo stack of rawYAML snapshots
 
 	width  int
 	height int
@@ -72,7 +69,7 @@ func (m *Model) scrollPreviewToKey(key string) {
 		return
 	}
 	target := key + ":"
-	for i, l := range strings.Split(string(m.rawYAML), "\n") {
+	for i, l := range strings.Split(string(m.doc.Raw()), "\n") {
 		if strings.HasPrefix(l, target) {
 			m.preview.SetCursor(i)
 			return
@@ -82,34 +79,20 @@ func (m *Model) scrollPreviewToKey(key string) {
 
 // New loads the YAML file and initialises the model.
 func New(filePath string) (Model, error) {
-	raw, err := os.ReadFile(filePath) // #nosec G304 -- path is user-supplied via CLI arg
-	if err != nil && !os.IsNotExist(err) {
-		return Model{}, fmt.Errorf("reading %s: %w", filePath, err)
-	}
-	if raw == nil {
-		raw = []byte{}
-	}
-	// Normalise line endings once on load. The model and preview both work
-	// with LF-only content; doing it here avoids re-normalising on every
-	// View, undo, or YAML rebuild.
-	raw = []byte(strings.ReplaceAll(string(raw), "\r\n", "\n"))
-
-	blocks, err := ParseBlocksFromBytes(raw)
+	doc, err := LoadDocument(filePath)
 	if err != nil {
-		return Model{}, fmt.Errorf("parsing YAML: %w", err)
+		return Model{}, fmt.Errorf("loading %s: %w", filePath, err)
 	}
 
-	list := NewListModel(blocks, 0)
+	list := NewListModel(doc.Blocks(), 0)
 	preview := textarea.New()
 	preview.CharLimit = 0
 	preview.ShowLineNumbers = false
 	preview.Blur()
-	preview.SetValue(string(raw))
+	preview.SetValue(string(doc.Raw()))
 
 	return Model{
-		filePath:  filePath,
-		rawYAML:   raw,
-		blocks:    blocks,
+		doc:       doc,
 		list:      list,
 		preview:   preview,
 		statusMsg: "",
@@ -198,7 +181,7 @@ func (m Model) handleListKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		case "tab":
 			return m.togglePreviewPane()
 		case "q", "ctrl+c":
-			if m.dirty {
+			if m.doc.Dirty() {
 				return m.showConfirmAlert("Quit without saving?",
 					"Unsaved changes will be lost.", tea.Quit)
 			}
@@ -243,15 +226,10 @@ func (m Model) togglePreviewPane() (tea.Model, tea.Cmd) {
 func (m Model) updatePreviewEditor(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.preview, cmd = m.preview.Update(msg)
-	// Textarea content may contain CRLF if the user pasted from an external
-	// source; normalise here so m.rawYAML always stays LF-only.
-	raw := []byte(strings.ReplaceAll(m.preview.Value(), "\r\n", "\n"))
-	if blocks, err := ParseBlocksFromBytes(raw); err == nil {
-		m.pushHistory()
-		m.rawYAML = raw
-		m.blocks = blocks
-		m.list.Rebuild(m.blocks)
-		m.dirty = true
+	// Best-effort apply. If the draft does not parse, leave the textarea as-is
+	// (the user is mid-edit); the document only updates on parse success.
+	if err := m.doc.ReplaceRaw([]byte(m.preview.Value())); err == nil {
+		m.list.Rebuild(m.doc.Blocks())
 	}
 	return m, cmd
 }
@@ -259,7 +237,7 @@ func (m Model) updatePreviewEditor(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 func (m Model) handleSpace(it ListItem) (tea.Model, tea.Cmd) {
 	var initial string
 	if it.Existing {
-		current, err := BlockContent(m.rawYAML, m.blocks, it.Key)
+		current, err := m.doc.BlockContent(it.Key)
 		if err != nil {
 			m.statusMsg = fmt.Sprintf("Error reading %s: %v", it.Key, err)
 			return m, nil
@@ -287,43 +265,34 @@ func (m Model) handleSpace(it ListItem) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) handleDelete(key string) (tea.Model, tea.Cmd) {
-	newRaw, err := RemoveBlock(m.rawYAML, m.blocks, key)
-	if err != nil {
+	if err := m.doc.Remove(key); err != nil {
 		m.statusMsg = fmt.Sprintf("Error removing %s: %v", key, err)
 		return m, nil
 	}
-	m.applyRaw(newRaw)
+	m.syncView()
 	m.statusMsg = fmt.Sprintf("Removed %q (not saved yet).", key)
 	return m, nil
 }
 
 func (m Model) handleOverlayConfirmed(snippet string) (tea.Model, tea.Cmd) {
-	raw := m.rawYAML
-
-	if m.overlay != nil && m.overlay.isEdit {
-		// Replace: remove the old block first, then re-parse before inserting.
-		removed, err := RemoveBlock(raw, m.blocks, m.overlay.editKey)
-		if err != nil {
-			m.statusMsg = fmt.Sprintf("Remove error: %v", err)
-			m.overlay = nil
-			return m, nil
-		}
-		raw = removed
-		blocks, err := ParseBlocksFromBytes(raw)
-		if err == nil {
-			m.blocks = blocks
-		}
+	isEdit := m.overlay != nil && m.overlay.isEdit
+	editKey := ""
+	if isEdit {
+		editKey = m.overlay.editKey
 	}
 
-	isEdit := m.overlay != nil && m.overlay.isEdit
-
-	newRaw, err := InsertBlock(raw, snippet)
+	var err error
+	if isEdit {
+		err = m.doc.Replace(editKey, snippet)
+	} else {
+		err = m.doc.Insert(snippet)
+	}
 	if err != nil {
-		m.statusMsg = fmt.Sprintf("Insert error: %v", err)
+		m.statusMsg = fmt.Sprintf("Apply error: %v", err)
 		m.overlay = nil
 		return m, nil
 	}
-	m.applyRaw(newRaw)
+	m.syncView()
 	m.overlay = nil
 	if isEdit {
 		m.statusMsg = "Block updated (not saved yet)."
@@ -333,51 +302,24 @@ func (m Model) handleOverlayConfirmed(snippet string) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-const maxHistory = 50
-
-func (m *Model) pushHistory() {
-	snap := make([]byte, len(m.rawYAML))
-	copy(snap, m.rawYAML)
-	m.history = append(m.history, snap)
-	if len(m.history) > maxHistory {
-		m.history = m.history[len(m.history)-maxHistory:]
+// syncView propagates current Document state to the preview textarea and list.
+// Call after any mutation through the Document.
+func (m *Model) syncView() {
+	m.preview.SetValue(string(m.doc.Raw()))
+	m.list.Rebuild(m.doc.Blocks())
+	if it := m.list.SelectedItem(); it != nil {
+		m.scrollPreviewToKey(it.Key)
 	}
 }
 
 func (m Model) undo() tea.Model {
-	if len(m.history) == 0 {
+	if !m.doc.Undo() {
 		m.statusMsg = "Nothing to undo."
 		return m
 	}
-	prev := m.history[len(m.history)-1]
-	m.history = m.history[:len(m.history)-1]
-	m.rawYAML = prev
-	if blocks, err := ParseBlocksFromBytes(prev); err == nil {
-		m.blocks = blocks
-	}
-	m.list.Rebuild(m.blocks)
-	m.preview.SetValue(string(prev))
-	if it := m.list.SelectedItem(); it != nil {
-		m.scrollPreviewToKey(it.Key)
-	}
-	m.dirty = true
+	m.syncView()
 	m.statusMsg = "Undone."
 	return m
-}
-
-func (m *Model) applyRaw(raw []byte) {
-	m.pushHistory()
-	m.rawYAML = raw
-	blocks, err := ParseBlocksFromBytes(raw)
-	if err == nil {
-		m.blocks = blocks
-	}
-	m.list.Rebuild(m.blocks)
-	m.preview.SetValue(string(raw))
-	if it := m.list.SelectedItem(); it != nil {
-		m.scrollPreviewToKey(it.Key)
-	}
-	m.dirty = true
 }
 
 func formatErrors(errs []string) string {
@@ -392,36 +334,35 @@ func formatErrors(errs []string) string {
 	return sb.String()
 }
 
-func (m Model) save() (tea.Model, tea.Cmd) {
+// collectErrors gathers all blocking validation errors for the current document.
+// Used by both save() and validateKeys() to avoid divergence.
+func (m Model) collectErrors() []string {
 	var errs []string
-	if unknown := ValidateKnownKeys(m.rawYAML); len(unknown) > 0 {
-		errs = append(errs, "Unknown key(s): "+strings.Join(unknown, ", "))
+	if u := m.doc.UnknownKeys(); len(u) > 0 {
+		errs = append(errs, "Unknown key(s): "+strings.Join(u, ", "))
 	}
-	errs = append(errs, ValidateMutualExclusions(m.blocks)...)
-	if len(errs) > 0 {
+	return append(errs, m.doc.Conflicts()...)
+}
+
+func (m Model) save() (tea.Model, tea.Cmd) {
+	if errs := m.collectErrors(); len(errs) > 0 {
 		return m.showAlert("Cannot save — fix errors first", formatErrors(errs), alertError)
 	}
 	doSave := func() tea.Msg { return doSaveMsg{} }
-	return m.showConfirmAlert("Save changes?", fmt.Sprintf("Save to %s?", m.filePath), doSave)
+	return m.showConfirmAlert("Save changes?", fmt.Sprintf("Save to %s?", m.doc.Path()), doSave)
 }
 
 type doSaveMsg struct{}
 
 func (m Model) execSave() (tea.Model, tea.Cmd) {
-	if err := os.WriteFile(m.filePath, m.rawYAML, 0o600); err != nil {
+	if err := m.doc.Save(); err != nil {
 		return m.showAlert("Save failed", err.Error(), alertError)
 	}
-	m.dirty = false
-	return m.showAlert("Saved", fmt.Sprintf("Saved to %s.", m.filePath), alertSuccess)
+	return m.showAlert("Saved", fmt.Sprintf("Saved to %s.", m.doc.Path()), alertSuccess)
 }
 
 func (m Model) validateKeys() (tea.Model, tea.Cmd) {
-	var errs []string
-	if unknown := ValidateKnownKeys(m.rawYAML); len(unknown) > 0 {
-		errs = append(errs, "Unknown key(s): "+strings.Join(unknown, ", "))
-	}
-	errs = append(errs, ValidateMutualExclusions(m.blocks)...)
-	if len(errs) > 0 {
+	if errs := m.collectErrors(); len(errs) > 0 {
 		return m.showAlert("Validation errors", formatErrors(errs), alertError)
 	}
 	return m.showAlert("Validation passed", "All keys are valid devcontainer fields with no conflicts.", alertSuccess)
@@ -468,7 +409,7 @@ func (m Model) View() string {
 		return m.overlay.View()
 	}
 
-	header := renderHeader(m.filePath, m.dirty, m.width)
+	header := renderHeader(m.doc.Path(), m.doc.Dirty(), m.width)
 
 	leftTitle := fmt.Sprintf("Blocks (%d/%d)", m.list.AddedCount(), len(allKnownKeys))
 	leftPanel := theme.RenderTitledPanel(leftTitle, m.listW, m.innerH+2, !m.previewFocused, m.list.View())

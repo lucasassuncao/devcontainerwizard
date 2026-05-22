@@ -28,7 +28,7 @@ func selfUpdateCmd(currentVersion string) *cobra.Command {
 		Long: `Downloads a release of devcontainerwizard from GitHub and replaces the current binary.
 The old binary is kept as devcontainerwizard.old until the next run.
 
-With no flags, installs the latest stable release (same as before).
+With no flags, installs the latest stable release.
 Use --list to see available versions, --version to pick a specific one,
 and --prerelease to include rc/beta/alpha releases.`,
 		Example: `  devcontainerwizard self-update

@@ -26,6 +26,23 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
 - [type Block](<#Block>)
   - [func ParseBlocksFromBytes\(raw \[\]byte\) \(\[\]Block, error\)](<#ParseBlocksFromBytes>)
 - [type DeleteItemMsg](<#DeleteItemMsg>)
+- [type Document](<#Document>)
+  - [func LoadDocument\(path string\) \(\*Document, error\)](<#LoadDocument>)
+  - [func NewDocument\(raw \[\]byte\) \(\*Document, error\)](<#NewDocument>)
+  - [func \(d \*Document\) BlockContent\(key string\) \(string, error\)](<#Document.BlockContent>)
+  - [func \(d \*Document\) Blocks\(\) \[\]Block](<#Document.Blocks>)
+  - [func \(d \*Document\) CanUndo\(\) bool](<#Document.CanUndo>)
+  - [func \(d \*Document\) Conflicts\(\) \[\]string](<#Document.Conflicts>)
+  - [func \(d \*Document\) Dirty\(\) bool](<#Document.Dirty>)
+  - [func \(d \*Document\) Insert\(snippet string\) error](<#Document.Insert>)
+  - [func \(d \*Document\) Path\(\) string](<#Document.Path>)
+  - [func \(d \*Document\) Raw\(\) \[\]byte](<#Document.Raw>)
+  - [func \(d \*Document\) Remove\(key string\) error](<#Document.Remove>)
+  - [func \(d \*Document\) Replace\(key, snippet string\) error](<#Document.Replace>)
+  - [func \(d \*Document\) ReplaceRaw\(raw \[\]byte\) error](<#Document.ReplaceRaw>)
+  - [func \(d \*Document\) Save\(\) error](<#Document.Save>)
+  - [func \(d \*Document\) Undo\(\) bool](<#Document.Undo>)
+  - [func \(d \*Document\) UnknownKeys\(\) \[\]string](<#Document.UnknownKeys>)
 - [type FieldDef](<#FieldDef>)
   - [func FieldsForKey\(key string\) \[\]FieldDef](<#FieldsForKey>)
 - [type FieldListModel](<#FieldListModel>)
@@ -217,6 +234,161 @@ DeleteItemMsg is sent when the user presses d on an existing item.
 ```go
 type DeleteItemMsg struct{ Key string }
 ```
+
+<a name="Document"></a>
+## type [Document](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L16-L22>)
+
+Document owns the YAML editing state. All mutations are atomic and snapshot for undo automatically. Single\-threaded — no concurrent use.
+
+```go
+type Document struct {
+    // contains filtered or unexported fields
+}
+```
+
+<a name="LoadDocument"></a>
+### func [LoadDocument](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L26>)
+
+```go
+func LoadDocument(path string) (*Document, error)
+```
+
+LoadDocument reads a YAML file from path. A non\-existent file is not an error — the returned Document is empty, dirty=false, and Save writes to path.
+
+<a name="NewDocument"></a>
+### func [NewDocument](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L45>)
+
+```go
+func NewDocument(raw []byte) (*Document, error)
+```
+
+NewDocument builds a Document from raw bytes. Intended for tests and in\-memory use; the resulting document has no file path.
+
+<a name="Document.BlockContent"></a>
+### func \(\*Document\) [BlockContent](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L61>)
+
+```go
+func (d *Document) BlockContent(key string) (string, error)
+```
+
+BlockContent returns the raw lines for a given block key.
+
+<a name="Document.Blocks"></a>
+### func \(\*Document\) [Blocks](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L55>)
+
+```go
+func (d *Document) Blocks() []Block
+```
+
+
+
+<a name="Document.CanUndo"></a>
+### func \(\*Document\) [CanUndo](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L58>)
+
+```go
+func (d *Document) CanUndo() bool
+```
+
+
+
+<a name="Document.Conflicts"></a>
+### func \(\*Document\) [Conflicts](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L171>)
+
+```go
+func (d *Document) Conflicts() []string
+```
+
+Conflicts returns human\-readable messages for mutual\-exclusion violations.
+
+<a name="Document.Dirty"></a>
+### func \(\*Document\) [Dirty](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L57>)
+
+```go
+func (d *Document) Dirty() bool
+```
+
+
+
+<a name="Document.Insert"></a>
+### func \(\*Document\) [Insert](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L77>)
+
+```go
+func (d *Document) Insert(snippet string) error
+```
+
+Insert adds snippet to the document, positioned by the canonical key order. Snapshots history and sets dirty on success.
+
+<a name="Document.Path"></a>
+### func \(\*Document\) [Path](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L56>)
+
+```go
+func (d *Document) Path() string
+```
+
+
+
+<a name="Document.Raw"></a>
+### func \(\*Document\) [Raw](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L54>)
+
+```go
+func (d *Document) Raw() []byte
+```
+
+
+
+<a name="Document.Remove"></a>
+### func \(\*Document\) [Remove](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L95>)
+
+```go
+func (d *Document) Remove(key string) error
+```
+
+Remove deletes the block with the given key. Returns an error if the key is not present.
+
+<a name="Document.Replace"></a>
+### func \(\*Document\) [Replace](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L113>)
+
+```go
+func (d *Document) Replace(key, snippet string) error
+```
+
+Replace removes the block at key and inserts snippet in its schema\-ordered position. Records a single history snapshot for the combined operation.
+
+<a name="Document.ReplaceRaw"></a>
+### func \(\*Document\) [ReplaceRaw](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L136>)
+
+```go
+func (d *Document) ReplaceRaw(raw []byte) error
+```
+
+ReplaceRaw replaces the document content with raw, normalising CRLF. If raw fails to parse, the document is left untouched and the error is returned. On success, snapshots history and sets dirty=true.
+
+<a name="Document.Save"></a>
+### func \(\*Document\) [Save](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L177>)
+
+```go
+func (d *Document) Save() error
+```
+
+Save writes the current raw to disk at d.path with mode 0600 and clears dirty. Returns an error if d.path is empty \(Document created with NewDocument\).
+
+<a name="Document.Undo"></a>
+### func \(\*Document\) [Undo](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L151>)
+
+```go
+func (d *Document) Undo() bool
+```
+
+Undo restores the previous raw from history. Returns false if history is empty. Does not push a new snapshot; keeps dirty=true.
+
+<a name="Document.UnknownKeys"></a>
+### func \(\*Document\) [UnknownKeys](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/document.go#L166>)
+
+```go
+func (d *Document) UnknownKeys() []string
+```
+
+UnknownKeys returns dotted paths of keys not recognised by the schema.
 
 <a name="FieldDef"></a>
 ## type [FieldDef](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/field_defs.go#L4-L9>)
@@ -412,7 +584,7 @@ func (lm ListModel) View() string
 View renders the visible slice of the list.
 
 <a name="Model"></a>
-## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L31-L51>)
+## type [Model](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L33-L48>)
 
 Model is the root Bubble Tea model for the edit TUI.
 
@@ -423,6 +595,8 @@ The active pane is derived from state, not tracked explicitly:
 - previewFocused → panePreview
 - otherwise → paneList
 
+All YAML state \(raw bytes, parsed blocks, undo history, dirty flag, file path\) lives on doc. Model is a pure UI orchestrator.
+
 ```go
 type Model struct {
     // contains filtered or unexported fields
@@ -430,7 +604,7 @@ type Model struct {
 ```
 
 <a name="New"></a>
-### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L84>)
+### func [New](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L81>)
 
 ```go
 func New(filePath string) (Model, error)
@@ -439,7 +613,7 @@ func New(filePath string) (Model, error)
 New loads the YAML file and initialises the model.
 
 <a name="Model.Init"></a>
-### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L119>)
+### func \(Model\) [Init](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L102>)
 
 ```go
 func (m Model) Init() tea.Cmd
@@ -448,7 +622,7 @@ func (m Model) Init() tea.Cmd
 
 
 <a name="Model.Update"></a>
-### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L121>)
+### func \(Model\) [Update](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L104>)
 
 ```go
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
@@ -457,7 +631,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
 
 
 <a name="Model.View"></a>
-### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L459>)
+### func \(Model\) [View](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/tui/edit/model.go#L400>)
 
 ```go
 func (m Model) View() string
