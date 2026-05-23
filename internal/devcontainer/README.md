@@ -11,9 +11,11 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/devcontainer"
 ## Index
 
 - [func DevContainerStructLevelValidation\(sl validator.StructLevel\)](<#DevContainerStructLevelValidation>)
+- [func FieldSnippets\(\) map\[string\]map\[string\]string](<#FieldSnippets>)
 - [func HumanizeValidationError\(err error\) string](<#HumanizeValidationError>)
 - [func LoadYAMLFile\(path string\) \(\*koanf.Koanf, error\)](<#LoadYAMLFile>)
 - [func Parse\(k \*koanf.Koanf\) \(model.DevContainer, error\)](<#Parse>)
+- [func PreCheckedFields\(\) map\[string\]\[\]string](<#PreCheckedFields>)
 - [func Validate\(dc model.DevContainer\) error](<#Validate>)
 - [func WriteFile\(dc model.DevContainer, outputPath string, force bool\) \(string, error\)](<#WriteFile>)
 
@@ -26,6 +28,17 @@ func DevContainerStructLevelValidation(sl validator.StructLevel)
 ```
 
 DevContainerStructLevelValidation enforces that exactly one of Image, Build or DockerComposeFile is set on a DevContainer.
+
+<a name="FieldSnippets"></a>
+## func [FieldSnippets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/editor.go#L9>)
+
+```go
+func FieldSnippets() map[string]map[string]string
+```
+
+FieldSnippets returns the per\-parent → per\-child YAML snippet map used by the editor TUI when the user toggles a sub\-field on. Keeping this in the devcontainer package keeps yedit free of devcontainer\-specific knowledge.
+
+Each snippet is the indented YAML chunk inserted under the parent key, already including the child key, a placeholder value, and a trailing newline.
 
 <a name="HumanizeValidationError"></a>
 ## func [HumanizeValidationError](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L70>)
@@ -53,6 +66,15 @@ func Parse(k *koanf.Koanf) (model.DevContainer, error)
 ```
 
 
+
+<a name="PreCheckedFields"></a>
+## func [PreCheckedFields](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/editor.go#L64>)
+
+```go
+func PreCheckedFields() map[string][]string
+```
+
+PreCheckedFields returns the per\-parent list of sub\-fields that should be pre\-checked when the editor opens an overlay for that parent. These are UX hints — they are \*not\* the same as validation\-required fields.
 
 <a name="Validate"></a>
 ## func [Validate](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L13>)

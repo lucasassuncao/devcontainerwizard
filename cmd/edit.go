@@ -3,10 +3,12 @@ package cmd
 import (
 	"fmt"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 
-	"github.com/lucasassuncao/devcontainerwizard/internal/tui/edit"
+	"github.com/lucasassuncao/devcontainerwizard/internal/devcontainer"
+	"github.com/lucasassuncao/devcontainerwizard/internal/model"
+	dcpresets "github.com/lucasassuncao/devcontainerwizard/internal/presets"
+	"github.com/lucasassuncao/yedit/editor"
 )
 
 var editConfig string
@@ -24,17 +26,23 @@ func init() {
 	editCmd.Flags().StringVarP(&editConfig, "config", "c", "config.yaml", "Path to the config file")
 }
 
-func runEditE(cmd *cobra.Command, args []string) error {
-	m, err := edit.New(editConfig)
+func runEditE(cmd *cobra.Command, _ []string) error {
+	err := editor.Run(editor.Config{
+		Path:    editConfig,
+		Schema:  &model.DevContainer{},
+		Title:   "devcontainer wizard",
+		Presets: dcpresets.Source(),
+		Validators: []editor.Validator{
+			editor.MutuallyExclusive("image", "build", "dockerComposeFile"),
+			editor.RequiredWith("service", "dockerComposeFile"),
+			editor.RequiredWith("runServices", "dockerComposeFile"),
+		},
+		PreCheckedFields: devcontainer.PreCheckedFields(),
+		FieldSnippets:    devcontainer.FieldSnippets(),
+		Hidden:           []string{"dockerFile"}, // legacy alias, prefer build.dockerfile
+	})
 	if err != nil {
 		fmt.Fprintf(cmd.ErrOrStderr(), "Error: %v\n", err)
-		return err
 	}
-
-	p := tea.NewProgram(m, tea.WithAltScreen())
-	if _, err := p.Run(); err != nil {
-		fmt.Fprintf(cmd.ErrOrStderr(), "TUI error: %v\n", err)
-		return err
-	}
-	return nil
+	return err
 }

@@ -48,6 +48,7 @@ Package model defines the data structures used to represent dev container config
   - [func \(m MountOrString\) MarshalYAML\(\) \(any, error\)](<#MountOrString.MarshalYAML>)
   - [func \(m \*MountOrString\) UnmarshalJSON\(data \[\]byte\) error](<#MountOrString.UnmarshalJSON>)
   - [func \(m \*MountOrString\) UnmarshalYAML\(value \*yaml.Node\) error](<#MountOrString.UnmarshalYAML>)
+  - [func \(MountOrString\) YeditSchema\(\) \[\]schema.FieldDef](<#MountOrString.YeditSchema>)
 - [type PortAttributes](<#PortAttributes>)
 - [type Secret](<#Secret>)
 - [type VSCodeCustomization](<#VSCodeCustomization>)
@@ -418,7 +419,7 @@ type Mount struct {
 ```
 
 <a name="MountOrString"></a>
-## type [MountOrString](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L13-L16>)
+## type [MountOrString](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L15-L18>)
 
 MountOrString represents an element of the mounts array. The devcontainer spec allows each mount to be either a Mount object or a Docker \-\-mount string \(e.g. "source=/path,target=/container,type=bind"\).
 
@@ -430,7 +431,7 @@ type MountOrString struct {
 ```
 
 <a name="MountObject"></a>
-### func [MountObject](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L19>)
+### func [MountObject](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L21>)
 
 ```go
 func MountObject(m Mount) MountOrString
@@ -439,7 +440,7 @@ func MountObject(m Mount) MountOrString
 MountObject returns a MountOrString backed by a structured Mount.
 
 <a name="MountString"></a>
-### func [MountString](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L22>)
+### func [MountString](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L24>)
 
 ```go
 func MountString(s string) MountOrString
@@ -448,7 +449,7 @@ func MountString(s string) MountOrString
 MountString returns a MountOrString backed by a raw Docker mount string.
 
 <a name="MountOrString.MarshalJSON"></a>
-### func \(MountOrString\) [MarshalJSON](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L24>)
+### func \(MountOrString\) [MarshalJSON](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L26>)
 
 ```go
 func (m MountOrString) MarshalJSON() ([]byte, error)
@@ -457,7 +458,7 @@ func (m MountOrString) MarshalJSON() ([]byte, error)
 
 
 <a name="MountOrString.MarshalYAML"></a>
-### func \(MountOrString\) [MarshalYAML](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L46>)
+### func \(MountOrString\) [MarshalYAML](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L48>)
 
 ```go
 func (m MountOrString) MarshalYAML() (any, error)
@@ -466,7 +467,7 @@ func (m MountOrString) MarshalYAML() (any, error)
 MarshalYAML implements yaml.Marshaler so yaml.Marshal produces the correct output.
 
 <a name="MountOrString.UnmarshalJSON"></a>
-### func \(\*MountOrString\) [UnmarshalJSON](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L31>)
+### func \(\*MountOrString\) [UnmarshalJSON](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L33>)
 
 ```go
 func (m *MountOrString) UnmarshalJSON(data []byte) error
@@ -475,13 +476,22 @@ func (m *MountOrString) UnmarshalJSON(data []byte) error
 
 
 <a name="MountOrString.UnmarshalYAML"></a>
-### func \(\*MountOrString\) [UnmarshalYAML](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L54>)
+### func \(\*MountOrString\) [UnmarshalYAML](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L68>)
 
 ```go
 func (m *MountOrString) UnmarshalYAML(value *yaml.Node) error
 ```
 
 UnmarshalYAML implements yaml.Unmarshaler for direct yaml.v3 decoding.
+
+<a name="MountOrString.YeditSchema"></a>
+### func \(MountOrString\) [YeditSchema](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L58>)
+
+```go
+func (MountOrString) YeditSchema() []schema.FieldDef
+```
+
+YeditSchema implements yedit/schema.Provider, declaring the editor view of a mount item as the structured Mount form \(string mounts edit through the raw YAML pane\).
 
 <a name="PortAttributes"></a>
 ## type [PortAttributes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L82-L88>)

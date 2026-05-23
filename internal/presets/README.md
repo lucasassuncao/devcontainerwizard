@@ -88,6 +88,7 @@ Package presets provides preset value maps for each top\-level field of the DevC
 - [func SecurityOptPreset\(name string\) \[\]string](<#SecurityOptPreset>)
 - [func ServicePreset\(name string\) string](<#ServicePreset>)
 - [func ShutdownActionPreset\(name string\) string](<#ShutdownActionPreset>)
+- [func Source\(\) yeditpresets.Source](<#Source>)
 - [func UpdateContentCommandPreset\(name string\) \*model.CommandValue](<#UpdateContentCommandPreset>)
 - [func UpdateRemoteUserUIDPreset\(name string\) bool](<#UpdateRemoteUserUIDPreset>)
 - [func UserEnvProbePreset\(name string\) string](<#UserEnvProbePreset>)
@@ -780,6 +781,15 @@ func ShutdownActionPreset(name string) string
 ```
 
 
+
+<a name="Source"></a>
+## func [Source](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/yedit.go#L7>)
+
+```go
+func Source() yeditpresets.Source
+```
+
+Source returns this package's preset registry as a yedit/presets.Source so the editor TUI can consume it without depending on devcontainerwizard.
 
 <a name="UpdateContentCommandPreset"></a>
 ## func [UpdateContentCommandPreset](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/presets/lifecycle.go#L43>)

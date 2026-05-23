@@ -9,7 +9,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 
-	"github.com/lucasassuncao/devcontainerwizard/internal/tui/theme"
+	"github.com/lucasassuncao/yedit/theme"
 )
 
 type docPane int
@@ -222,7 +222,7 @@ func (m docTUIModel) View() string {
 		"[Tab] switch panel  [↑/↓ j/k] navigate / scroll  [PgUp/PgDn] half-page  [q] quit",
 	)
 
-	header := theme.RenderHeader("docs", "", m.width)
+	header := theme.RenderHeader("devcontainer wizard", "docs", "", m.width)
 	return theme.RenderTwoColumnView(header, leftPanel, rightPanel, "", hint)
 }
 

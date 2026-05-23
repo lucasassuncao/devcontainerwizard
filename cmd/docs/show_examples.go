@@ -3,8 +3,9 @@ package docs
 import (
 	"log"
 
-	"github.com/lucasassuncao/devcontainerwizard/internal/presets"
-	"github.com/lucasassuncao/devcontainerwizard/internal/tui/examples"
+	"github.com/lucasassuncao/yedit/viewer"
+
+	dcpresets "github.com/lucasassuncao/devcontainerwizard/internal/presets"
 
 	"github.com/spf13/cobra"
 )
@@ -16,8 +17,8 @@ var ShowExamplesCmd = &cobra.Command{
 }
 
 func runShowExamples(cmd *cobra.Command, args []string) {
-	err := examples.Run(presets.ListFields(), presets.ListPresets, presets.PresetYAML)
+	err := viewer.Run(dcpresets.Source())
 	if err != nil {
-		log.Fatalf("examples TUI: %v", err)
+		log.Fatalf("viewer TUI: %v", err)
 	}
 }

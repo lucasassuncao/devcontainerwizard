@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/lucasassuncao/yedit/schema"
 )
 
 // MountOrString represents an element of the mounts array.
@@ -48,6 +50,18 @@ func (m MountOrString) MarshalYAML() (any, error) {
 		return m.Str, nil
 	}
 	return m.Mount, nil
+}
+
+// YeditSchema implements yedit/schema.Provider, declaring the editor view of
+// a mount item as the structured Mount form (string mounts edit through the
+// raw YAML pane).
+func (MountOrString) YeditSchema() []schema.FieldDef {
+	return []schema.FieldDef{
+		{YAMLName: "type", Kind: schema.KindScalar, Required: true, OneOf: []string{"bind", "volume", "tmpfs"}, Description: "Mount type."},
+		{YAMLName: "source", Kind: schema.KindScalar, Description: "Source path or volume name."},
+		{YAMLName: "target", Kind: schema.KindScalar, Required: true, Description: "Target path inside the container."},
+		{YAMLName: "readonly", Kind: schema.KindScalar, Description: "Mount as read-only."},
+	}
 }
 
 // UnmarshalYAML implements yaml.Unmarshaler for direct yaml.v3 decoding.
