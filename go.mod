@@ -1,6 +1,6 @@
 module github.com/lucasassuncao/devcontainerwizard
 
-go 1.25.0
+go 1.26.3
 
 require (
 	github.com/charmbracelet/bubbles v1.0.0
@@ -12,7 +12,7 @@ require (
 	github.com/knadh/koanf/parsers/yaml v1.1.0
 	github.com/knadh/koanf/providers/file v1.2.0
 	github.com/knadh/koanf/v2 v2.3.0
-	github.com/lucasassuncao/yedit v0.1.1
+	github.com/lucasassuncao/yedit v0.2.0
 	github.com/spf13/cobra v1.10.1
 	gopkg.in/yaml.v3 v3.0.1
 )

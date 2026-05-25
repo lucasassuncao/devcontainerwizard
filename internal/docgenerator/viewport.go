@@ -209,21 +209,21 @@ func (m docTUIModel) View() string {
 		}
 	}
 
-	leftPanel := theme.RenderTitledPanel("Topics", m.listColW, m.listH+2, m.active == docPaneList, listSB.String())
+	leftPanel := theme.RenderTitledPanel("Topics", theme.Size{W: m.listColW, H: m.listH + 2}, m.active == docPaneList, listSB.String())
 
 	// ── Right panel (viewport) ───────────────────────────────────────────────
 	rightTitle := "Documentation"
 	if m.cursor >= 0 && m.cursor < len(m.names) {
 		rightTitle = m.names[m.cursor]
 	}
-	rightPanel := theme.RenderTitledPanel(rightTitle, m.vpColW, m.vpH+2, m.active == docPaneView, m.vp.View())
+	rightPanel := theme.RenderTitledPanel(rightTitle, theme.Size{W: m.vpColW, H: m.vpH + 2}, m.active == docPaneView, m.vp.View())
 
 	hint := theme.StatusBar.Render(
 		"[Tab] switch panel  [↑/↓ j/k] navigate / scroll  [PgUp/PgDn] half-page  [q] quit",
 	)
 
 	header := theme.RenderHeader("devcontainer wizard", "docs", "", m.width)
-	return theme.RenderTwoColumnView(header, leftPanel, rightPanel, "", hint)
+	return theme.RenderTwoColumnView(theme.TwoColumnLayout{Header: header, Left: leftPanel, Right: rightPanel, Feedback: "", Hint: hint})
 }
 
 // RenderMarkdownDocsInTerminal launches the two-panel documentation TUI.
