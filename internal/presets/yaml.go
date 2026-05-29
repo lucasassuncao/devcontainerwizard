@@ -4,6 +4,7 @@
 package presets
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"sort"
@@ -21,11 +22,19 @@ func marshalAsBlock(field string, value any) (string, error) {
 		return "", fmt.Errorf("preset not found for %q", field)
 	}
 
-	out, err := yaml.Marshal(value)
-	if err != nil {
+	// Use an explicit encoder with two-space indentation. yaml.Marshal defaults
+	// to four spaces, which — combined with the two-space prefix below — produced
+	// a mixed 2/4-space style that read inconsistently in the editor preview.
+	var buf bytes.Buffer
+	enc := yaml.NewEncoder(&buf)
+	enc.SetIndent(2)
+	if err := enc.Encode(value); err != nil {
 		return "", fmt.Errorf("marshal %s: %w", field, err)
 	}
-	body := strings.TrimRight(string(out), "\n")
+	if err := enc.Close(); err != nil {
+		return "", fmt.Errorf("marshal %s: %w", field, err)
+	}
+	body := strings.TrimRight(buf.String(), "\n")
 
 	// Single-line scalar (not a list item, not a mapping) → render inline.
 	if !strings.Contains(body, "\n") && !strings.Contains(body, ":") && !strings.HasPrefix(body, "- ") {

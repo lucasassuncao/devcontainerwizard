@@ -67,6 +67,25 @@ func TestMarshalAsBlockSlice(t *testing.T) {
 	}
 }
 
+func TestMarshalAsBlockNestedUsesTwoSpace(t *testing.T) {
+	type inner struct {
+		B int `yaml:"b"`
+	}
+	type outer struct {
+		A inner `yaml:"a"`
+	}
+	got, err := marshalAsBlock("x", outer{A: inner{B: 1}})
+	if err != nil {
+		t.Fatalf("err = %v", err)
+	}
+	// Two spaces per level throughout: x → a (2) → b (4), never the 6-space jump
+	// that yaml.Marshal's default four-space indent used to produce.
+	want := "x:\n  a:\n    b: 1\n"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
 func TestMarshalAsBlockNilPointer(t *testing.T) {
 	type Foo struct{ X int }
 	var p *Foo
