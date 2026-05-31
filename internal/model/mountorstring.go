@@ -57,10 +57,10 @@ func (m MountOrString) MarshalYAML() (any, error) {
 // raw YAML pane).
 func (MountOrString) YeditSchema() []schema.FieldDef {
 	return []schema.FieldDef{
-		{YAMLName: "type", Kind: schema.KindScalar, Required: true, OneOf: []string{"bind", "volume", "tmpfs"}, Description: "Mount type."},
-		{YAMLName: "source", Kind: schema.KindScalar, Description: "Source path or volume name."},
-		{YAMLName: "target", Kind: schema.KindScalar, Required: true, Description: "Target path inside the container."},
-		{YAMLName: "readonly", Kind: schema.KindScalar, Description: "Mount as read-only."},
+		{YAMLName: "type", Kind: schema.KindEnum, Required: true, OneOf: []string{"bind", "volume", "tmpfs"}, Description: "Type of mount: bind, volume, or tmpfs."},
+		{YAMLName: "source", Kind: schema.KindPrimitive, Description: "Source path or volume name. Not required for tmpfs mounts."},
+		{YAMLName: "target", Kind: schema.KindPrimitive, Required: true, Description: "Target path inside the container."},
+		{YAMLName: "readonly", Kind: schema.KindPrimitive, Description: "Whether the mount is read-only."},
 	}
 }
 
