@@ -1,0 +1,710 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "appPort": {
+      "description": "Legacy: publishes container ports on the host, like docker run -p. Unlike forwardPorts it cannot be changed without a rebuild - prefer forwardPorts.",
+      "examples": [
+        "appPort:\n  - 3000"
+      ],
+      "type": "array",
+      "uniqueItems": true
+    },
+    "build": {
+      "description": "Build the image from a Dockerfile instead of pulling one. Mutually exclusive with image and dockerComposeFile.",
+      "examples": [
+        "build:\n  dockerfile: Dockerfile\n  context: ."
+      ],
+      "properties": {
+        "args": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Build arguments, passed as --build-arg key=value. Each one must have a matching ARG in the Dockerfile.",
+          "examples": [
+            "args:\n  NODE_VERSION: \"18\"\n  APP_ENV: dev"
+          ],
+          "type": "object"
+        },
+        "cacheFrom": {
+          "description": "Images to pull layers from as a build cache, as docker build --cache-from. Usually a registry image a CI job pushed.",
+          "examples": [
+            "cacheFrom:\n  - myregistry/image:cache"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "context": {
+          "default": "the folder containing devcontainer.json",
+          "description": "Directory docker build runs from, relative to devcontainer.json. Paths in COPY and ADD resolve against it. Format: directory",
+          "examples": [
+            "context: ."
+          ],
+          "type": "string"
+        },
+        "dockerfile": {
+          "default": "Dockerfile",
+          "description": "Path to the Dockerfile, relative to devcontainer.json. The only required field of the build block.",
+          "examples": [
+            "dockerfile: Dockerfile"
+          ],
+          "type": "string"
+        },
+        "options": {
+          "description": "Extra flags passed straight to docker build for anything the fields above do not cover.",
+          "examples": [
+            "options:\n  - --no-cache\n  - --pull"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "target": {
+          "description": "Stage to stop at in a multi-stage Dockerfile, as docker build --target.",
+          "examples": [
+            "target: dev"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "dockerfile"
+      ],
+      "type": "object"
+    },
+    "capAdd": {
+      "description": "Linux capabilities to grant the container, such as SYS_PTRACE for attaching a debugger.",
+      "examples": [
+        "capAdd:\n  - SYS_PTRACE\n  - NET_ADMIN"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "containerEnv": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Environment variables baked into the container at creation time, visible to every process. Changing one requires a rebuild.",
+      "examples": [
+        "containerEnv:\n  GOPATH: /go\n  GOMODCACHE: /root/.cache/go/mod"
+      ],
+      "type": "object"
+    },
+    "containerUser": {
+      "default": "root, or the last USER instruction in the Dockerfile",
+      "description": "User the container itself is started with, entrypoint included.",
+      "examples": [
+        "containerUser: vscode"
+      ],
+      "type": "string"
+    },
+    "customizations": {
+      "description": "Tool-specific configuration, one sub-object per tool. Unknown tools are ignored rather than rejected.",
+      "examples": [
+        "customizations:\n  vscode:\n    extensions:\n      - golang.go\n    settings:\n      editor.formatOnSave: true"
+      ],
+      "properties": {
+        "codespaces": {
+          "description": "GitHub Codespaces-specific settings and extensions.",
+          "examples": [
+            "codespaces:\n  extensions:\n    - github.copilot"
+          ],
+          "properties": {
+            "extensions": {
+              "description": "Extension IDs installed only in Codespaces, on top of the vscode list.",
+              "examples": [
+                "extensions:\n  - github.copilot"
+              ],
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            },
+            "settings": {
+              "description": "Settings applied only when the container runs as a GitHub Codespace.",
+              "examples": [
+                "settings:\n  editor.formatOnSave: true"
+              ],
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "jetbrains": {
+          "description": "JetBrains IDE plugins to install.",
+          "examples": [
+            "jetbrains:\n  plugins:\n    - org.rust.lang"
+          ],
+          "properties": {
+            "plugins": {
+              "description": "JetBrains plugin IDs installed when the container is created, in reverse-domain form.",
+              "examples": [
+                "plugins:\n  - org.rust.lang\n  - com.intellij.kubernetes"
+              ],
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "type": "object"
+        },
+        "vscode": {
+          "description": "VS Code-specific settings and extensions.",
+          "examples": [
+            "vscode:\n  extensions:\n    - golang.go\n  settings:\n    editor.formatOnSave: true"
+          ],
+          "properties": {
+            "extensions": {
+              "description": "Extension IDs installed when the container is created, in publisher.name form.",
+              "examples": [
+                "extensions:\n  - golang.go\n  - ms-python.python"
+              ],
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            },
+            "settings": {
+              "description": "Default settings written into the container's workspace settings.json. Users can still override them locally.",
+              "examples": [
+                "settings:\n  editor.formatOnSave: true\n  go.toolsManagement.autoUpdate: true"
+              ],
+              "type": "object"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "devices": {
+      "description": "Host devices to expose inside the container, as docker run --device values. A Docker passthrough, not part of the devcontainer specification.",
+      "examples": [
+        "devices:\n  - /dev/video0:/dev/video0"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "dockerComposeFile": {
+      "description": "Docker Compose file(s) used to start the services. Later files override earlier ones. Mutually exclusive with image and build.",
+      "examples": [
+        "dockerComposeFile:\n  - docker-compose.yml\n  - docker-compose.override.yml"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "dockerFile": {
+      "$comment": "use the build block instead: build.dockerfile",
+      "deprecated": true,
+      "description": "Path to a Dockerfile. Deprecated shorthand for build.dockerfile - prefer the build block for new configs.",
+      "examples": [
+        "dockerFile: Dockerfile"
+      ],
+      "type": "string"
+    },
+    "features": {
+      "description": "Dev Container Features to install, keyed by feature ID. An empty object takes the feature's defaults.",
+      "examples": [
+        "features:\n  ghcr.io/devcontainers/features/git:1: {}\n  ghcr.io/devcontainers/features/node:1:\n    version: \"18\""
+      ],
+      "type": "object"
+    },
+    "forwardPorts": {
+      "description": "Ports forwarded from the container to the local machine. Each entry is a port number (0-65535) or a \"host:port\" string naming another Compose service.",
+      "examples": [
+        "forwardPorts:\n  - 3000\n  - 5432\n  - \"db:5432\""
+      ],
+      "type": "array",
+      "uniqueItems": true
+    },
+    "hostRequirements": {
+      "description": "Minimum host hardware. Codespaces picks a machine type from this; locally it is a pre-flight check.",
+      "examples": [
+        "hostRequirements:\n  cpus: 4\n  memory: 8gb\n  storage: 32gb"
+      ],
+      "properties": {
+        "cpus": {
+          "description": "Minimum number of CPU cores.",
+          "examples": [
+            "cpus: 4"
+          ],
+          "minimum": 1,
+          "type": "integer"
+        },
+        "gpu": {
+          "description": "GPU requirement: true, false, \"optional\" to use one when present, or an object with cores (at least 1) and memory.",
+          "examples": [
+            "gpu: true\n\n# Or with specific requirements:\ngpu:\n  cores: 2\n  memory: 4gb"
+          ]
+        },
+        "memory": {
+          "description": "Minimum memory. A whole number with an optional lowercase unit: kb, mb, gb, or tb. A bare number means bytes.",
+          "examples": [
+            "memory: 8gb"
+          ],
+          "pattern": "^\\d+([tgmk]b)?$",
+          "type": "string"
+        },
+        "storage": {
+          "description": "Minimum free disk space, in the same format as memory.",
+          "examples": [
+            "storage: 32gb"
+          ],
+          "pattern": "^\\d+([tgmk]b)?$",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "image": {
+      "description": "Docker image used to create the container. Mutually exclusive with build and dockerComposeFile.",
+      "examples": [
+        "image: mcr.microsoft.com/devcontainers/base:ubuntu"
+      ],
+      "type": "string"
+    },
+    "init": {
+      "default": "false",
+      "description": "Pass docker run --init, adding a tiny PID 1 that reaps zombie processes.",
+      "examples": [
+        "init: true"
+      ],
+      "type": "boolean"
+    },
+    "initializeCommand": {
+      "description": "Runs on the HOST, before the container is created or started - the only lifecycle command that does. Use it to prepare files the build needs.",
+      "examples": [
+        "initializeCommand: echo initializing\n\n# Named parallel commands:\ninitializeCommand:\n  setup: ./scripts/setup.sh\n  check: ./scripts/check.sh"
+      ]
+    },
+    "mounts": {
+      "description": "Extra mounts set up when the container is created. Each entry is a Mount object or a raw docker --mount string.",
+      "examples": [
+        "mounts:\n  - type: bind\n    source: ${localWorkspaceFolder}/.cache\n    target: /home/vscode/.cache"
+      ],
+      "items": {
+        "properties": {
+          "source": {
+            "description": "Host path for a bind mount, or the volume name for a volume mount. Omit it for tmpfs.",
+            "examples": [
+              "source: ${localWorkspaceFolder}/.cache"
+            ],
+            "type": "string"
+          },
+          "target": {
+            "description": "Absolute path the mount appears at inside the container. Format: directory",
+            "examples": [
+              "target: /home/vscode/.cache"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "description": "Mount type. bind maps a host path, volume uses a named Docker volume that survives rebuilds. tmpfs is a Docker extension, not part of the specification.",
+            "enum": [
+              "bind",
+              "volume",
+              "tmpfs"
+            ],
+            "examples": [
+              "type: bind"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "target",
+          "type"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "name": {
+      "description": "Name for the dev container, displayed to the user by the IDE.",
+      "examples": [
+        "name: my-project"
+      ],
+      "type": "string"
+    },
+    "onCreateCommand": {
+      "description": "First command run inside the container, during creation. In prebuild-capable tools this is the last step baked into the prebuilt image.",
+      "examples": [
+        "onCreateCommand: npm install"
+      ]
+    },
+    "otherPortsAttributes": {
+      "description": "Fallback attributes for every forwarded port that portsAttributes does not match.",
+      "examples": [
+        "otherPortsAttributes:\n  onAutoForward: silent"
+      ],
+      "properties": {
+        "elevateIfNeeded": {
+          "default": "false",
+          "description": "Ask for elevated privileges when the local port needs them - ports below 1024 such as 22, 80 and 443.",
+          "examples": [
+            "elevateIfNeeded: false"
+          ],
+          "type": "boolean"
+        },
+        "label": {
+          "default": "Application",
+          "description": "Name shown next to the port in the IDE's forwarded-ports list.",
+          "examples": [
+            "label: Web App"
+          ],
+          "type": "string"
+        },
+        "onAutoForward": {
+          "default": "notify",
+          "description": "What happens when a port is auto-forwarded: notify shows a toast, openBrowser opens the system browser, openPreview uses the IDE's built-in browser, silent forwards quietly, and ignore skips the port entirely.",
+          "enum": [
+            "notify",
+            "openBrowser",
+            "openPreview",
+            "silent",
+            "ignore"
+          ],
+          "examples": [
+            "onAutoForward: notify"
+          ],
+          "type": "string"
+        },
+        "protocol": {
+          "description": "Scheme the IDE uses when it builds the URL for this port.",
+          "enum": [
+            "http",
+            "https"
+          ],
+          "examples": [
+            "protocol: http"
+          ],
+          "type": "string"
+        },
+        "requireLocalPort": {
+          "default": "false",
+          "description": "Insist on the same port number locally. When false the IDE silently maps to a free port instead; when true it warns that the port is taken.",
+          "examples": [
+            "requireLocalPort: false"
+          ],
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "overrideCommand": {
+      "default": "true for image/Dockerfile, false for Docker Compose",
+      "description": "Replace the image's default command with an infinite sleep so the container stays up for the IDE to attach to.",
+      "examples": [
+        "overrideCommand: true"
+      ],
+      "type": "boolean"
+    },
+    "overrideFeatureInstallOrder": {
+      "description": "Force the install order of features by listing their IDs. Without it the order comes from each feature's own installsAfter property.",
+      "examples": [
+        "overrideFeatureInstallOrder:\n  - ghcr.io/devcontainers/features/git:1\n  - ghcr.io/devcontainers/features/node:1"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "portsAttributes": {
+      "additionalProperties": {
+        "properties": {
+          "elevateIfNeeded": {
+            "default": "false",
+            "description": "Ask for elevated privileges when the local port needs them - ports below 1024 such as 22, 80 and 443.",
+            "examples": [
+              "elevateIfNeeded: false"
+            ],
+            "type": "boolean"
+          },
+          "label": {
+            "default": "Application",
+            "description": "Name shown next to the port in the IDE's forwarded-ports list.",
+            "examples": [
+              "label: Web App"
+            ],
+            "type": "string"
+          },
+          "onAutoForward": {
+            "default": "notify",
+            "description": "What happens when this port is auto-forwarded: notify shows a toast, openBrowser opens the system browser every time, openBrowserOnce only the first time in a session, openPreview uses the IDE's built-in browser, silent forwards quietly, and ignore skips the port entirely.",
+            "enum": [
+              "notify",
+              "openBrowser",
+              "openBrowserOnce",
+              "openPreview",
+              "silent",
+              "ignore"
+            ],
+            "examples": [
+              "onAutoForward: notify"
+            ],
+            "type": "string"
+          },
+          "protocol": {
+            "description": "Scheme the IDE uses when it builds the URL for this port.",
+            "enum": [
+              "http",
+              "https"
+            ],
+            "examples": [
+              "protocol: http"
+            ],
+            "type": "string"
+          },
+          "requireLocalPort": {
+            "default": "false",
+            "description": "Insist on the same port number locally. When false the IDE silently maps to a free port instead; when true it warns that the port is taken.",
+            "examples": [
+              "requireLocalPort: false"
+            ],
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "description": "Per-port forwarding behaviour. Keys are quoted port numbers (\"3000\"), ranges (\"40000-55000\"), or regular expressions matching a port.",
+      "examples": [
+        "portsAttributes:\n  \"3000\":\n    label: Web App\n    onAutoForward: openBrowser"
+      ],
+      "type": "object"
+    },
+    "postAttachCommand": {
+      "description": "Runs each time a tool attaches to the container, so it can fire several times for one container.",
+      "examples": [
+        "postAttachCommand: source ~/.bashrc"
+      ]
+    },
+    "postCreateCommand": {
+      "description": "Runs once the container is created and every feature is installed - the usual place to install project dependencies.",
+      "examples": [
+        "postCreateCommand: bash .devcontainer/setup.sh"
+      ]
+    },
+    "postStartCommand": {
+      "description": "Runs every time the container starts, including after a stop/start cycle. Keep it quick - the IDE waits on it.",
+      "examples": [
+        "postStartCommand: nohup bash -c 'sleep infinity' \u0026"
+      ]
+    },
+    "privileged": {
+      "default": "false",
+      "description": "Pass docker run --privileged, giving the container full access to the host. Prefer capAdd for a specific capability.",
+      "examples": [
+        "privileged: false"
+      ],
+      "type": "boolean"
+    },
+    "remoteEnv": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Environment variables for processes the IDE spawns, resolved at attach time rather than build time. The only place ${containerEnv:VAR} works; ${localEnv:VAR} reads the host environment.",
+      "examples": [
+        "remoteEnv:\n  PATH: ${containerEnv:PATH}:/usr/local/mybin\n  MY_TOKEN: ${localEnv:MY_TOKEN}"
+      ],
+      "type": "object"
+    },
+    "remoteUser": {
+      "default": "the user the container runs as, often root",
+      "description": "User the IDE and every process it spawns run as. Does not change the container's own entrypoint user - see containerUser.",
+      "examples": [
+        "remoteUser: vscode"
+      ],
+      "type": "string"
+    },
+    "runArgs": {
+      "description": "Extra arguments passed to docker run. Ignored for Docker Compose configs, where the Compose file owns the runtime settings.",
+      "examples": [
+        "runArgs:\n  - --network=host\n  - --cap-add=SYS_PTRACE"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "runServices": {
+      "description": "Additional Compose services started and stopped alongside the primary service. Defaults to every service in the file.",
+      "examples": [
+        "runServices:\n  - db\n  - redis"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "secrets": {
+      "additionalProperties": {
+        "properties": {
+          "description": {
+            "description": "What the secret is for. Shown next to the input when the IDE prompts for its value.",
+            "examples": [
+              "description: Personal access token for the registry"
+            ],
+            "type": "string"
+          },
+          "documentationUrl": {
+            "description": "Link shown alongside the prompt, pointing at instructions for obtaining the value.",
+            "examples": [
+              "documentationUrl: https://example.com/docs/tokens"
+            ],
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "description": "Secrets the container needs, keyed by environment variable name (letters, digits and underscore, not starting with a digit). The IDE prompts for the values - none of them are stored in this file.",
+      "examples": [
+        "secrets:\n  MY_TOKEN:\n    description: Personal access token for the registry\n    documentationUrl: https://example.com/tokens"
+      ],
+      "type": "object"
+    },
+    "securityOpt": {
+      "description": "Values for docker run --security-opt, most often seccomp=unconfined so a debugger can attach.",
+      "examples": [
+        "securityOpt:\n  - seccomp=unconfined"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "service": {
+      "description": "Service in the Docker Compose file the IDE attaches to - the primary container of the dev environment. Required when dockerComposeFile is set.",
+      "examples": [
+        "service: app"
+      ],
+      "type": "string"
+    },
+    "shutdownAction": {
+      "default": "stopContainer for image/Dockerfile, stopCompose for Docker Compose",
+      "description": "What happens to the container when the IDE disconnects. Use none to leave it running. stopCompose is the Docker Compose counterpart of stopContainer.",
+      "enum": [
+        "none",
+        "stopContainer",
+        "stopCompose"
+      ],
+      "examples": [
+        "shutdownAction: stopContainer"
+      ],
+      "type": "string"
+    },
+    "updateContentCommand": {
+      "description": "Runs after onCreateCommand, and again whenever the workspace content is refreshed. The default stage waitFor waits on.",
+      "examples": [
+        "updateContentCommand: npm install"
+      ]
+    },
+    "updateRemoteUserUID": {
+      "default": "true",
+      "description": "On Linux, update the container user's UID/GID to match the local user so bind-mounted files keep the right ownership.",
+      "examples": [
+        "updateRemoteUserUID: true"
+      ],
+      "type": "boolean"
+    },
+    "userEnvProbe": {
+      "default": "loginInteractiveShell",
+      "description": "Shell used to probe the user's environment variables on container start. A login shell picks up /etc/profile and ~/.profile; an interactive one picks up ~/.bashrc.",
+      "enum": [
+        "none",
+        "loginShell",
+        "loginInteractiveShell",
+        "interactiveShell"
+      ],
+      "examples": [
+        "userEnvProbe: loginInteractiveShell"
+      ],
+      "type": "string"
+    },
+    "waitFor": {
+      "default": "updateContentCommand",
+      "description": "Lifecycle stage the IDE waits for before it reports the container ready and opens the workspace.",
+      "enum": [
+        "initializeCommand",
+        "onCreateCommand",
+        "updateContentCommand",
+        "postCreateCommand",
+        "postStartCommand"
+      ],
+      "examples": [
+        "waitFor: postCreateCommand"
+      ],
+      "type": "string"
+    },
+    "watch": {
+      "description": "File-watch configuration for automatic process restarts inside the container.",
+      "examples": [
+        "watch:\n  waitFor:\n    - postCreateCommand\n  restart:\n    - '**/*.go'"
+      ],
+      "properties": {
+        "restart": {
+          "description": "Glob patterns that trigger a restart of the watched process when a matching file changes. Quote them - a leading * is not valid unquoted YAML.",
+          "examples": [
+            "restart:\n  - '**/*.go'\n  - '**/*.ts'"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "waitFor": {
+          "description": "Lifecycle commands that must finish before file watching starts, so a rebuild does not race the watcher.",
+          "examples": [
+            "waitFor:\n  - postCreateCommand"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "type": "object"
+    },
+    "workspaceFolder": {
+      "default": "the automatic source-code mount location; \"/\" for Docker Compose",
+      "description": "Path the IDE opens inside the container. Supports ${localWorkspaceFolderBasename} and the other devcontainer variables. Format: directory",
+      "examples": [
+        "workspaceFolder: /workspaces/${localWorkspaceFolderBasename}"
+      ],
+      "type": "string"
+    },
+    "workspaceMount": {
+      "description": "Overrides the default workspace mount, as a docker run --mount string. Set it together with workspaceFolder.",
+      "examples": [
+        "workspaceMount: source=${localWorkspaceFolder},target=/workspaces/my-project,type=bind,consistency=cached"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "type": "object"
+}

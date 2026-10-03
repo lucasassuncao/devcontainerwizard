@@ -11,17 +11,17 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/devcontainer"
 ## Index
 
 - [func DevContainerStructLevelValidation\(sl validator.StructLevel\)](<#DevContainerStructLevelValidation>)
-- [func FieldSnippets\(\) map\[string\]map\[string\]string](<#FieldSnippets>)
 - [func HumanizeValidationError\(err error\) string](<#HumanizeValidationError>)
+- [func LoadYAML\(r io.Reader\) \(\*koanf.Koanf, error\)](<#LoadYAML>)
 - [func LoadYAMLFile\(path string\) \(\*koanf.Koanf, error\)](<#LoadYAMLFile>)
 - [func Parse\(k \*koanf.Koanf\) \(model.DevContainer, error\)](<#Parse>)
-- [func PreCheckedFields\(\) map\[string\]\[\]string](<#PreCheckedFields>)
+- [func ParseStrict\(k \*koanf.Koanf\) \(model.DevContainer, error\)](<#ParseStrict>)
 - [func Validate\(dc model.DevContainer\) error](<#Validate>)
 - [func WriteFile\(dc model.DevContainer, outputPath string, force bool\) \(string, error\)](<#WriteFile>)
 
 
 <a name="DevContainerStructLevelValidation"></a>
-## func [DevContainerStructLevelValidation](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L21>)
+## func [DevContainerStructLevelValidation](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L25>)
 
 ```go
 func DevContainerStructLevelValidation(sl validator.StructLevel)
@@ -29,61 +29,67 @@ func DevContainerStructLevelValidation(sl validator.StructLevel)
 
 DevContainerStructLevelValidation enforces that exactly one of Image, Build or DockerComposeFile is set on a DevContainer.
 
-<a name="FieldSnippets"></a>
-## func [FieldSnippets](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/editor.go#L9>)
-
-```go
-func FieldSnippets() map[string]map[string]string
-```
-
-FieldSnippets returns the per\-parent → per\-child YAML snippet map used by the editor TUI when the user toggles a sub\-field on. Keeping this in the devcontainer package keeps yedit free of devcontainer\-specific knowledge.
-
-Each snippet is the indented YAML chunk inserted under the parent key, already including the child key, a placeholder value, and a trailing newline.
-
 <a name="HumanizeValidationError"></a>
-## func [HumanizeValidationError](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L70>)
+## func [HumanizeValidationError](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L175>)
 
 ```go
 func HumanizeValidationError(err error) string
 ```
 
+HumanizeValidationError renders a validation failure as one plain\-language line per violation, looked up in validationMessages. An error that is not a validator.ValidationErrors is returned as its own text, and a nil error as the empty string.
 
+<a name="LoadYAML"></a>
+## func [LoadYAML](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/loader.go#L18>)
+
+```go
+func LoadYAML(r io.Reader) (*koanf.Koanf, error)
+```
+
+LoadYAML parses a devcontainerwizard configuration from r.
+
+Taking a reader rather than only a path keeps parsing independent of the filesystem: the editor can validate a buffer it has not written yet, and tests can exercise the pipeline without a temp directory.
 
 <a name="LoadYAMLFile"></a>
-## func [LoadYAMLFile](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/loader.go#L11>)
+## func [LoadYAMLFile](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/loader.go#L32>)
 
 ```go
 func LoadYAMLFile(path string) (*koanf.Koanf, error)
 ```
 
-
+LoadYAMLFile parses the configuration stored at path. It is a convenience wrapper around LoadYAML for the common case of reading from disk.
 
 <a name="Parse"></a>
-## func [Parse](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/parser.go#L12>)
+## func [Parse](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/parser.go#L18>)
 
 ```go
 func Parse(k *koanf.Koanf) (model.DevContainer, error)
 ```
 
+Parse decodes a loaded configuration into a DevContainer.
 
+The decode hooks exist for the specification's union types, none of which mapstructure can bind on its own: a lifecycle command that may be a string, a list or a named map; a gpu requirement that may be a bool, a string or an object; and a mount that may be a string or an object.
 
-<a name="PreCheckedFields"></a>
-## func [PreCheckedFields](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/editor.go#L64>)
+<a name="ParseStrict"></a>
+## func [ParseStrict](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/parser.go#L32>)
 
 ```go
-func PreCheckedFields() map[string][]string
+func ParseStrict(k *koanf.Koanf) (model.DevContainer, error)
 ```
 
-PreCheckedFields returns the per\-parent list of sub\-fields that should be pre\-checked when the editor opens an overlay for that parent. These are UX hints — they are \*not\* the same as validation\-required fields.
+ParseStrict is Parse with unknown keys rejected instead of dropped.
+
+mapstructure discards a key it cannot match, so a config saying "remoteUsr: vscode" decodes without complaint and the setting silently does nothing. Parse stays lenient on purpose: the specification's customizations block is open\-ended, so a real config may carry keys for a tool this model does not describe, and refusing those would reject working configs.
+
+The templates this project ships have no such excuse \- every key in them is one this model claims to support \- so the template tests decode through here.
 
 <a name="Validate"></a>
-## func [Validate](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L13>)
+## func [Validate](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/validator.go#L17>)
 
 ```go
 func Validate(dc model.DevContainer) error
 ```
 
-
+Validate checks dc against the struct tags declared on the model and the cross\-field rules in DevContainerStructLevelValidation. Pass the result to HumanizeValidationError to render it for a user.
 
 <a name="WriteFile"></a>
 ## func [WriteFile](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/devcontainer/writer.go#L15>)

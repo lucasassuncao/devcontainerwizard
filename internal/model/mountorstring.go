@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"gopkg.in/yaml.v3"
-
-	"github.com/lucasassuncao/yedit/schema"
 )
 
 // MountOrString represents an element of the mounts array.
@@ -52,15 +50,14 @@ func (m MountOrString) MarshalYAML() (any, error) {
 	return m.Mount, nil
 }
 
-// YeditSchema implements yedit/schema.Provider, declaring the editor view of
-// a mount item as the structured Mount form (string mounts edit through the
-// raw YAML pane).
-func (MountOrString) YeditSchema() []schema.FieldDef {
-	return []schema.FieldDef{
-		{YAMLName: "type", Kind: schema.KindEnum, Required: true, OneOf: []string{"bind", "volume", "tmpfs"}, Description: "Type of mount: bind, volume, or tmpfs."},
-		{YAMLName: "source", Kind: schema.KindPrimitive, Description: "Source path or volume name. Not required for tmpfs mounts."},
-		{YAMLName: "target", Kind: schema.KindPrimitive, Required: true, Description: "Target path inside the container."},
-		{YAMLName: "readonly", Kind: schema.KindPrimitive, Description: "Whether the mount is read-only."},
+// Metadata declares the shape reflection cannot read: a mount is a structured
+// Mount or a raw string, so the entries carry "kind" and stand in for the
+// wrapper's own fields. String mounts edit through the raw YAML pane.
+func (MountOrString) Metadata() map[string]any {
+	return map[string]any{
+		"type":   meta{Kind: "primitive", Scalar: "string"},
+		"source": meta{Kind: "primitive", Scalar: "string"},
+		"target": meta{Kind: "primitive", Scalar: "string"},
 	}
 }
 

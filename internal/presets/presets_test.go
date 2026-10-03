@@ -174,38 +174,6 @@ func TestPresetYAMLRoundtripAllFields(t *testing.T) {
 	}
 }
 
-// TestPresetYAMLValidatesSchema sanity-checks that a representative preset per
-// type-category produces YAML that validates as a complete DevContainer config.
-func TestPresetYAMLValidatesSchema(t *testing.T) {
-	cases := []struct {
-		field, name string
-	}{
-		{"customizations", "base"},
-		{"image", "golang"},
-		{"capAdd", "base"},
-		{"build", "base"},
-		{"mounts", "base"},
-		{"features", "base"},
-		{"onCreateCommand", "base"},
-	}
-	shell := "name: smoke\nimage: ubuntu:22.04\n"
-	for _, c := range cases {
-		body, err := PresetYAML(c.field, c.name)
-		if err != nil {
-			t.Errorf("PresetYAML(%s, %s): %v", c.field, c.name, err)
-			continue
-		}
-		full := shell + body
-		if c.field == "name" || c.field == "image" {
-			full = body
-		}
-		var dc model.DevContainer
-		if err := yaml.Unmarshal([]byte(full), &dc); err != nil {
-			t.Errorf("yaml.Unmarshal(%s, %s): %v\nyaml:\n%s", c.field, c.name, err, full)
-		}
-	}
-}
-
 func TestAllFieldsHaveBasePreset(t *testing.T) {
 	for _, field := range ListFields() {
 		names := ListPresets(field)

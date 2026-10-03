@@ -22,15 +22,19 @@ func WriteFile(dc model.DevContainer, outputPath string, force bool) (string, er
 		return "", fmt.Errorf("error marshalling JSON: %w", err)
 	}
 
-	parent := filepath.Dir(outputPath)
-	if err := os.MkdirAll(parent, 0750); err != nil {
-		return "", fmt.Errorf("creating output directory: %w", err)
-	}
-
+	// Check the refusal before creating anything. An existing file implies an
+	// existing parent, so this order changes no outcome today - it is here so a
+	// later edit cannot introduce a side effect ahead of the guard. It also
+	// matches the order the init command already uses.
 	if _, err := os.Stat(outputPath); err == nil && !force {
 		return "", fmt.Errorf("file '%s' already exists — use --force to overwrite", outputPath)
 	}
-	if err := os.WriteFile(outputPath, jsonBytes, 0600); err != nil {
+
+	parent := filepath.Dir(outputPath)
+	if err := os.MkdirAll(parent, 0o750); err != nil {
+		return "", fmt.Errorf("creating output directory: %w", err)
+	}
+	if err := os.WriteFile(outputPath, jsonBytes, 0o600); err != nil {
 		return "", fmt.Errorf("error writing file: %w", err)
 	}
 

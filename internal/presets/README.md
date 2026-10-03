@@ -10,6 +10,8 @@ import "github.com/lucasassuncao/devcontainerwizard/internal/presets"
 
 Package presets provides preset value maps for each top\-level field of the DevContainer model. Presets are exposed via a string\-keyed dispatcher used by the edit TUI overlay and the show\-examples command.
 
+Every field follows one naming convention, so the accessors are not documented individually: XPreset\(name\) returns the value of preset name for field X, or the zero value when there is no such preset, and ListXPresets\(\) returns that field's preset names sorted alphabetically with "base" first. PresetYAML and ListPresets dispatch to them by field name.
+
 ## Index
 
 - [func AppPortPreset\(name string\) \[\]any](<#AppPortPreset>)

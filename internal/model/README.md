@@ -13,9 +13,10 @@ Package model defines the data structures used to represent dev container config
 ## Index
 
 - [Variables](<#variables>)
-- [func GetAllTypes\(\) \[\]any](<#GetAllTypes>)
 - [type BuildConfig](<#BuildConfig>)
+  - [func \(BuildConfig\) Metadata\(\) map\[string\]any](<#BuildConfig.Metadata>)
 - [type CodespacesCustomization](<#CodespacesCustomization>)
+  - [func \(CodespacesCustomization\) Metadata\(\) map\[string\]any](<#CodespacesCustomization.Metadata>)
 - [type CommandValue](<#CommandValue>)
   - [func CommandMap\(m map\[string\]\[\]string\) CommandValue](<#CommandMap>)
   - [func CommandSlice\(s \[\]string\) CommandValue](<#CommandSlice>)
@@ -25,7 +26,9 @@ Package model defines the data structures used to represent dev container config
   - [func \(c \*CommandValue\) UnmarshalJSON\(data \[\]byte\) error](<#CommandValue.UnmarshalJSON>)
   - [func \(c \*CommandValue\) UnmarshalYAML\(value \*yaml.Node\) error](<#CommandValue.UnmarshalYAML>)
 - [type Customizations](<#Customizations>)
+  - [func \(Customizations\) Metadata\(\) map\[string\]any](<#Customizations.Metadata>)
 - [type DevContainer](<#DevContainer>)
+  - [func \(DevContainer\) Metadata\(\) map\[string\]any](<#DevContainer.Metadata>)
 - [type GPURequirement](<#GPURequirement>)
 - [type GPUValue](<#GPUValue>)
   - [func GPUBool\(v bool\) GPUValue](<#GPUBool>)
@@ -39,20 +42,26 @@ Package model defines the data structures used to represent dev container config
   - [func \(g \*GPUValue\) UnmarshalJSON\(data \[\]byte\) error](<#GPUValue.UnmarshalJSON>)
   - [func \(g \*GPUValue\) UnmarshalYAML\(value \*yaml.Node\) error](<#GPUValue.UnmarshalYAML>)
 - [type HostRequirements](<#HostRequirements>)
+  - [func \(HostRequirements\) Metadata\(\) map\[string\]any](<#HostRequirements.Metadata>)
 - [type JetBrainsCustomization](<#JetBrainsCustomization>)
+  - [func \(JetBrainsCustomization\) Metadata\(\) map\[string\]any](<#JetBrainsCustomization.Metadata>)
 - [type Mount](<#Mount>)
 - [type MountOrString](<#MountOrString>)
   - [func MountObject\(m Mount\) MountOrString](<#MountObject>)
   - [func MountString\(s string\) MountOrString](<#MountString>)
   - [func \(m MountOrString\) MarshalJSON\(\) \(\[\]byte, error\)](<#MountOrString.MarshalJSON>)
   - [func \(m MountOrString\) MarshalYAML\(\) \(any, error\)](<#MountOrString.MarshalYAML>)
+  - [func \(MountOrString\) Metadata\(\) map\[string\]any](<#MountOrString.Metadata>)
   - [func \(m \*MountOrString\) UnmarshalJSON\(data \[\]byte\) error](<#MountOrString.UnmarshalJSON>)
   - [func \(m \*MountOrString\) UnmarshalYAML\(value \*yaml.Node\) error](<#MountOrString.UnmarshalYAML>)
-  - [func \(MountOrString\) YeditSchema\(\) \[\]schema.FieldDef](<#MountOrString.YeditSchema>)
 - [type PortAttributes](<#PortAttributes>)
+  - [func \(PortAttributes\) Metadata\(\) map\[string\]any](<#PortAttributes.Metadata>)
 - [type Secret](<#Secret>)
+  - [func \(Secret\) Metadata\(\) map\[string\]any](<#Secret.Metadata>)
 - [type VSCodeCustomization](<#VSCodeCustomization>)
+  - [func \(VSCodeCustomization\) Metadata\(\) map\[string\]any](<#VSCodeCustomization.Metadata>)
 - [type WatchConfig](<#WatchConfig>)
+  - [func \(WatchConfig\) Metadata\(\) map\[string\]any](<#WatchConfig.Metadata>)
 
 
 ## Variables
@@ -75,42 +84,51 @@ var TopLevelKeys = []string{
 }
 ```
 
-<a name="GetAllTypes"></a>
-## func [GetAllTypes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L159>)
-
-```go
-func GetAllTypes() []any
-```
-
-GetAllTypes returns all model types for documentation generation
-
 <a name="BuildConfig"></a>
-## type [BuildConfig](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L64-L71>)
+## type [BuildConfig](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L68-L75>)
 
 BuildConfig defines parameters for building a dev container image.
 
 ```go
 type BuildConfig struct {
-    Dockerfile string            `json:"dockerfile,omitempty" yaml:"dockerfile,omitempty" validate:"required" jsonschema:"required,default=Dockerfile" jsonschema_description:"Path to the Dockerfile to use for building the image."`
-    Context    string            `json:"context,omitempty" yaml:"context,omitempty" validate:"required" jsonschema:"required,default=." jsonschema_description:"Build context directory."`
-    Args       map[string]string `json:"args,omitempty" yaml:"args,omitempty" validate:"omitempty" jsonschema_description:"Build arguments as key-value pairs."`
-    Target     string            `json:"target,omitempty" yaml:"target,omitempty" validate:"omitempty" jsonschema_description:"Target stage for multi-stage Docker builds."`
-    CacheFrom  []string          `json:"cacheFrom,omitempty" yaml:"cacheFrom,omitempty" validate:"omitempty" jsonschema_description:"List of images to cache from."`
-    Options    []string          `json:"options,omitempty" yaml:"options,omitempty" validate:"omitempty" jsonschema_description:"Additional CLI options passed to docker build (e.g. --no-cache)."`
+    Dockerfile string            `json:"dockerfile,omitempty" yaml:"dockerfile,omitempty" validate:"required"`
+    Context    string            `json:"context,omitempty" yaml:"context,omitempty" validate:"omitempty"`
+    Args       map[string]string `json:"args,omitempty" yaml:"args,omitempty" validate:"omitempty"`
+    Target     string            `json:"target,omitempty" yaml:"target,omitempty" validate:"omitempty"`
+    CacheFrom  []string          `json:"cacheFrom,omitempty" yaml:"cacheFrom,omitempty" validate:"omitempty"`
+    Options    []string          `json:"options,omitempty" yaml:"options,omitempty" validate:"omitempty"`
 }
 ```
 
+<a name="BuildConfig.Metadata"></a>
+### func \(BuildConfig\) [Metadata](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/metadata.go#L236>)
+
+```go
+func (BuildConfig) Metadata() map[string]any
+```
+
+Metadata declares the fields of the build block.
+
 <a name="CodespacesCustomization"></a>
-## type [CodespacesCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L110-L113>)
+## type [CodespacesCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L113-L116>)
 
 CodespacesCustomization defines GitHub Codespaces\-specific settings.
 
 ```go
 type CodespacesCustomization struct {
-    Settings   map[string]any `json:"settings,omitempty" yaml:"settings,omitempty" validate:"omitempty" jsonschema_description:"Key-value settings for Codespaces."`
-    Extensions []string       `json:"extensions,omitempty" yaml:"extensions,omitempty" validate:"omitempty" jsonschema_description:"List of Codespaces extensions to install."`
+    Settings   map[string]any `json:"settings,omitempty" yaml:"settings,omitempty" validate:"omitempty"`
+    Extensions []string       `json:"extensions,omitempty" yaml:"extensions,omitempty" validate:"omitempty"`
 }
 ```
+
+<a name="CodespacesCustomization.Metadata"></a>
+### func \(CodespacesCustomization\) [Metadata](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/metadata.go#L472>)
+
+```go
+func (CodespacesCustomization) Metadata() map[string]any
+```
+
+Metadata declares the fields of customizations.codespaces.
 
 <a name="CommandValue"></a>
 ## type [CommandValue](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/commandvalue.go#L14-L17>)
@@ -188,91 +206,114 @@ func (c *CommandValue) UnmarshalYAML(value *yaml.Node) error
 UnmarshalYAML implements yaml.Unmarshaler for direct yaml.v3 decoding.
 
 <a name="Customizations"></a>
-## type [Customizations](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L97-L101>)
+## type [Customizations](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L100-L104>)
 
 Customizations defines editor or IDE specific configurations.
 
 ```go
 type Customizations struct {
-    VSCode     *VSCodeCustomization     `json:"vscode,omitempty" yaml:"vscode,omitempty" validate:"omitempty" jsonschema_description:"VS Code specific customizations."`
-    Codespaces *CodespacesCustomization `json:"codespaces,omitempty" yaml:"codespaces,omitempty" validate:"omitempty" jsonschema_description:"Codespaces specific customizations."`
-    JetBrains  *JetBrainsCustomization  `json:"jetbrains,omitempty" yaml:"jetbrains,omitempty" validate:"omitempty" jsonschema_description:"JetBrains IDE specific customizations."`
+    VSCode     *VSCodeCustomization     `json:"vscode,omitempty" yaml:"vscode,omitempty" validate:"omitempty"`
+    Codespaces *CodespacesCustomization `json:"codespaces,omitempty" yaml:"codespaces,omitempty" validate:"omitempty"`
+    JetBrains  *JetBrainsCustomization  `json:"jetbrains,omitempty" yaml:"jetbrains,omitempty" validate:"omitempty"`
 }
 ```
 
+<a name="Customizations.Metadata"></a>
+### func \(Customizations\) [Metadata](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/metadata.go#L436>)
+
+```go
+func (Customizations) Metadata() map[string]any
+```
+
+Metadata declares the fields of the customizations block.
+
 <a name="DevContainer"></a>
-## type [DevContainer](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L6-L61>)
+## type [DevContainer](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L10-L65>)
 
-
+DevContainer is the whole configuration document: the YAML the user edits and the devcontainer.json generated from it. Fields are declared in the order they should appear in the generated JSON, which is the order encoding/json emits them.
 
 ```go
 type DevContainer struct {
-    Schema            string       `json:"$schema,omitempty" yaml:"$schema,omitempty" jsonschema_description:"URL of the JSON schema that describes the format of this file."`
-    Name              string       `json:"name,omitempty" yaml:"name,omitempty" validate:"required" jsonschema:"required" jsonschema_description:"Name of the dev container."`
-    Image             string       `json:"image,omitempty" yaml:"image,omitempty" jsonschema_description:"Docker image to use for the dev container."`
-    Build             *BuildConfig `json:"build,omitempty" yaml:"build,omitempty" validate:"omitempty" jsonschema_description:"Configuration for building the image."`
-    DockerFile        string       `json:"dockerFile,omitempty" yaml:"dockerFile,omitempty" jsonschema_description:"Deprecated: legacy path to the Dockerfile. Use build.dockerfile instead."`
-    DockerComposeFile []string     `json:"dockerComposeFile,omitempty" yaml:"dockerComposeFile,omitempty" jsonschema_description:"List of Docker Compose files to use."`
-    Service           string       `json:"service,omitempty" yaml:"service,omitempty" validate:"required_with=DockerComposeFile" jsonschema_description:"Specific service to run from Docker Compose."`
-    RunServices       []string     `json:"runServices,omitempty" yaml:"runServices,omitempty" jsonschema_description:"Docker Compose services to start automatically alongside the dev container service."`
+    Schema            string       `json:"$schema,omitempty" yaml:"$schema,omitempty"`
+    Name              string       `json:"name,omitempty" yaml:"name,omitempty" validate:"required"`
+    Image             string       `json:"image,omitempty" yaml:"image,omitempty"`
+    Build             *BuildConfig `json:"build,omitempty" yaml:"build,omitempty" validate:"omitempty"`
+    DockerFile        string       `json:"dockerFile,omitempty" yaml:"dockerFile,omitempty"`
+    DockerComposeFile []string     `json:"dockerComposeFile,omitempty" yaml:"dockerComposeFile,omitempty"`
+    Service           string       `json:"service,omitempty" yaml:"service,omitempty" validate:"required_with=DockerComposeFile"`
+    RunServices       []string     `json:"runServices,omitempty" yaml:"runServices,omitempty"`
 
-    WorkspaceFolder     string `json:"workspaceFolder,omitempty" yaml:"workspaceFolder,omitempty" jsonschema_description:"Path to the workspace folder inside the container."`
-    WorkspaceMount      string `json:"workspaceMount,omitempty" yaml:"workspaceMount,omitempty" jsonschema_description:"Mount type for the workspace folder."`
-    RemoteUser          string `json:"remoteUser,omitempty" yaml:"remoteUser,omitempty" jsonschema_description:"User that tools run as inside the container (VS Code, extensions, terminals)."`
-    ContainerUser       string `json:"containerUser,omitempty" yaml:"containerUser,omitempty" jsonschema_description:"User for all processes inside the container, including the entrypoint."`
-    UpdateRemoteUserUID bool   `json:"updateRemoteUserUID,omitempty" yaml:"updateRemoteUserUID,omitempty" jsonschema_description:"Sync the container user UID/GID with the local user on Linux to avoid permission issues."`
-    UserEnvProbe        string `json:"userEnvProbe,omitempty" yaml:"userEnvProbe,omitempty" validate:"omitempty,oneof=none loginShell loginInteractiveShell interactiveShell" jsonschema_description:"Shell type used to probe user environment variables."`
+    WorkspaceFolder     string `json:"workspaceFolder,omitempty" yaml:"workspaceFolder,omitempty"`
+    WorkspaceMount      string `json:"workspaceMount,omitempty" yaml:"workspaceMount,omitempty"`
+    RemoteUser          string `json:"remoteUser,omitempty" yaml:"remoteUser,omitempty"`
+    ContainerUser       string `json:"containerUser,omitempty" yaml:"containerUser,omitempty"`
+    UpdateRemoteUserUID bool   `json:"updateRemoteUserUID,omitempty" yaml:"updateRemoteUserUID,omitempty"`
+    UserEnvProbe        string `json:"userEnvProbe,omitempty" yaml:"userEnvProbe,omitempty" validate:"omitempty,oneof=none loginShell loginInteractiveShell interactiveShell"`
 
     // Environment variables
-    ContainerEnv map[string]string `json:"containerEnv,omitempty" yaml:"containerEnv,omitempty" jsonschema_description:"Environment variables to set in the container."`
-    RemoteEnv    map[string]string `json:"remoteEnv,omitempty" yaml:"remoteEnv,omitempty" jsonschema_description:"Environment variables for remote connections (like SSH)."`
+    ContainerEnv map[string]string `json:"containerEnv,omitempty" yaml:"containerEnv,omitempty"`
+    RemoteEnv    map[string]string `json:"remoteEnv,omitempty" yaml:"remoteEnv,omitempty"`
 
-    ForwardPorts         []any                      `json:"forwardPorts,omitempty" yaml:"forwardPorts,omitempty" jsonschema_description:"Ports that are forwarded from the container to the local machine. Can be an integer port number, or a string of the format \"host:port_number\""`
-    AppPort              []any                      `json:"appPort,omitempty" yaml:"appPort,omitempty" jsonschema_description:"Legacy: ports to publish from the container. Prefer forwardPorts instead."`
-    PortsAttributes      map[string]*PortAttributes `json:"portsAttributes,omitempty" yaml:"portsAttributes,omitempty" validate:"omitempty" jsonschema_description:"Additional attributes for forwarded ports."`
-    OtherPortsAttributes *PortAttributes            `json:"otherPortsAttributes,omitempty" yaml:"otherPortsAttributes,omitempty" validate:"omitempty" jsonschema_description:"Default attributes applied to all forwarded ports not defined in portsAttributes."`
-    Mounts               []MountOrString            `json:"mounts,omitempty" yaml:"mounts,omitempty" validate:"omitempty,dive" jsonschema_description:"Mount points inside the container. Each entry can be a Mount object or a Docker --mount string."`
+    ForwardPorts         []any                      `json:"forwardPorts,omitempty" yaml:"forwardPorts,omitempty"`
+    AppPort              []any                      `json:"appPort,omitempty" yaml:"appPort,omitempty"`
+    PortsAttributes      map[string]*PortAttributes `json:"portsAttributes,omitempty" yaml:"portsAttributes,omitempty" validate:"omitempty,dive"`
+    OtherPortsAttributes *PortAttributes            `json:"otherPortsAttributes,omitempty" yaml:"otherPortsAttributes,omitempty" validate:"omitempty"`
+    Mounts               []MountOrString            `json:"mounts,omitempty" yaml:"mounts,omitempty" validate:"omitempty,dive"`
 
-    RunArgs         []string `json:"runArgs,omitempty" yaml:"runArgs,omitempty" jsonschema_description:"Additional arguments to pass to 'docker run'."`
-    OverrideCommand bool     `json:"overrideCommand,omitempty" yaml:"overrideCommand,omitempty" jsonschema_description:"Whether to override the container's default startup command with the devcontainer lifecycle commands."`
+    RunArgs         []string `json:"runArgs,omitempty" yaml:"runArgs,omitempty"`
+    OverrideCommand bool     `json:"overrideCommand,omitempty" yaml:"overrideCommand,omitempty"`
 
-    Init       bool     `json:"init,omitempty" yaml:"init,omitempty" jsonschema_description:"Whether to run an init process inside the container."`
-    Privileged bool     `json:"privileged,omitempty" yaml:"privileged,omitempty" jsonschema_description:"Run the container in privileged mode."`
-    CapAdd     []string `json:"capAdd,omitempty" yaml:"capAdd,omitempty" jsonschema_description:"Linux capabilities to add to the container."`
+    Init       bool     `json:"init,omitempty" yaml:"init,omitempty"`
+    Privileged bool     `json:"privileged,omitempty" yaml:"privileged,omitempty"`
+    CapAdd     []string `json:"capAdd,omitempty" yaml:"capAdd,omitempty"`
 
-    SecurityOpt []string `json:"securityOpt,omitempty" yaml:"securityOpt,omitempty" jsonschema_description:"Security options for the container."`
-    Devices     []string `json:"devices,omitempty" yaml:"devices,omitempty" jsonschema_description:"Devices to expose to the container."`
+    SecurityOpt []string `json:"securityOpt,omitempty" yaml:"securityOpt,omitempty"`
+    Devices     []string `json:"devices,omitempty" yaml:"devices,omitempty"`
 
-    HostRequirements            *HostRequirements         `json:"hostRequirements,omitempty" yaml:"hostRequirements,omitempty" validate:"omitempty" jsonschema_description:"Minimum host hardware requirements for the dev container."`
-    OverrideFeatureInstallOrder []string                  `json:"overrideFeatureInstallOrder,omitempty" yaml:"overrideFeatureInstallOrder,omitempty" jsonschema_description:"Order to install features inside the container, overriding defaults."`
-    Features                    map[string]map[string]any `json:"features,omitempty" yaml:"features,omitempty" jsonschema_description:"Features to install in the container and their options."`
+    HostRequirements            *HostRequirements         `json:"hostRequirements,omitempty" yaml:"hostRequirements,omitempty" validate:"omitempty"`
+    OverrideFeatureInstallOrder []string                  `json:"overrideFeatureInstallOrder,omitempty" yaml:"overrideFeatureInstallOrder,omitempty"`
+    Features                    map[string]map[string]any `json:"features,omitempty" yaml:"features,omitempty"`
 
-    InitializeCommand    *CommandValue `json:"initializeCommand,omitempty" yaml:"initializeCommand,omitempty" jsonschema_description:"Command to run on the host before the container is created or started. Can be a string, an array of strings, or a named command object."`
-    OnCreateCommand      *CommandValue `json:"onCreateCommand,omitempty" yaml:"onCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created. Can be a string, an array of strings, or a named command object."`
-    UpdateContentCommand *CommandValue `json:"updateContentCommand,omitempty" yaml:"updateContentCommand,omitempty" jsonschema_description:"Command to run when the container content is updated. Can be a string, an array of strings, or a named command object."`
-    PostCreateCommand    *CommandValue `json:"postCreateCommand,omitempty" yaml:"postCreateCommand,omitempty" jsonschema_description:"Command to run after the container is created and initialized. Can be a string, an array of strings, or a named command object."`
-    PostStartCommand     *CommandValue `json:"postStartCommand,omitempty" yaml:"postStartCommand,omitempty" jsonschema_description:"Command to run after the container starts. Can be a string, an array of strings, or a named command object."`
-    PostAttachCommand    *CommandValue `json:"postAttachCommand,omitempty" yaml:"postAttachCommand,omitempty" jsonschema_description:"Command to run after attaching to the container. Can be a string, an array of strings, or a named command object."`
-    WaitFor              string        `json:"waitFor,omitempty" yaml:"waitFor,omitempty" validate:"omitempty,oneof=initializeCommand onCreateCommand updateContentCommand postCreateCommand postStartCommand" jsonschema_description:"Lifecycle command to wait for before the tool considers the container ready."` //nolint:lll
+    InitializeCommand    *CommandValue `json:"initializeCommand,omitempty" yaml:"initializeCommand,omitempty"`
+    OnCreateCommand      *CommandValue `json:"onCreateCommand,omitempty" yaml:"onCreateCommand,omitempty"`
+    UpdateContentCommand *CommandValue `json:"updateContentCommand,omitempty" yaml:"updateContentCommand,omitempty"`
+    PostCreateCommand    *CommandValue `json:"postCreateCommand,omitempty" yaml:"postCreateCommand,omitempty"`
+    PostStartCommand     *CommandValue `json:"postStartCommand,omitempty" yaml:"postStartCommand,omitempty"`
+    PostAttachCommand    *CommandValue `json:"postAttachCommand,omitempty" yaml:"postAttachCommand,omitempty"`
+    WaitFor              string        `json:"waitFor,omitempty" yaml:"waitFor,omitempty" validate:"omitempty,oneof=initializeCommand onCreateCommand updateContentCommand postCreateCommand postStartCommand"`
 
-    Watch          *WatchConfig    `json:"watch,omitempty" yaml:"watch,omitempty" validate:"omitempty" jsonschema_description:"Configuration for files/processes to watch for restarts."`
-    Customizations *Customizations `json:"customizations,omitempty" yaml:"customizations,omitempty" validate:"omitempty" jsonschema_description:"Editor/IDE customizations inside the container."`
+    Watch          *WatchConfig    `json:"watch,omitempty" yaml:"watch,omitempty" validate:"omitempty"`
+    Customizations *Customizations `json:"customizations,omitempty" yaml:"customizations,omitempty" validate:"omitempty"`
 
-    Secrets map[string]Secret `json:"secrets,omitempty" yaml:"secrets,omitempty" validate:"omitempty" jsonschema_description:"Secrets to pass to the container."`
+    Secrets map[string]Secret `json:"secrets,omitempty" yaml:"secrets,omitempty" validate:"omitempty,dive"`
 
-    ShutdownAction string `json:"shutdownAction,omitempty" yaml:"shutdownAction,omitempty" validate:"omitempty,oneof=none stopContainer" jsonschema_description:"Action to take when the container is stopped. Use none or stopContainer (stopCompose is only valid in compose variants)."`
+    ShutdownAction string `json:"shutdownAction,omitempty" yaml:"shutdownAction,omitempty" validate:"omitempty,oneof=none stopContainer stopCompose"`
 }
 ```
 
+<a name="DevContainer.Metadata"></a>
+### func \(DevContainer\) [Metadata](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/metadata.go#L23>)
+
+```go
+func (DevContainer) Metadata() map[string]any
+```
+
+Metadata declares the top\-level devcontainer fields.
+
+Two fields set Children explicitly instead of letting composition fill them:
+
+- mounts, because MountOrString declares its own shape \- composition skips those \(reflection cannot read their fields\), so the mount attributes are declared here for the hint panel.
+- portsAttributes, because it is a map keyed by port number and needs different snippets from otherPortsAttributes, which shares the same Go type. Explicit children win over composition, so otherPortsAttributes picks up the unkeyed PortAttributes.Metadata\(\) and this one does not.
+
 <a name="GPURequirement"></a>
-## type [GPURequirement](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L135-L138>)
+## type [GPURequirement](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L138-L141>)
 
 GPURequirement describes GPU resource needs within HostRequirements.
 
 ```go
 type GPURequirement struct {
-    Cores  int    `json:"cores,omitempty" yaml:"cores,omitempty" validate:"omitempty,min=1" jsonschema_description:"Minimum number of GPU cores required."`
-    Memory string `json:"memory,omitempty" yaml:"memory,omitempty" jsonschema_description:"Minimum GPU memory required (e.g. \"4gb\")."`
+    Cores  int    `json:"cores,omitempty" yaml:"cores,omitempty" validate:"omitempty,min=1"`
+    Memory string `json:"memory,omitempty" yaml:"memory,omitempty"`
 }
 ```
 
@@ -380,46 +421,63 @@ func (g *GPUValue) UnmarshalYAML(value *yaml.Node) error
 UnmarshalYAML implements yaml.Unmarshaler for direct yaml.v3 decoding.
 
 <a name="HostRequirements"></a>
-## type [HostRequirements](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L127-L132>)
+## type [HostRequirements](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L130-L135>)
 
 HostRequirements defines minimum hardware resources the host must provide.
 
 ```go
 type HostRequirements struct {
-    CPUs    int       `json:"cpus,omitempty" yaml:"cpus,omitempty" validate:"omitempty,min=1" jsonschema_description:"Minimum number of CPUs required."`
-    Memory  string    `json:"memory,omitempty" yaml:"memory,omitempty" jsonschema_description:"Minimum memory required (e.g. \"4gb\")."`
-    Storage string    `json:"storage,omitempty" yaml:"storage,omitempty" jsonschema_description:"Minimum disk storage required (e.g. \"32gb\")."`
-    GPU     *GPUValue `json:"gpu,omitempty" yaml:"gpu,omitempty" validate:"omitempty" jsonschema_description:"GPU requirement: true/false, \"optional\", or object with cores/memory."`
+    CPUs    int       `json:"cpus,omitempty" yaml:"cpus,omitempty" validate:"omitempty,min=1"`
+    Memory  string    `json:"memory,omitempty" yaml:"memory,omitempty"`
+    Storage string    `json:"storage,omitempty" yaml:"storage,omitempty"`
+    GPU     *GPUValue `json:"gpu,omitempty" yaml:"gpu,omitempty" validate:"omitempty"`
 }
 ```
 
+<a name="HostRequirements.Metadata"></a>
+### func \(HostRequirements\) [Metadata](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/metadata.go#L383>)
+
+```go
+func (HostRequirements) Metadata() map[string]any
+```
+
+Metadata declares the fields of the hostRequirements block.
+
 <a name="JetBrainsCustomization"></a>
-## type [JetBrainsCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L116-L118>)
+## type [JetBrainsCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L119-L121>)
 
 JetBrainsCustomization defines JetBrains IDE configuration.
 
 ```go
 type JetBrainsCustomization struct {
-    Plugins []string `json:"plugins,omitempty" yaml:"plugins,omitempty" validate:"omitempty" jsonschema_description:"List of JetBrains plugins to install."`
+    Plugins []string `json:"plugins,omitempty" yaml:"plugins,omitempty" validate:"omitempty"`
 }
 ```
 
+<a name="JetBrainsCustomization.Metadata"></a>
+### func \(JetBrainsCustomization\) [Metadata](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/metadata.go#L487>)
+
+```go
+func (JetBrainsCustomization) Metadata() map[string]any
+```
+
+Metadata declares the fields of customizations.jetbrains.
+
 <a name="Mount"></a>
-## type [Mount](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L74-L79>)
+## type [Mount](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L78-L82>)
 
 Mount represents a filesystem or volume mount for the container.
 
 ```go
 type Mount struct {
-    Type     string `json:"type,omitempty" yaml:"type,omitempty" validate:"required,oneof=bind volume tmpfs" jsonschema:"required" jsonschema_description:"Type of mount: bind, volume, or tmpfs."`
-    Source   string `json:"source,omitempty" yaml:"source,omitempty" jsonschema_description:"Source path or volume name. Not required for tmpfs mounts."`
-    Target   string `json:"target,omitempty" yaml:"target,omitempty" validate:"required" jsonschema:"required" jsonschema_description:"Target path inside the container."`
-    ReadOnly bool   `json:"readonly,omitempty" yaml:"readonly,omitempty" jsonschema_description:"Whether the mount is read-only."`
+    Type   string `json:"type,omitempty" yaml:"type,omitempty" validate:"required,oneof=bind volume tmpfs"`
+    Source string `json:"source,omitempty" yaml:"source,omitempty"`
+    Target string `json:"target,omitempty" yaml:"target,omitempty" validate:"required"`
 }
 ```
 
 <a name="MountOrString"></a>
-## type [MountOrString](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L15-L18>)
+## type [MountOrString](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L13-L16>)
 
 MountOrString represents an element of the mounts array. The devcontainer spec allows each mount to be either a Mount object or a Docker \-\-mount string \(e.g. "source=/path,target=/container,type=bind"\).
 
@@ -431,7 +489,7 @@ type MountOrString struct {
 ```
 
 <a name="MountObject"></a>
-### func [MountObject](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L21>)
+### func [MountObject](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L19>)
 
 ```go
 func MountObject(m Mount) MountOrString
@@ -440,7 +498,7 @@ func MountObject(m Mount) MountOrString
 MountObject returns a MountOrString backed by a structured Mount.
 
 <a name="MountString"></a>
-### func [MountString](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L24>)
+### func [MountString](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L22>)
 
 ```go
 func MountString(s string) MountOrString
@@ -449,7 +507,7 @@ func MountString(s string) MountOrString
 MountString returns a MountOrString backed by a raw Docker mount string.
 
 <a name="MountOrString.MarshalJSON"></a>
-### func \(MountOrString\) [MarshalJSON](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L26>)
+### func \(MountOrString\) [MarshalJSON](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L24>)
 
 ```go
 func (m MountOrString) MarshalJSON() ([]byte, error)
@@ -458,7 +516,7 @@ func (m MountOrString) MarshalJSON() ([]byte, error)
 
 
 <a name="MountOrString.MarshalYAML"></a>
-### func \(MountOrString\) [MarshalYAML](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L48>)
+### func \(MountOrString\) [MarshalYAML](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L46>)
 
 ```go
 func (m MountOrString) MarshalYAML() (any, error)
@@ -466,8 +524,17 @@ func (m MountOrString) MarshalYAML() (any, error)
 
 MarshalYAML implements yaml.Marshaler so yaml.Marshal produces the correct output.
 
+<a name="MountOrString.Metadata"></a>
+### func \(MountOrString\) [Metadata](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L56>)
+
+```go
+func (MountOrString) Metadata() map[string]any
+```
+
+Metadata declares the shape reflection cannot read: a mount is a structured Mount or a raw string, so the entries carry "kind" and stand in for the wrapper's own fields. String mounts edit through the raw YAML pane.
+
 <a name="MountOrString.UnmarshalJSON"></a>
-### func \(\*MountOrString\) [UnmarshalJSON](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L33>)
+### func \(\*MountOrString\) [UnmarshalJSON](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L31>)
 
 ```go
 func (m *MountOrString) UnmarshalJSON(data []byte) error
@@ -476,7 +543,7 @@ func (m *MountOrString) UnmarshalJSON(data []byte) error
 
 
 <a name="MountOrString.UnmarshalYAML"></a>
-### func \(\*MountOrString\) [UnmarshalYAML](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L68>)
+### func \(\*MountOrString\) [UnmarshalYAML](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L65>)
 
 ```go
 func (m *MountOrString) UnmarshalYAML(value *yaml.Node) error
@@ -484,65 +551,92 @@ func (m *MountOrString) UnmarshalYAML(value *yaml.Node) error
 
 UnmarshalYAML implements yaml.Unmarshaler for direct yaml.v3 decoding.
 
-<a name="MountOrString.YeditSchema"></a>
-### func \(MountOrString\) [YeditSchema](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/mountorstring.go#L58>)
-
-```go
-func (MountOrString) YeditSchema() []schema.FieldDef
-```
-
-YeditSchema implements yedit/schema.Provider, declaring the editor view of a mount item as the structured Mount form \(string mounts edit through the raw YAML pane\).
-
 <a name="PortAttributes"></a>
-## type [PortAttributes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L82-L88>)
+## type [PortAttributes](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L85-L91>)
 
 PortAttributes defines additional metadata for a forwarded port.
 
 ```go
 type PortAttributes struct {
-    Label            string `json:"label,omitempty" yaml:"label,omitempty" validate:"omitempty" jsonschema_description:"Human-readable label for the port."`
-    OnAutoForward    string `json:"onAutoForward,omitempty" yaml:"onAutoForward,omitempty" validate:"omitempty,oneof=notify openBrowser openBrowserOnce openPreview silent ignore" jsonschema_description:"Behavior when the port is auto-forwarded (notify, openBrowser, ignore)."`
-    Protocol         string `json:"protocol,omitempty" yaml:"protocol,omitempty" validate:"omitempty,oneof=http https" jsonschema_description:"Network protocol (http/https) for the port."`
-    ElevateIfNeeded  bool   `json:"elevateIfNeeded,omitempty" yaml:"elevateIfNeeded,omitempty" jsonschema_description:"Prompt for elevated privileges if the port requires it (e.g. ports below 1024)."`
-    RequireLocalPort bool   `json:"requireLocalPort,omitempty" yaml:"requireLocalPort,omitempty" jsonschema_description:"Require the local port to match the remote port. Shows a modal if not available."`
+    Label            string `json:"label,omitempty" yaml:"label,omitempty" validate:"omitempty"`
+    OnAutoForward    string `json:"onAutoForward,omitempty" yaml:"onAutoForward,omitempty" validate:"omitempty,oneof=notify openBrowser openBrowserOnce openPreview silent ignore"`
+    Protocol         string `json:"protocol,omitempty" yaml:"protocol,omitempty" validate:"omitempty,oneof=http https"`
+    ElevateIfNeeded  bool   `json:"elevateIfNeeded,omitempty" yaml:"elevateIfNeeded,omitempty"`
+    RequireLocalPort bool   `json:"requireLocalPort,omitempty" yaml:"requireLocalPort,omitempty"`
 }
 ```
 
+<a name="PortAttributes.Metadata"></a>
+### func \(PortAttributes\) [Metadata](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/metadata.go#L280>)
+
+```go
+func (PortAttributes) Metadata() map[string]any
+```
+
+Metadata declares the fields of a port\-attributes block. It is the unkeyed variant used by otherPortsAttributes; see portAttributesChildren.
+
 <a name="Secret"></a>
-## type [Secret](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L121-L124>)
+## type [Secret](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L124-L127>)
 
 Secret defines a reusable secret for builds or runtime.
 
 ```go
 type Secret struct {
-    Description      string `json:"description,omitempty" yaml:"description,omitempty" validate:"required" jsonschema_description:"Human-readable description of the secret."`
-    DocumentationURL string `json:"documentationUrl,omitempty" yaml:"documentationUrl,omitempty" validate:"omitempty,url" jsonschema_description:"URL pointing to documentation for this secret."`
+    Description      string `json:"description,omitempty" yaml:"description,omitempty" validate:"omitempty"`
+    DocumentationURL string `json:"documentationUrl,omitempty" yaml:"documentationUrl,omitempty" validate:"omitempty,url"`
 }
 ```
 
+<a name="Secret.Metadata"></a>
+### func \(Secret\) [Metadata](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/metadata.go#L498>)
+
+```go
+func (Secret) Metadata() map[string]any
+```
+
+Metadata declares the fields of one entry of the secrets map.
+
 <a name="VSCodeCustomization"></a>
-## type [VSCodeCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L104-L107>)
+## type [VSCodeCustomization](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L107-L110>)
 
 VSCodeCustomization defines VS Code\-specific settings.
 
 ```go
 type VSCodeCustomization struct {
-    Settings   map[string]any `json:"settings,omitempty" yaml:"settings,omitempty" validate:"omitempty" jsonschema_description:"Key-value settings for VS Code."`
-    Extensions []string       `json:"extensions,omitempty" yaml:"extensions,omitempty" validate:"omitempty" jsonschema_description:"List of VS Code extensions to install."`
+    Settings   map[string]any `json:"settings,omitempty" yaml:"settings,omitempty" validate:"omitempty"`
+    Extensions []string       `json:"extensions,omitempty" yaml:"extensions,omitempty" validate:"omitempty"`
 }
 ```
 
+<a name="VSCodeCustomization.Metadata"></a>
+### func \(VSCodeCustomization\) [Metadata](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/metadata.go#L457>)
+
+```go
+func (VSCodeCustomization) Metadata() map[string]any
+```
+
+Metadata declares the fields of customizations.vscode.
+
 <a name="WatchConfig"></a>
-## type [WatchConfig](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L91-L94>)
+## type [WatchConfig](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/model.go#L94-L97>)
 
 WatchConfig controls which files or processes trigger restarts.
 
 ```go
 type WatchConfig struct {
-    WaitFor []string `json:"waitFor,omitempty" yaml:"waitFor,omitempty" validate:"omitempty" jsonschema_description:"List of processes or files to wait for before starting."`
-    Restart []string `json:"restart,omitempty" yaml:"restart,omitempty" validate:"omitempty" jsonschema_description:"List of files or events that trigger a restart."`
+    WaitFor []string `json:"waitFor,omitempty" yaml:"waitFor,omitempty" validate:"omitempty"`
+    Restart []string `json:"restart,omitempty" yaml:"restart,omitempty" validate:"omitempty"`
 }
 ```
+
+<a name="WatchConfig.Metadata"></a>
+### func \(WatchConfig\) [Metadata](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/model/metadata.go#L417>)
+
+```go
+func (WatchConfig) Metadata() map[string]any
+```
+
+Metadata declares the fields of the watch block.
 
 Generated by [gomarkdoc](<https://github.com/princjef/gomarkdoc>)
 

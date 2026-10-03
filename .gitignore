@@ -1,4 +1,4 @@
-dist/# Binaries for programs and plugins
+# Binaries for programs and plugins
 *.exe
 *.exe~
 *.dll
@@ -8,14 +8,15 @@ bin/
 dist/
 .binaries/
 
+# Pinned tools (make tools) and the generated SBOM
+.gobin/
+sbom.json
+
 # Test binary, built with `go test -c`
 *.test
 
 # Output of the go coverage tool
-*.out
-coverage.out
-coverage.html
-coverage.xml
+.coverage/
 
 # Dependency directories
 vendor/
@@ -50,14 +51,15 @@ temp/
 
 # Testing
 .testCoverage/
+coverage/
 
 # OS specific
 Thumbs.db
 Desktop.ini
 
 # Binary files
-devcontainerwizard
-devcontainerwizard.exe
+./devcontainerwizard
+./devcontainerwizard.exe
 
 # Claude files
 CLAUDE.md

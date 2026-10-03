@@ -13,35 +13,71 @@ Package updater implements the self\-update mechanism for devcontainerwizard.
 ## Index
 
 - [func CleanOldBinary\(\)](<#CleanOldBinary>)
-- [func SelfUpdate\(repo, token, currentVersion, version string, includePrerelease bool\) error](<#SelfUpdate>)
+- [func NormalizeVersion\(v string\) string](<#NormalizeVersion>)
+- [func SelfUpdate\(ctx context.Context, opts Options\) error](<#SelfUpdate>)
+- [type Options](<#Options>)
 - [type Release](<#Release>)
-  - [func ListReleases\(repo, token string, includePrerelease bool, limit int\) \(\[\]Release, error\)](<#ListReleases>)
+  - [func ListReleases\(ctx context.Context, repo, token string, includePrerelease bool, limit int\) \(\[\]Release, error\)](<#ListReleases>)
 
 
 <a name="CleanOldBinary"></a>
-## func [CleanOldBinary](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L201>)
+## func [CleanOldBinary](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L242>)
 
 ```go
 func CleanOldBinary()
 ```
 
-CleanOldBinary removes a \<exe\>.old file left by a previous self\-update. Call this from main\(\) at startup.
+CleanOldBinary removes a \<exe\>.old file left by a previous self\-update, reporting any failure on stderr. Call this from main\(\) at startup.
 
-<a name="SelfUpdate"></a>
-## func [SelfUpdate](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L48>)
+<a name="NormalizeVersion"></a>
+## func [NormalizeVersion](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L262>)
 
 ```go
-func SelfUpdate(repo, token, currentVersion, version string, includePrerelease bool) error
+func NormalizeVersion(v string) string
+```
+
+NormalizeVersion strips a leading "v" or "V" so that "v1.2.3" and "1.2.3" compare equal. It is exported because the CLI needs the same rule to mark the installed release in \`self\-update \-\-list\`.
+
+<a name="SelfUpdate"></a>
+## func [SelfUpdate](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L88>)
+
+```go
+func SelfUpdate(ctx context.Context, opts Options) error
 ```
 
 SelfUpdate downloads a release of devcontainerwizard from GitHub and replaces the current binary. The old binary is kept as \<name\>.old until the next run, when it is cleaned up automatically.
 
-repo must be in "owner/repo" format, e.g. "lucasassuncao/devcontainerwizard". currentVersion is the running binary's version \(e.g. "1.0.0" or "v1.0.0"\); the update is skipped when it matches the resolved release tag.
+ctx cancels the metadata and download requests, so an interrupted run stops before the binary is swapped rather than after.
 
-version selects the release to install: empty means "latest". includePrerelease only affects the empty\-version path: when true, the most recent release wins even if it is a prerelease; otherwise the latest stable is used. When version is non\-empty, includePrerelease is ignored — the explicit tag is honored.
+The run is configured by opts; see Options.
+
+<a name="Options"></a>
+## type [Options](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L53-L65>)
+
+Options configures a SelfUpdate run.
+
+Repo must be in "owner/repo" format, e.g. "lucasassuncao/devcontainerwizard". CurrentVersion is the running binary's version \(e.g. "1.0.0" or "v1.0.0"\); the update is skipped when it matches the resolved release tag.
+
+Version selects the release to install: empty means "latest". IncludePrerelease only affects the empty\-version path: when true, the most recent release wins even if it is a prerelease; otherwise the latest stable is used. When Version is non\-empty, IncludePrerelease is ignored — the explicit tag is honored.
+
+```go
+type Options struct {
+    Repo              string
+    Token             string
+    CurrentVersion    string
+    Version           string
+    IncludePrerelease bool
+
+    // Out receives progress, ErrOut receives warnings. Both may be nil, in
+    // which case they fall back to os.Stdout and os.Stderr; the CLI passes
+    // cobra's streams and tests pass buffers.
+    Out    io.Writer
+    ErrOut io.Writer
+}
+```
 
 <a name="Release"></a>
-## type [Release](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L30-L34>)
+## type [Release](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L37-L41>)
 
 Release is the public, presentation\-friendly view of a GitHub release returned by ListReleases. It hides API\-specific fields.
 
@@ -54,10 +90,10 @@ type Release struct {
 ```
 
 <a name="ListReleases"></a>
-### func [ListReleases](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L120>)
+### func [ListReleases](<https://github.com/lucasassuncao/devcontainerwizard/blob/main/internal/updater/selfupdate.go#L161>)
 
 ```go
-func ListReleases(repo, token string, includePrerelease bool, limit int) ([]Release, error)
+func ListReleases(ctx context.Context, repo, token string, includePrerelease bool, limit int) ([]Release, error)
 ```
 
 ListReleases returns up to \`limit\` recent releases for the repo, newest first. Drafts are always excluded. When includePrerelease is false, prereleases are also excluded. limit \<= 0 defaults to 20; the GitHub per\-page cap is 100.

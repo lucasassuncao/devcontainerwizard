@@ -14,7 +14,7 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - "-s -w -X main.version={{.Version}} -X github.com/lucasassuncao/devcontainerwizard/cmd.DefaultRepo=lucasassuncao/{{.ProjectName}}"
+      - "-s -w -X main.version={{.Version}} -X github.com/lucasassuncao/devcontainerwizard/internal/cmd.DefaultRepo=lucasassuncao/{{.ProjectName}}"
 
 archives:
   - formats: [binary]
