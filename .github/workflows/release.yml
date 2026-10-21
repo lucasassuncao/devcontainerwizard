@@ -28,9 +28,18 @@ jobs:
           go-version-file: "go.mod"
           cache: true
 
+      # make tag writes every commit since the last tag, subject and body, into
+      # the tag's annotation. checkout can fetch the pushed tag lightweight, so
+      # fetch it again and stop if the annotation is still missing.
+      - name: Write release notes
+        run: |
+          git fetch --force --tags
+          test "$(git cat-file -t "$GITHUB_REF_NAME")" = tag
+          git tag -l --format='%(contents:body)' "$GITHUB_REF_NAME" > "$RUNNER_TEMP/release-notes.md"
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: release --clean
+          args: release --clean --release-notes=${{ runner.temp }}/release-notes.md

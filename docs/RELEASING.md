@@ -6,7 +6,7 @@ A release is a git tag. Everything else follows from it.
 make tag VERSION=v0.2.0
 ```
 
-That target refuses to run with a dirty tree (`git diff --exit-code`), creates an annotated tag and pushes it. The push matches `v*.*.*` in [`.github/workflows/release.yml`](https://github.com/lucasassuncao/devcontainerwizard/blob/main/.github/workflows/release.yml), which runs GoReleaser, which builds six binaries (linux, darwin and windows, each amd64 and arm64) and attaches them to a GitHub release.
+That target refuses to run with a dirty tree (`git diff --exit-code`), creates a tag annotated with the release notes and pushes it. The notes are every commit since the previous tag, subject and body, grouped by type, written by [git-cliff](https://git-cliff.org) from [`cliff.toml`](https://github.com/lucasassuncao/devcontainerwizard/blob/main/cliff.toml); the target installs git-cliff into `./.gobin` like the other tools. The push matches `v*.*.*` in [`.github/workflows/release.yml`](https://github.com/lucasassuncao/devcontainerwizard/blob/main/.github/workflows/release.yml), which runs GoReleaser, which builds six binaries (linux, darwin and windows, each amd64 and arm64) and attaches them to a GitHub release, with the tag's notes as its description.
 
 Run `make all` first. The tag workflow does not re-run the test suite; it trusts that the commit it points at was already green on CI.
 
