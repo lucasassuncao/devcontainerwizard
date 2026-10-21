@@ -17,7 +17,7 @@ var version = "dev"
 
 func main() {
 	if err := run(); err != nil {
-		th := theme.Resolve(theme.ThemeTerminal, true)
+		th := theme.Resolve(theme.Terminal, true)
 		fmt.Fprintln(os.Stderr, th.Danger.Render("Error:"), err)
 		os.Exit(1)
 	}

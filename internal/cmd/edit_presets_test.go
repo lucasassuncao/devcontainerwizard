@@ -8,7 +8,7 @@ import (
 
 	"github.com/lucasassuncao/devcontainerwizard/internal/devcontainer"
 	dcpresets "github.com/lucasassuncao/devcontainerwizard/internal/presets"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 // Every preset the TUI can insert must be valid YAML that sets the field it

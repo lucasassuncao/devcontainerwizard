@@ -11,7 +11,7 @@ const defaultConfigPath = "config.yaml"
 
 // th is the terminal palette the editor draws with, so plain command output
 // reads in the same colours.
-var th = theme.Resolve(theme.ThemeTerminal, true)
+var th = theme.Resolve(theme.Terminal, true)
 
 // RootCmd builds the command tree. version is injected at build time and
 // reported by --version and self-update.

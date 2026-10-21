@@ -19,7 +19,7 @@ import (
 
 // th is the palette the rest of the CLI prints with, so progress and warnings
 // read the same here.
-var th = theme.Resolve(theme.ThemeTerminal, true)
+var th = theme.Resolve(theme.Terminal, true)
 
 // apiClient handles short metadata requests against the GitHub API.
 // downloadClient covers the larger binary fetch and uses a longer ceiling.
